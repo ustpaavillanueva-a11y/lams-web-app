@@ -270,7 +270,6 @@ export class UsersComponent implements OnInit {
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Role</label>
                             <select id="role" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #e0e0e0; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent; cursor: pointer; transition: border-color 0.2s;" onfocus="this.style.borderBottomColor='#667eea'" onblur="this.style.borderBottomColor='#e0e0e0'">
-                                <option value="SuperAdmin" ${editData.role === 'SuperAdmin' ? 'selected' : ''}>SuperAdmin</option>
                                 <option value="CampusAdmin" ${editData.role === 'CampusAdmin' ? 'selected' : ''}>CampusAdmin</option>
                                 <option value="Faculty" ${editData.role === 'Faculty' ? 'selected' : ''}>Faculty</option>
                                 <option value="LabTech" ${editData.role === 'LabTech' ? 'selected' : ''}>LabTech</option>
