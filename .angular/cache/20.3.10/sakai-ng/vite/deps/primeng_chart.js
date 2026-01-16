@@ -1,16 +1,18 @@
 import {
   BaseComponent
-} from "./chunk-HN3FT5WE.js";
+} from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
-} from "./chunk-WXGRKYUQ.js";
+} from "./chunk-DCGH7JIK.js";
 import {
   SharedModule
-} from "./chunk-AEUBHVGT.js";
+} from "./chunk-JCDWLVR7.js";
 import {
   Bind,
   BindModule
-} from "./chunk-SSPEJKN4.js";
+} from "./chunk-246XFSKK.js";
+import "./chunk-OTTARZB5.js";
+import "./chunk-U4LT4ZJN.js";
 import {
   CommonModule,
   isPlatformBrowser
@@ -51,8 +53,6 @@ import {
 import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
-import "./chunk-OTTARZB5.js";
-import "./chunk-U4LT4ZJN.js";
 import {
   __spreadProps,
   __spreadValues

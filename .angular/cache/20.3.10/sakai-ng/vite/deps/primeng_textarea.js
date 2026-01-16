@@ -1,19 +1,21 @@
 import {
   BaseModelHolder
-} from "./chunk-5NGDX53P.js";
+} from "./chunk-TG5GUYVN.js";
 import {
   Fluid
-} from "./chunk-HQP6WWBM.js";
+} from "./chunk-TNKCNNDS.js";
 import {
   PARENT_INSTANCE
-} from "./chunk-HN3FT5WE.js";
+} from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
-} from "./chunk-WXGRKYUQ.js";
-import "./chunk-AEUBHVGT.js";
+} from "./chunk-DCGH7JIK.js";
+import "./chunk-JCDWLVR7.js";
 import {
   Bind
-} from "./chunk-SSPEJKN4.js";
+} from "./chunk-246XFSKK.js";
+import "./chunk-OTTARZB5.js";
+import "./chunk-U4LT4ZJN.js";
 import {
   NgControl
 } from "./chunk-C225D66Z.js";
@@ -47,8 +49,6 @@ import {
 import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
-import "./chunk-OTTARZB5.js";
-import "./chunk-U4LT4ZJN.js";
 import "./chunk-3OV72XIM.js";
 
 // node_modules/@primeuix/styles/dist/textarea/index.mjs
