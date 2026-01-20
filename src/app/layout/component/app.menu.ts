@@ -252,7 +252,7 @@ export class AppMenu implements OnInit {
                     },
                     {
                         label: 'Laboratories',
-                        icon: 'pi pi-fw pi-flask',
+                        icon: 'pi pi-fw pi-list',
                         routerLink: ['/app/pages/laboratories']
                     },
                     {
