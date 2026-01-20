@@ -1040,81 +1040,69 @@ export class AssetsComponent implements OnInit {
         const location = item.Location_id || '';
 
         const html = `
-            <div style="text-align: left; max-width: 650px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                <!-- Header Section -->
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px 20px; margin: -20px -20px 24px -20px; border-radius: 8px 8px 0 0; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.15);">
-                    <h2 style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.3px;">✎ Edit Asset</h2>
-                    <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9; letter-spacing: 0.2px;">ID: <span style="font-weight: 600;">${assetId}</span></p>
+            <div style="text-align: left; max-width: 650px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;">
+                <!-- Minimal Header with Close Button -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 0 20px 0; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.3px;">Edit Asset</h2>
+                        <p style="margin: 8px 0 0 0; font-size: 13px; color: #999;">ID: ${assetId}</p>
+                    </div>
+                    <button id="closeBtn" style="background: none; border: none; font-size: 24px; color: #999; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='#f5f5f5'; this.style.color='#1a1a1a';" onmouseout="this.style.background='none'; this.style.color='#999';">✕</button>
                 </div>
                 
-                <!-- Basic Information Section -->
-                <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #667eea;">📦 Basic Information</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Asset Name *</label>
-                            <input type="text" id="assetName" value="${assetName}" placeholder="Enter asset name" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Property Number</label>
-                            <input type="text" id="propertyNumber" value="${propertyNumber}" placeholder="Property number" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
+                <!-- Minimal Form Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Asset Name *</label>
+                        <input type="text" id="assetName" value="${assetName}" placeholder="Asset name" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Property Number</label>
+                        <input type="text" id="propertyNumber" value="${propertyNumber}" placeholder="Property number" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
                     </div>
                 </div>
 
-                <!-- Classification Section -->
-                <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #667eea;">🏷️ Classification</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Category</label>
-                            <input type="text" id="category" value="${category}" placeholder="Hardware / Software" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Found Cluster</label>
-                            <input type="text" id="foundCluster" value="${foundCluster}" placeholder="Cluster location" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Category</label>
+                        <input type="text" id="category" value="${category}" placeholder="Hardware / Software" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Found Cluster</label>
+                        <input type="text" id="foundCluster" value="${foundCluster}" placeholder="Cluster" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
                     </div>
                 </div>
 
-                <!-- Purpose & Assignment Section -->
-                <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #667eea;">👤 Purpose & Assignment</h3>
-                    <div style="background: #f8f9ff; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Purpose</label>
-                        <input type="text" id="purpose" value="${purpose}" placeholder="Purpose of asset" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                    </div>
-                    <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Issued To</label>
-                        <input type="text" id="issuedTo" value="${issuedTo}" placeholder="Person/Department" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Purpose</label>
+                        <input type="text" id="purpose" value="${purpose}" placeholder="Purpose of asset" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
                     </div>
                 </div>
 
-                <!-- Management Section -->
-                <div style="margin-bottom: 24px;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #667eea;">⚙️ Management</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Program</label>
-                            <input type="text" id="program" value="${program}" placeholder="Program" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Status</label>
-                            <input type="text" id="status" value="${status}" placeholder="Status" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                            <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Location</label>
-                            <input type="text" id="location" value="${location}" placeholder="Location" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
-                        </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Issued To</label>
+                        <input type="text" id="issuedTo" value="${issuedTo}" placeholder="Person/Department" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Program</label>
+                        <input type="text" id="program" value="${program}" placeholder="Program" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
                     </div>
                 </div>
 
-                <!-- Supplier Section -->
-                <div>
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #667eea;">🏢 Supplier</h3>
-                    <div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px;">Supplier</label>
-                        <input type="text" id="supplier" value="${supplier}" placeholder="Supplier name" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; box-sizing: border-box; background: white; transition: all 0.3s; font-weight: 500;" />
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Status</label>
+                        <input type="text" id="status" value="${status}" placeholder="Status" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Supplier</label>
+                        <input type="text" id="supplier" value="${supplier}" placeholder="Supplier" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Location</label>
+                        <input type="text" id="location" value="${location}" placeholder="Location" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
                     </div>
                 </div>
             </div>
@@ -1132,6 +1120,23 @@ export class AssetsComponent implements OnInit {
             didOpen: () => {
                 // Auto-focus first input
                 (document.getElementById('assetName') as HTMLInputElement)?.focus();
+
+                // Close button functionality
+                const closeBtn = document.getElementById('closeBtn') as HTMLButtonElement;
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        Swal.close();
+                    });
+                }
+
+                // Position buttons to the right corner with Cancel on left, Save on right
+                const buttonContainer = document.querySelector('.swal2-actions') as HTMLElement;
+                if (buttonContainer) {
+                    buttonContainer.style.justifyContent = 'flex-end';
+                    buttonContainer.style.gap = '12px';
+                    buttonContainer.style.flexDirection = 'row-reverse';
+                    buttonContainer.style.marginRight = '20px';
+                }
 
                 // Add hover effects to inputs
                 const inputs = document.querySelectorAll('input[type="text"]');
