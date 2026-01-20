@@ -182,11 +182,7 @@ export class AppMenu implements OnInit {
                         routerLink: ['/app/requestmaintenance'],
                         queryParams: { tab: 'pending' }
                     },
-                    {
-                        label: 'Campuses',
-                        icon: 'pi pi-fw pi-building',
-                        routerLink: ['/app/pages/campuses']
-                    },
+
                     {
                         label: 'Departments',
                         icon: 'pi pi-fw pi-building-columns',
