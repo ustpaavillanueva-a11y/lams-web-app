@@ -47,7 +47,6 @@ export interface Supplier {
 export interface Program {
     programId?: string;
     programName?: string;
-    description?: string;
 }
 
 export interface Status {

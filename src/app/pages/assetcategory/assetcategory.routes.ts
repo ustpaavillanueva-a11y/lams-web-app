@@ -2,7 +2,8 @@ import { Routes } from '@angular/router';
 import { BrandComponent } from './brand';
 import { ColorComponent } from './color';
 import { StatusComponent } from './status';
-import { ProgramComponent, SupplierComponent, LocationComponent } from './assetcategory';
+import { ProgramComponent } from './program';
+import { SupplierComponent, LocationComponent } from './assetcategory';
 
 export const ASSET_CATEGORY_ROUTES: Routes = [
     { path: 'brand', component: BrandComponent },
