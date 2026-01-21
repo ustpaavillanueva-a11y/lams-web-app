@@ -468,8 +468,9 @@ export class UsersComponent implements OnInit {
         // Get logged-in user data
         const userId = this.userContextService.getUserId();
         const loggedInUserData = JSON.parse(sessionStorage.getItem('loggedInUserData') || '{}');
-        const isCampusAdmin = this.currentUserRole === 'CampusAdmin';
-        const isSuperAdmin = this.currentUserRole === 'SuperAdmin';
+        const currentUserRole = loggedInUserData.role || this.currentUserRole || '';
+        const isCampusAdmin = currentUserRole === 'CampusAdmin';
+        const isSuperAdmin = currentUserRole === 'SuperAdmin';
         const campusAdminCampusId = loggedInUserData.campus?.campusId || loggedInUserData.campusId || '';
 
         // Find campus name from campuses array based on campusId
@@ -574,6 +575,7 @@ export class UsersComponent implements OnInit {
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Campus <span style="color: #999; font-size: 11px;">(Auto)</span></label>
                             <input id="newCampus" type="text" value="${campusAdminCampusName}" placeholder="Campus" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #ccc; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent; color: #999; cursor: not-allowed;" disabled />
+                            <input id="newCampusHidden" type="hidden" value="${campusAdminCampusId}" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Role *</label>
