@@ -243,7 +243,7 @@ import Swal from 'sweetalert2';
         </p-table>
 
         <!-- New Asset Dialog with Stepper -->
-        <p-dialog [(visible)]="assetDialog" [style]="{ width: '900px' }" header="Create New Asset" [modal]="true" [closable]="true">
+        <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="true" [maximizable]="true">
             <ng-template #content>
                 <!-- Professional Stepper -->
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 24px; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid #e5e5e5;">
