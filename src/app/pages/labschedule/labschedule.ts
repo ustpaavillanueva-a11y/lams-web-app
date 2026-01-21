@@ -19,6 +19,7 @@ import { MessageService } from 'primeng/api';
 import { DatePickerModule } from 'primeng/datepicker';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../service/auth.service';
 
 @Component({
     selector: 'app-labschedule',
@@ -50,7 +51,7 @@ import { environment } from '../../../environments/environment';
         <p-toolbar styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
-                    <p-button label="New Schedule" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+                    <p-button label="New Schedule" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" *ngIf="!isCampusAdmin && !isSuperAdmin" />
                     <p-button label="Print" icon="pi pi-print" severity="secondary" outlined />
                 </div>
             </ng-template>
@@ -181,6 +182,8 @@ export class LabScheduleComponent implements OnInit {
     users: any[] = [];
     subjects: any[] = [];
     selectedLaboratory: any = null;
+    isCampusAdmin: boolean = false;
+    isSuperAdmin: boolean = false;
 
     // Dialog state
     scheduleDialog: boolean = false;
@@ -192,15 +195,24 @@ export class LabScheduleComponent implements OnInit {
 
     constructor(
         private messageService: MessageService,
-        private http: HttpClient
+        private http: HttpClient,
+        private authService: AuthService
     ) {}
 
     ngOnInit() {
         this.initializeTimeSlots();
+        this.checkUserRole();
         this.loadLaboratories();
         this.loadUsers();
         this.loadSubjects();
         this.loadSchedules();
+    }
+
+    checkUserRole() {
+        const currentUser = this.authService.getCurrentUser();
+        this.isCampusAdmin = currentUser?.role === 'CampusAdmin';
+        this.isSuperAdmin = currentUser?.role === 'SuperAdmin';
+        console.log('👤 Current user role:', currentUser?.role, 'Is CampusAdmin:', this.isCampusAdmin, 'Is SuperAdmin:', this.isSuperAdmin);
     }
 
     // Initialize time slots from 07:00 AM to 09:00 PM (30-minute intervals)

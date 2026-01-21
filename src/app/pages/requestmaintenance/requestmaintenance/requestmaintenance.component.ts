@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, ViewChild, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
@@ -52,7 +53,6 @@ import { TabsModule } from 'primeng/tabs';
         <p-toolbar styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
-                    <p-button label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNewDialog()" />
                     <p-button label="Delete Selected" icon="pi pi-trash" severity="secondary" outlined (onClick)="deleteSelected()" [disabled]="!selectedItems.length" />
                 </div>
             </ng-template>
@@ -69,9 +69,9 @@ import { TabsModule } from 'primeng/tabs';
 
         <p-tabs>
             <p-tablist>
-                <p-tab value="0">Pending</p-tab>
-                <p-tab value="1">Approved</p-tab>
-                <p-tab value="3">Completed</p-tab>
+                <p-tab value="0" (click)="activeTabIndex = 0">Pending</p-tab>
+                <p-tab value="1" (click)="activeTabIndex = 1">Approved</p-tab>
+                <p-tab value="3" (click)="activeTabIndex = 2">Completed</p-tab>
             </p-tablist>
             <p-tabpanels>
                 <!-- Pending Tab -->
@@ -139,103 +139,107 @@ import { TabsModule } from 'primeng/tabs';
 
                 <!-- Approved Tab -->
                 <p-tabpanel value="1">
-                    <p-table
-                        [value]="approvedItems"
-                        [rows]="10"
-                        [paginator]="true"
-                        [rowsPerPageOptions]="[10, 20, 30]"
-                        [loading]="loading"
-                        [rowHover]="true"
-                        dataKey="maintenanceApprovalId"
-                        [(selection)]="selectedItems"
-                        (selectionChange)="onSelectionChange($event)"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} approved requests"
-                        [showCurrentPageReport]="true"
-                        [tableStyle]="{ 'min-width': '70rem' }"
-                    >
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                                <th style="min-width:25rem">ID</th>
-                                <th pSortableColumn="maintenanceRequest.maintenanceName" style="min-width:20rem">Maintenance Name <p-sortIcon field="maintenanceRequest.maintenanceName" /></th>
-                                <th style="min-width:15rem">Scheduled Date</th>
-                                <th style="min-width:15rem">Status</th>
-                                <th style="min-width:12rem">Actions</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-row>
-                            <tr>
-                                <td><p-tableCheckbox [value]="row" /></td>
-                                <td>{{ row.maintenanceRequest?.requestId }}</td>
-                                <td>{{ row.maintenanceRequest?.maintenanceName }}</td>
-                                <td>{{ row.scheduledAt | date: 'short' }}</td>
-                                <td><p-tag [value]="row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending'" /></td>
-                                <td>
-                                    <div class="flex gap-2">
-                                        <ng-container *ngIf="isLabTech()">
-                                            <p-button label="Confirm" icon="pi pi-check" severity="success" [rounded]="true" [text]="false" (onClick)="confirm(row)" pTooltip="Confirm completion" />
-                                        </ng-container>
-                                        <ng-container *ngIf="!isLabTech()">
-                                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
-                                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
-                                        </ng-container>
-                                    </div>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage">
-                            <tr>
-                                <td colspan="6" class="text-center py-5">No approved requests found</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
+                    <div *ngIf="activeTabIndex === 1">
+                        <p-table
+                            [value]="approvedItems"
+                            [rows]="10"
+                            [paginator]="true"
+                            [rowsPerPageOptions]="[10, 20, 30]"
+                            [loading]="loading"
+                            [rowHover]="true"
+                            dataKey="maintenanceApprovalId"
+                            [(selection)]="selectedItems"
+                            (selectionChange)="onSelectionChange($event)"
+                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} approved requests"
+                            [showCurrentPageReport]="true"
+                            [tableStyle]="{ 'min-width': '70rem' }"
+                        >
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width:3rem"><p-tableHeaderCheckbox /></th>
+                                    <th style="min-width:25rem">ID</th>
+                                    <th pSortableColumn="maintenanceRequest.maintenanceName" style="min-width:20rem">Maintenance Name <p-sortIcon field="maintenanceRequest.maintenanceName" /></th>
+                                    <th style="min-width:15rem">Scheduled Date</th>
+                                    <th style="min-width:15rem">Status</th>
+                                    <th style="min-width:12rem">Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-row>
+                                <tr>
+                                    <td><p-tableCheckbox [value]="row" /></td>
+                                    <td>{{ row.maintenanceRequest?.requestId }}</td>
+                                    <td>{{ row.maintenanceRequest?.maintenanceName }}</td>
+                                    <td>{{ row.scheduledAt | date: 'short' }}</td>
+                                    <td><p-tag [value]="row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending'" /></td>
+                                    <td>
+                                        <div class="flex gap-2">
+                                            <ng-container *ngIf="isLabTech()">
+                                                <p-button label="Confirm" icon="pi pi-check" severity="success" [rounded]="true" [text]="false" (onClick)="confirm(row)" pTooltip="Confirm completion" />
+                                            </ng-container>
+                                            <ng-container *ngIf="!isLabTech()">
+                                                <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
+                                                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
+                                            </ng-container>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">No approved requests found</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
                 </p-tabpanel>
 
                 <!-- Completed Tab -->
                 <p-tabpanel value="2">
-                    <p-table
-                        [value]="completedItems"
-                        [rows]="10"
-                        [paginator]="true"
-                        [rowsPerPageOptions]="[10, 20, 30]"
-                        [loading]="loading"
-                        [rowHover]="true"
-                        dataKey="requestId"
-                        [(selection)]="selectedItems"
-                        (selectionChange)="onSelectionChange($event)"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} completed requests"
-                        [showCurrentPageReport]="true"
-                        [tableStyle]="{ 'min-width': '70rem' }"
-                    >
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                                <th style="min-width:25rem">ID</th>
-                                <th pSortableColumn="maintenanceName" style="min-width:20rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
-                                <th style="min-width:15rem">Status</th>
-                                <th style="min-width:12rem">Actions</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-row>
-                            <tr>
-                                <td><p-tableCheckbox [value]="row" /></td>
-                                <td>{{ row.requestId }}</td>
-                                <td>{{ row.maintenanceName }}</td>
-                                <td><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
-                                <td>
-                                    <div class="flex gap-2">
-                                        <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
-                                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
-                                    </div>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage">
-                            <tr>
-                                <td colspan="5" class="text-center py-5">No completed requests found</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
+                    <div *ngIf="activeTabIndex === 2">
+                        <p-table
+                            [value]="completedItems"
+                            [rows]="10"
+                            [paginator]="true"
+                            [rowsPerPageOptions]="[10, 20, 30]"
+                            [loading]="loading"
+                            [rowHover]="true"
+                            dataKey="requestId"
+                            [(selection)]="selectedItems"
+                            (selectionChange)="onSelectionChange($event)"
+                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} completed requests"
+                            [showCurrentPageReport]="true"
+                            [tableStyle]="{ 'min-width': '70rem' }"
+                        >
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width:3rem"><p-tableHeaderCheckbox /></th>
+                                    <th style="min-width:25rem">ID</th>
+                                    <th pSortableColumn="maintenanceName" style="min-width:20rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
+                                    <th style="min-width:15rem">Status</th>
+                                    <th style="min-width:12rem">Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-row>
+                                <tr>
+                                    <td><p-tableCheckbox [value]="row" /></td>
+                                    <td>{{ row.requestId }}</td>
+                                    <td>{{ row.maintenanceName }}</td>
+                                    <td><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
+                                    <td>
+                                        <div class="flex gap-2">
+                                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
+                                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">No completed requests found</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
                 </p-tabpanel>
 
                 <!-- Completed Approvals Tab -->
@@ -374,11 +378,28 @@ export class RequestmaintenanceComponent implements OnInit {
     constructor(
         private maintenanceService: MaintenanceService,
         private messageService: MessageService,
-        private authService: AuthService
+        private authService: AuthService,
+        private activatedRoute: ActivatedRoute
     ) {}
 
     ngOnInit() {
+        // Check for tab parameter in query params
+        this.activatedRoute.queryParams.subscribe((params) => {
+            const tabParam = params['tab'];
+            if (tabParam === 'pending') {
+                this.activeTabIndex = 0;
+            } else if (tabParam === 'approved') {
+                this.activeTabIndex = 1;
+            } else if (tabParam === 'completed') {
+                this.activeTabIndex = 2;
+            }
+        });
+
         this.loadItems();
+    }
+
+    checkUserRole() {
+        const currentUser = this.authService.getCurrentUser();
     }
 
     isLabTech(): boolean {

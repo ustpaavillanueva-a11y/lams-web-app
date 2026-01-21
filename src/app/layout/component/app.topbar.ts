@@ -62,14 +62,6 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
                 <div class="layout-topbar-menu hidden lg:block">
                     <div class="layout-topbar-menu-content">
-                        <button type="button" class="layout-topbar-action">
-                            <i class="pi pi-calendar"></i>
-                            <span>Calendar</span>
-                        </button>
-                        <button type="button" class="layout-topbar-action">
-                            <i class="pi pi-inbox"></i>
-                            <span>Messages</span>
-                        </button>
                         <button type="button" class="layout-topbar-action" (click)="showProfileMenu($event)" #profileMenuButton>
                             <i class="pi pi-user"></i>
                             <span>{{ currentUser?.FirstName || 'Profile' }}</span>
@@ -266,19 +258,13 @@ export class AppTopbar {
     async searchAsset() {
         if (!this.scanResult) return;
 
-       
-
         try {
             const assets = await this.assetService.getAssets().toPromise();
-
-           
 
             let foundAsset: any = null;
 
             // Compare each asset's propertyNumber and qrCode with scanned value
             assets?.forEach((asset, index) => {
-              
-
                 // Check if propertyNumber matches
                 if (asset.propertyNumber === this.scanResult || asset.propertyNumber?.toString() === this.scanResult?.toString()) {
                     foundAsset = asset;
@@ -288,12 +274,9 @@ export class AppTopbar {
                 if (asset.qrCode === this.scanResult || asset.qrCode?.toString() === this.scanResult?.toString()) {
                     foundAsset = asset;
                 }
-
             });
 
             if (foundAsset) {
-              
-
                 this.closeQRScanner();
 
                 // Show success message with asset details
@@ -320,9 +303,7 @@ export class AppTopbar {
                     }
                 });
             } else {
-               
-                assets?.forEach((asset, idx) => {
-                });
+                assets?.forEach((asset, idx) => {});
 
                 Swal.fire({
                     title: 'Asset Not Found',

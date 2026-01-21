@@ -127,24 +127,25 @@ export class AppMenu implements OnInit {
                     },
                     {
                         label: 'Assets',
-                        icon: 'pi pi-fw pi-pencil',
+                        icon: 'pi pi-fw pi-box',
                         routerLink: ['/app/crud']
                     },
                     {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
-                        routerLink: ['/app/requestmaintenance']
+                        routerLink: ['/app/requestmaintenance'],
+                        queryParams: { tab: 'pending' }
                     },
                     {
                         label: 'Campuses',
                         icon: 'pi pi-fw pi-building',
                         routerLink: ['/app/pages/campuses']
                     },
-                    {
-                        label: 'Departments',
-                        icon: 'pi pi-fw pi-building-columns',
-                        routerLink: ['/app/pages/departments']
-                    },
+                    // {
+                    //     label: 'Departments',
+                    //     icon: 'pi pi-fw pi-building-columns',
+                    //     routerLink: ['/app/pages/departments']
+                    // },
                     {
                         label: 'Lab Schedule',
                         icon: 'pi pi-fw pi-calendar',
@@ -172,19 +173,16 @@ export class AppMenu implements OnInit {
                     },
                     {
                         label: 'Assets',
-                        icon: 'pi pi-fw pi-pencil',
+                        icon: 'pi pi-fw pi-box',
                         routerLink: ['/app/crud']
                     },
                     {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
-                        routerLink: ['/app/requestmaintenance']
+                        routerLink: ['/app/requestmaintenance'],
+                        queryParams: { tab: 'pending' }
                     },
-                    {
-                        label: 'Campuses',
-                        icon: 'pi pi-fw pi-building',
-                        routerLink: ['/app/pages/campuses']
-                    },
+
                     {
                         label: 'Departments',
                         icon: 'pi pi-fw pi-building-columns',
@@ -212,13 +210,14 @@ export class AppMenu implements OnInit {
                 items: [
                     {
                         label: 'Assets',
-                        icon: 'pi pi-fw pi-pencil',
+                        icon: 'pi pi-fw pi-box',
                         routerLink: ['/app/crud']
                     },
                     {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
-                        routerLink: ['/app/requestmaintenance']
+                        routerLink: ['/app/requestmaintenance'],
+                        queryParams: { tab: 'pending' }
                     },
                     {
                         label: 'Lab Schedule',
@@ -242,17 +241,18 @@ export class AppMenu implements OnInit {
                 items: [
                     {
                         label: 'Assets',
-                        icon: 'pi pi-fw pi-pencil',
+                        icon: 'pi pi-fw pi-box',
                         routerLink: ['/app/crud']
                     },
                     {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
-                        routerLink: ['/app/requestmaintenance']
+                        routerLink: ['/app/requestmaintenance'],
+                        queryParams: { tab: 'pending' }
                     },
                     {
                         label: 'Laboratories',
-                        icon: 'pi pi-fw pi-flask',
+                        icon: 'pi pi-fw pi-list',
                         routerLink: ['/app/pages/laboratories']
                     },
                     {
@@ -262,16 +262,16 @@ export class AppMenu implements OnInit {
                     },
                     {
                         label: 'Master Plan',
-                        icon: 'pi pi-fw pi-calendar',
+                        icon: 'pi pi-fw pi-sitemap',
                         routerLink: ['/app/pages/masterplan']
                     },
                     {
                         label: 'Reports',
-                        icon: 'pi pi-fw pi-calendar',
+                        icon: 'pi pi-fw pi-file',
                         items: [
-                            { label: 'Preventive', icon: 'pi pi-fw pi-list', routerLink: ['/app/pages/reports/preventive'] },
-                            { label: 'Corrective', icon: 'pi pi-fw pi-truck', routerLink: ['/app/pages/reports/corrective'] },
-                            { label: 'Calibration', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/pages/reports/calibration'] }
+                            { label: 'Preventive', icon: 'pi pi-fw pi-shield', routerLink: ['/app/pages/reports/preventive'] },
+                            { label: 'Corrective', icon: 'pi pi-fw pi-hammer', routerLink: ['/app/pages/reports/corrective'] },
+                            { label: 'Calibration', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/app/pages/reports/calibration'] }
                         ]
                     }
                 ]
@@ -281,24 +281,24 @@ export class AppMenu implements OnInit {
                 items: [
                     {
                         label: 'Asset Properties',
-                        icon: 'pi pi-fw pi-bookmark',
+                        icon: 'pi pi-fw pi-box',
                         items: [
                             { label: 'Brand', icon: 'pi pi-fw pi-tag', routerLink: ['/app/pages/assetcategory/brand'] },
                             { label: 'Color', icon: 'pi pi-fw pi-palette', routerLink: ['/app/pages/assetcategory/color'] },
-                            { label: 'Program', icon: 'pi pi-fw pi-list', routerLink: ['/app/pages/assetcategory/program'] },
-                            { label: 'Supplier', icon: 'pi pi-fw pi-truck', routerLink: ['/app/pages/assetcategory/supplier'] },
-                            { label: 'Location', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/pages/assetcategory/location'] },
-                            { label: 'Status', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/pages/assetcategory/status'] }
+                            { label: 'Program', icon: 'pi pi-fw pi-sitemap', routerLink: ['/app/pages/assetcategory/program'] },
+                            { label: 'Supplier', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/pages/assetcategory/supplier'] },
+                            { label: 'Location', icon: 'pi pi-fw pi-map', routerLink: ['/app/pages/assetcategory/location'] },
+                            { label: 'Status', icon: 'pi pi-fw pi-check-circle', routerLink: ['/app/pages/assetcategory/status'] }
                         ]
                     },
                     {
                         label: 'Maintenance Properties',
-                        icon: 'pi pi-fw pi-bookmark',
+                        icon: 'pi pi-fw pi-wrench',
                         items: [
-                            { label: 'Services', icon: 'pi pi-fw pi-tag', routerLink: ['/app/pages/maintenance/services'] },
-                            { label: 'Status', icon: 'pi pi-fw pi-palette', routerLink: ['/app/pages/maintenance/status'] },
-                            { label: 'Priority Level', icon: 'pi pi-fw pi-list', routerLink: ['/app/pages/maintenance/priority-level'] },
-                            { label: 'Types', icon: 'pi pi-fw pi-truck', routerLink: ['/app/pages/maintenance/types'] }
+                            { label: 'Services', icon: 'pi pi-fw pi-cog', routerLink: ['/app/pages/maintenance/services'] },
+                            { label: 'Status', icon: 'pi pi-fw pi-check-circle', routerLink: ['/app/pages/maintenance/status'] },
+                            { label: 'Priority Level', icon: 'pi pi-fw pi-bars', routerLink: ['/app/pages/maintenance/priority-level'] },
+                            { label: 'Types', icon: 'pi pi-fw pi-list', routerLink: ['/app/pages/maintenance/types'] }
                         ]
                     },
                     {

@@ -270,7 +270,6 @@ export class UsersComponent implements OnInit {
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Role</label>
                             <select id="role" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #e0e0e0; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent; cursor: pointer; transition: border-color 0.2s;" onfocus="this.style.borderBottomColor='#667eea'" onblur="this.style.borderBottomColor='#e0e0e0'">
-                                <option value="SuperAdmin" ${editData.role === 'SuperAdmin' ? 'selected' : ''}>SuperAdmin</option>
                                 <option value="CampusAdmin" ${editData.role === 'CampusAdmin' ? 'selected' : ''}>CampusAdmin</option>
                                 <option value="Faculty" ${editData.role === 'Faculty' ? 'selected' : ''}>Faculty</option>
                                 <option value="LabTech" ${editData.role === 'LabTech' ? 'selected' : ''}>LabTech</option>
@@ -470,8 +469,15 @@ export class UsersComponent implements OnInit {
         const userId = this.userContextService.getUserId();
         const loggedInUserData = JSON.parse(sessionStorage.getItem('loggedInUserData') || '{}');
         const isCampusAdmin = this.currentUserRole === 'CampusAdmin';
+        const isSuperAdmin = this.currentUserRole === 'SuperAdmin';
         const campusAdminCampusId = loggedInUserData.campus?.campusId || loggedInUserData.campusId || '';
-        const campusAdminCampusName = loggedInUserData.campus?.campusName || loggedInUserData.campusName || '';
+
+        // Find campus name from campuses array based on campusId
+        let campusAdminCampusName = loggedInUserData.campus?.campusName || loggedInUserData.campusName || '';
+        if (!campusAdminCampusName && campusAdminCampusId) {
+            const foundCampus = this.campuses.find((c: any) => c.campusId === campusAdminCampusId);
+            campusAdminCampusName = foundCampus?.campusName || '';
+        }
 
         // Filter departments for CampusAdmin (only their campus departments)
         const filteredDepartments = isCampusAdmin ? this.departments.filter((dept: any) => dept.campus?.campusId === campusAdminCampusId) : this.departments;
@@ -519,13 +525,29 @@ export class UsersComponent implements OnInit {
                         </div>
                     </div>
                     ${
-                        !isCampusAdmin
+                        isSuperAdmin
                             ? `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Campus *</label>
+                            <select id="newCampus" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #e0e0e0; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent;" onfocus="this.style.borderBottomColor='#667eea'" onblur="this.style.borderBottomColor='#e0e0e0'">
+                                <option value="">-- Select Campus --</option>
+                                ${this.campuses.map((campus: any) => `<option value="${campus.campusId}">${campus.campusName}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Role * <span style="color: #999; font-size: 11px;">(Auto)</span></label>
+                            <input id="newRole" type="text" value="CampusAdmin" placeholder="Role" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #ccc; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent; color: #999; cursor: not-allowed;" disabled />
+                        </div>
+                    </div>
+                    `
+                            : !isCampusAdmin
+                              ? `
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Department * <span style="color: #999; font-size: 11px;">(Auto)</span></label>
                             <input id="newDepartment" type="text" value="Default Department" placeholder="Department" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #ccc; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent; color: #999; cursor: not-allowed;" disabled />
-                            <input id="newDepartmentId" type="hidden" value="813e7dd9-345f-40dd-a37b-ec08c2575119" />
+                            <input id="newDepartmentId" type="hidden" value="DEPT-001" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Campus *</label>
@@ -540,7 +562,7 @@ export class UsersComponent implements OnInit {
                         </div>
                     </div>
                     `
-                            : `
+                              : `
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Department *</label>
@@ -684,8 +706,8 @@ export class UsersComponent implements OnInit {
                 if (isCampusAdmin) {
                     department = departmentElement ? departmentElement.value : '';
                 } else {
-                    // SuperAdmin - use hidden input
-                    department = departmentIdElement ? departmentIdElement.value : '813e7dd9-345f-40dd-a37b-ec08c2575119';
+                    // SuperAdmin - set to null (no department)
+                    department = '';
                 }
 
                 const campusInput = document.getElementById('newCampus') as HTMLInputElement | HTMLSelectElement;
@@ -724,7 +746,8 @@ export class UsersComponent implements OnInit {
                     Swal.fire({ title: 'Error', text: 'Password must be at least 6 characters', icon: 'error' });
                     return;
                 }
-                if (!department) {
+                // Department is only required for CampusAdmin
+                if (isCampusAdmin && !department) {
                     Swal.fire({ title: 'Error', text: 'Department is required', icon: 'error' });
                     return;
                 }
@@ -733,7 +756,7 @@ export class UsersComponent implements OnInit {
                     return;
                 }
 
-                const newUserPayload = {
+                const newUserPayload: any = {
                     userName,
                     email,
                     password,
@@ -741,12 +764,16 @@ export class UsersComponent implements OnInit {
                     lastName,
                     middleName: middleName || undefined,
                     contactNumber: contactNumber || undefined,
-                    department,
                     campus,
                     role: roleValue,
                     isActive,
                     profilePicture: undefined
                 };
+
+                // Only add department if CampusAdmin is creating the user
+                if (isCampusAdmin) {
+                    newUserPayload.department = department;
+                }
 
                 console.log('📤 Creating user with payload:', newUserPayload);
 

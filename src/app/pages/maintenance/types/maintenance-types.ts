@@ -55,26 +55,18 @@ import { MaintenanceService, MaintenanceType } from '../../service/maintenance.s
                     <th style="width:3rem"><p-tableHeaderCheckbox /></th>
                     <th style="min-width:25rem">ID</th>
                     <th pSortableColumn="maintenanceTypeName" style="min-width:20rem">Type Name <p-sortIcon field="maintenanceTypeName" /></th>
-                    <th style="min-width:12rem">Actions</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-row>
                 <tr>
-                    <td><p-tableCheckbox [value]="row" /></td>
-                    <td>{{ row.maintenanceTypeId }}</td>qq
+                    <td><p-tableCheckbox [value]="row"></p-tableCheckbox></td>
+                    <td>{{ row.maintenanceTypeId }}</td>
                     <td>{{ row.maintenanceTypeName }}</td>
-                    <td>
-                        <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
-                            <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" (onClick)="edit(row)" />
-                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
-                        </div>
-                    </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="4" class="text-center py-5">No maintenance types found</td>
+                    <td colspan="3" class="text-center py-5">No maintenance types found</td>
                 </tr>
             </ng-template>
         </p-table>

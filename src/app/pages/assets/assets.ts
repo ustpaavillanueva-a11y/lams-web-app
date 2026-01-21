@@ -21,6 +21,7 @@ import { StepperModule } from 'primeng/stepper';
 import { MessageService } from 'primeng/api';
 import { AssetService, Asset, Program, Supplier, Location, Color, Brand, Status, Laboratory } from '../service/asset.service';
 import { MaintenanceService, MaintenanceRequestPayload } from '../service/maintenance.service';
+import { AuthService } from '../service/auth.service';
 import { environment } from '../../../environments/environment';
 import jsQR from 'jsqr';
 import Swal from 'sweetalert2';
@@ -100,7 +101,7 @@ import Swal from 'sweetalert2';
         <p-toolbar styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
-                    <p-button label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+                    <p-button *ngIf="!isSuperAdmin" label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
                     <p-button label="Delete Selected" icon="pi pi-trash" severity="secondary" outlined (onClick)="deleteSelected()" [disabled]="!selectedAssets.length" />
                 </div>
             </ng-template>
@@ -175,7 +176,7 @@ import Swal from 'sweetalert2';
                             <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(item)" />
                             <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" (onClick)="edit(item)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(item)" />
-                            <p-button icon="pi pi-wrench" label="Request" severity="help" [rounded]="true" [text]="true" (onClick)="openRequestDialog(item)" />
+                            <p-button icon="pi pi-wrench" label="Request" severity="help" [rounded]="true" [text]="true" (onClick)="openRequestDialog(item)" *ngIf="!isLabTech && !isSuperAdmin" />
                         </div>
                     </td>
                 </tr>
@@ -242,18 +243,36 @@ import Swal from 'sweetalert2';
         </p-table>
 
         <!-- New Asset Dialog with Stepper -->
-        <p-dialog [(visible)]="assetDialog" [style]="{ width: '900px' }" header="Create New Asset & Inventory Custodian Slip" [modal]="true" [closable]="false">
+        <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="true" [maximizable]="true">
             <ng-template #content>
-                <!-- Manual Stepper Header -->
-                <div class="flex justify-center gap-4 mb-6 pb-4 border-b">
-                    <div class="flex items-center gap-2">
-                        <div [class]="'w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ' + (currentStep >= 0 ? 'bg-primary' : 'bg-gray-300')">1</div>
-                        <span [class]="currentStep >= 0 ? 'text-primary font-bold' : 'text-gray-500'">Asset Details</span>
+                <!-- Professional Stepper -->
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 24px; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid #e5e5e5;">
+                    <div [style]="'display: flex; align-items: center; gap: 8px; ' + (currentStep >= 0 ? 'opacity: 1;' : 'opacity: 0.5;')">
+                        <div
+                            [style]="
+                                'width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: white; ' +
+                                (currentStep >= 0 ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' : 'background: #d0d0d0;')
+                            "
+                        >
+                            1
+                        </div>
+                        <div style="line-height: 1.2;">
+                            <div style="font-weight: 600; color: #1a1a1a; font-size: 13px;">Asset Details</div>
+                        </div>
                     </div>
-                    <div [class]="'w-12 h-1 mt-3 ' + (currentStep >= 1 ? 'bg-primary' : 'bg-gray-300')"></div>
-                    <div class="flex items-center gap-2">
-                        <div [class]="'w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ' + (currentStep >= 1 ? 'bg-primary' : 'bg-gray-300')">2</div>
-                        <span [class]="currentStep >= 1 ? 'text-primary font-bold' : 'text-gray-500'">ICS Details</span>
+                    <div [style]="'height: 2px; width: 40px; ' + (currentStep >= 1 ? 'background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);' : 'background: #d0d0d0;')"></div>
+                    <div [style]="'display: flex; align-items: center; gap: 8px; ' + (currentStep >= 1 ? 'opacity: 1;' : 'opacity: 0.5;')">
+                        <div
+                            [style]="
+                                'width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: white; ' +
+                                (currentStep >= 1 ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' : 'background: #d0d0d0;')
+                            "
+                        >
+                            2
+                        </div>
+                        <div style="line-height: 1.2;">
+                            <div style="font-weight: 600; color: #1a1a1a; font-size: 13px;">ICS Details</div>
+                        </div>
                     </div>
                 </div>
 
@@ -261,41 +280,67 @@ import Swal from 'sweetalert2';
                 <div [ngSwitch]="currentStep">
                     <!-- Step 1: Asset Details -->
                     <div *ngSwitchCase="0" class="step-content">
-                        <div class="grid grid-cols-12 gap-4 mt-4">
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Asset Name *</label>
-                                <input pInputText [(ngModel)]="newAsset.assetName" placeholder="Enter asset name" class="w-full" />
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Asset Name *</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.assetName"
+                                    placeholder="Enter asset name"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Property Number *</label>
-                                <input pInputText [(ngModel)]="newAsset.propertyNumber" placeholder="Enter property number" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Property Number *</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.propertyNumber"
+                                    placeholder="Enter property number"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Category *</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Category *</label>
                                 <p-select [(ngModel)]="newAsset.category" [options]="categoryOptions" placeholder="Select category" class="w-full" appendTo="body" (onChange)="onCategoryChange()" />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Found Cluster</label>
-                                <input pInputText [(ngModel)]="newAsset.foundCluster" placeholder="Enter found cluster" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Found Cluster</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.foundCluster"
+                                    placeholder="Enter found cluster"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Purpose</label>
-                                <textarea pTextarea [(ngModel)]="newAsset.purpose" placeholder="Enter purpose" rows="3" class="w-full"></textarea>
+                            <div style="grid-column: 1 / -1;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Purpose</label>
+                                <textarea
+                                    pTextarea
+                                    [(ngModel)]="newAsset.purpose"
+                                    placeholder="Enter purpose"
+                                    rows="3"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s; font-family: inherit;"
+                                ></textarea>
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Issued To</label>
-                                <input pInputText [(ngModel)]="newAsset.issuedTo" placeholder="Enter person/department" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Issued To</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.issuedTo"
+                                    placeholder="Enter person/department"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Program</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Program</label>
                                 <p-select [(ngModel)]="newAsset.program" [options]="programs" optionLabel="programName" optionValue="programId" placeholder="Select program" class="w-full" appendTo="body" />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Supplier</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Supplier</label>
                                 <p-select [(ngModel)]="newAsset.supplier" [options]="suppliers" optionLabel="supplierName" optionValue="supplierId" placeholder="Select supplier" class="w-full" appendTo="body" />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Laboratory</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Laboratory</label>
                                 <p-select [(ngModel)]="newAsset.laboratories" [options]="laboratories" optionLabel="laboratoryName" optionValue="laboratoryId" placeholder="Select laboratory" class="w-full" appendTo="body" />
                             </div>
                         </div>
@@ -303,69 +348,117 @@ import Swal from 'sweetalert2';
 
                     <!-- Step 2: Inventory Custodian Slip Details -->
                     <div *ngSwitchCase="1" class="step-content">
-                        <div class="grid grid-cols-12 gap-4 mt-4">
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">ICS No</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.icsNo" placeholder="ICS number" class="w-full" />
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">ICS No</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.icsNo"
+                                    placeholder="ICS number"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Quantity *</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Quantity *</label>
                                 <p-inputNumber [(ngModel)]="newAsset.inventoryCustodianSlip.quantity" [useGrouping]="false" placeholder="Enter quantity" class="w-full" />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Unit of Measure *</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.uoM" placeholder="UoM (e.g., pcs, set)" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Unit of Measure *</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.uoM"
+                                    placeholder="UoM (e.g., pcs, set)"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Unit Cost</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Unit Cost</label>
                                 <p-inputNumber [(ngModel)]="newAsset.inventoryCustodianSlip.unitCost" mode="currency" currency="PHP" placeholder="Unit cost" class="w-full" />
                             </div>
-                            <div class="col-span-12">
-                                <label class="block font-bold mb-2">Description</label>
-                                <textarea pTextarea [(ngModel)]="newAsset.inventoryCustodianSlip.description" placeholder="Description" rows="3" class="w-full"></textarea>
+                            <div style="grid-column: 1 / -1;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Description</label>
+                                <textarea
+                                    pTextarea
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.description"
+                                    placeholder="Description"
+                                    rows="2"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s; font-family: inherit;"
+                                ></textarea>
                             </div>
-                            <div class="col-span-12">
-                                <label class="block font-bold mb-2">Specifications</label>
-                                <textarea pTextarea [(ngModel)]="newAsset.inventoryCustodianSlip.specifications" placeholder="Specifications" rows="2" class="w-full"></textarea>
+                            <div style="grid-column: 1 / -1;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Specifications</label>
+                                <textarea
+                                    pTextarea
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.specifications"
+                                    placeholder="Specifications"
+                                    rows="2"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s; font-family: inherit;"
+                                ></textarea>
                             </div>
-                            <div class="col-span-4">
-                                <label class="block font-bold mb-2">Height</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Height</label>
                                 <p-inputNumber [(ngModel)]="newAsset.inventoryCustodianSlip.height" [useGrouping]="false" placeholder="Height" class="w-full" [disabled]="isSoftwareCategory()" />
                             </div>
-                            <div class="col-span-4">
-                                <label class="block font-bold mb-2">Width</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Width</label>
                                 <p-inputNumber [(ngModel)]="newAsset.inventoryCustodianSlip.width" [useGrouping]="false" placeholder="Width" class="w-full" [disabled]="isSoftwareCategory()" />
                             </div>
-                            <div class="col-span-4">
-                                <label class="block font-bold mb-2">Length</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Length</label>
                                 <p-inputNumber [(ngModel)]="newAsset.inventoryCustodianSlip.length" [useGrouping]="false" placeholder="Length" class="w-full" [disabled]="isSoftwareCategory()" />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Package</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.package" placeholder="Package" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Package</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.package"
+                                    placeholder="Package"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Material</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.material" placeholder="Material" class="w-full" [disabled]="isSoftwareCategory()" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Material</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.material"
+                                    placeholder="Material"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                    [disabled]="isSoftwareCategory()"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Serial Number</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.serialNumber" placeholder="Serial number" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Serial Number</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.serialNumber"
+                                    placeholder="Serial number"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Model Number</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.modelNumber" placeholder="Model number" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Model Number</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.modelNumber"
+                                    placeholder="Model number"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Estimated Useful Life</label>
-                                <input pInputText [(ngModel)]="newAsset.inventoryCustodianSlip.estimatedUsefullLife" placeholder="e.g., 5 years" class="w-full" />
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Estimated Useful Life</label>
+                                <input
+                                    pInputText
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.estimatedUsefullLife"
+                                    placeholder="e.g., 5 years"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
+                                />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Brand</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Brand</label>
                                 <p-select [(ngModel)]="newAsset.inventoryCustodianSlip.brand" [options]="brands" optionLabel="brandName" optionValue="brandId" placeholder="Select brand" class="w-full" appendTo="body" />
                             </div>
-                            <div class="col-span-6">
-                                <label class="block font-bold mb-2">Color</label>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Color</label>
                                 <p-select
                                     [(ngModel)]="newAsset.inventoryCustodianSlip.color"
                                     [options]="colors"
@@ -377,8 +470,8 @@ import Swal from 'sweetalert2';
                                     [disabled]="isSoftwareCategory()"
                                 />
                             </div>
-                            <div class="col-span-12">
-                                <label class="block font-bold mb-2">QR Code Image *</label>
+                            <div style="grid-column: 1 / -1;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">QR Code Image *</label>
                                 <p-fileUpload
                                     name="qrCodeImage"
                                     [auto]="false"
@@ -403,7 +496,7 @@ import Swal from 'sweetalert2';
 
             <ng-template #footer>
                 <div class="flex justify-between w-full">
-                    <p-button label="Cancel" icon="pi pi-times" severity="secondary" text (click)="closeDialog()" />
+                    <div></div>
                     <div class="flex gap-2">
                         <p-button *ngIf="currentStep > 0" label="Back" severity="secondary" icon="pi pi-arrow-left" (onClick)="previousStep()" />
                         <p-button *ngIf="currentStep < 1" label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" />
@@ -418,24 +511,24 @@ import Swal from 'sweetalert2';
             <ng-template #content>
                 <div class="grid grid-cols-12 gap-4 mt-2">
                     <div class="col-span-12">
-                        <label class="block font-bold mb-2">maintenanceName *</label>
-                        <input pInputText [(ngModel)]="maintenanceRequest.maintenanceName" placeholder="Maintenance title / name" class="w-full" />
+                        <label class="block font-bold mb-2">Asset Name</label>
+                        <input pInputText [(ngModel)]="maintenanceRequest.maintenanceName" placeholder="Maintenance title / name" class="w-full" [disabled]="true" />
                     </div>
                     <div class="col-span-6">
-                        <label class="block font-bold mb-2">maintenanceType (ID) *</label>
+                        <label class="block font-bold mb-2">Maintenance Type</label>
                         <p-select [(ngModel)]="maintenanceRequest.maintenanceType" [options]="maintenanceTypesOptions" optionLabel="label" optionValue="value" placeholder="Select type" class="w-full" appendTo="body" />
                     </div>
                     <div class="col-span-6">
-                        <label class="block font-bold mb-2">serviceMaintenance (ID) *</label>
+                        <label class="block font-bold mb-2">Service Maintenance</label>
                         <p-select [(ngModel)]="maintenanceRequest.serviceMaintenance" [options]="serviceMaintenancesOptions" optionLabel="label" optionValue="value" placeholder="Select service" class="w-full" appendTo="body" />
                     </div>
                     <div class="col-span-6">
                         <label class="block font-bold mb-2">asset (ID) *</label>
-                        <input pInputText [(ngModel)]="maintenanceRequest.asset" [value]="requestAsset?.assetId" class="w-full" />
+                        <input pInputText [(ngModel)]="maintenanceRequest.asset" [value]="requestAsset?.assetId" class="w-full" [disabled]="true" />
                         <small class="text-gray-500">Selected: {{ requestAsset?.assetName }}</small>
                     </div>
                     <div class="col-span-6">
-                        <label class="block font-bold mb-2">priorityLevel (ID) *</label>
+                        <label class="block font-bold mb-2">Priority Level</label>
                         <p-select [(ngModel)]="maintenanceRequest.priorityLevel" [options]="priorityLevelsOptions" optionLabel="label" optionValue="value" placeholder="Select priority" class="w-full" appendTo="body" />
                     </div>
                 </div>
@@ -459,6 +552,8 @@ export class AssetsComponent implements OnInit {
     expandedRowIds: Set<string> = new Set();
     searchValue: string = '';
     loading: boolean = true;
+    isLabTech: boolean = false;
+    isSuperAdmin: boolean = false;
 
     // Dialog and form
     assetDialog: boolean = false;
@@ -491,6 +586,7 @@ export class AssetsComponent implements OnInit {
         private assetService: AssetService,
         private messageService: MessageService,
         private maintenanceService: MaintenanceService,
+        private authService: AuthService,
         private router: Router
     ) {}
 
@@ -529,9 +625,17 @@ export class AssetsComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.checkUserRole();
         this.loadAssets();
         this.loadReferenceData();
         this.loadMaintenanceDialogOptions();
+    }
+
+    checkUserRole() {
+        const currentUser = this.authService.getCurrentUser();
+        this.isLabTech = currentUser?.role === 'LabTech';
+        this.isSuperAdmin = currentUser?.role === 'SuperAdmin';
+        console.log('👤 Current user role:', currentUser?.role, 'Is LabTech:', this.isLabTech, 'Is SuperAdmin:', this.isSuperAdmin);
     }
 
     loadReferenceData() {
@@ -785,7 +889,7 @@ export class AssetsComponent implements OnInit {
             this.newAsset.inventoryCustodianSlip.length = null;
             this.newAsset.inventoryCustodianSlip.material = '';
             // Set default color for Software category
-            this.newAsset.inventoryCustodianSlip.color = '968afd8c-be83-48c8-b21b-f1ab29f15b2d';
+            this.newAsset.inventoryCustodianSlip.color = 'COLOR001';
         } else {
             // Clear color when switching back to Hardware
             this.newAsset.inventoryCustodianSlip.color = '';
@@ -885,8 +989,11 @@ export class AssetsComponent implements OnInit {
 
     // Request Maintenance Handlers
     openRequestDialog(asset: Asset) {
+        console.log('📋 Request button clicked for asset:', asset);
+        console.log('Asset ID:', asset.assetId);
+        console.log('Asset Name:', asset.assetName);
         this.requestAsset = asset;
-        this.maintenanceRequest = { maintenanceName: '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '' };
+        this.maintenanceRequest = { maintenanceName: asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '' };
         this.requestDialog = true;
     }
 
@@ -1030,29 +1137,118 @@ export class AssetsComponent implements OnInit {
         const location = item.Location_id || '';
 
         const html = `
-            <div style="display: grid; gap: 10px; text-align: left;">
-                <label>Asset Name: <input type="text" id="assetName" class="swal2-input" value="${assetName}" placeholder="Asset Name" /></label>
-                <label>Property Number: <input type="text" id="propertyNumber" class="swal2-input" value="${propertyNumber}" placeholder="Property Number" /></label>
-                <label>Category: <input type="text" id="category" class="swal2-input" value="${category}" placeholder="Category" /></label>
-                <label>Found Cluster: <input type="text" id="foundCluster" class="swal2-input" value="${foundCluster}" placeholder="Found Cluster" /></label>
-                <label>Purpose: <input type="text" id="purpose" class="swal2-input" value="${purpose}" placeholder="Purpose" /></label>
-                <label>Issued To: <input type="text" id="issuedTo" class="swal2-input" value="${issuedTo}" placeholder="Issued To" /></label>
-                <label>Program: <input type="text" id="program" class="swal2-input" value="${program}" placeholder="Program" /></label>
-                <label>Status: <input type="text" id="status" class="swal2-input" value="${status}" placeholder="Status" /></label>
-                <label>Supplier: <input type="text" id="supplier" class="swal2-input" value="${supplier}" placeholder="Supplier" /></label>
-                <label>Location: <input type="text" id="location" class="swal2-input" value="${location}" placeholder="Location" /></label>
+            <div style="text-align: left; max-width: 650px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;">
+                <!-- Minimal Header with Close Button -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 0 20px 0; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.3px;">Edit Asset</h2>
+                        <p style="margin: 8px 0 0 0; font-size: 13px; color: #999;">ID: ${assetId}</p>
+                    </div>
+                    <button id="closeBtn" style="background: none; border: none; font-size: 24px; color: #999; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='#f5f5f5'; this.style.color='#1a1a1a';" onmouseout="this.style.background='none'; this.style.color='#999';">✕</button>
+                </div>
+                
+                <!-- Minimal Form Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Asset Name *</label>
+                        <input type="text" id="assetName" value="${assetName}" placeholder="Asset name" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Property Number</label>
+                        <input type="text" id="propertyNumber" value="${propertyNumber}" placeholder="Property number" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Category</label>
+                        <input type="text" id="category" value="${category}" placeholder="Hardware / Software" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Found Cluster</label>
+                        <input type="text" id="foundCluster" value="${foundCluster}" placeholder="Cluster" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Purpose</label>
+                        <input type="text" id="purpose" value="${purpose}" placeholder="Purpose of asset" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Issued To</label>
+                        <input type="text" id="issuedTo" value="${issuedTo}" placeholder="Person/Department" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Program</label>
+                        <input type="text" id="program" value="${program}" placeholder="Program" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Status</label>
+                        <input type="text" id="status" value="${status}" placeholder="Status" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Supplier</label>
+                        <input type="text" id="supplier" value="${supplier}" placeholder="Supplier" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Location</label>
+                        <input type="text" id="location" value="${location}" placeholder="Location" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                    </div>
+                </div>
             </div>
         `;
 
         Swal.fire({
-            title: 'Edit Asset',
+            title: '',
             html,
-            confirmButtonText: 'Update',
+            width: '750px',
+            confirmButtonText: '💾 Save Changes',
             cancelButtonText: 'Cancel',
             showCancelButton: true,
+            confirmButtonColor: '#667eea',
+            cancelButtonColor: '#6c757d',
             didOpen: () => {
                 // Auto-focus first input
                 (document.getElementById('assetName') as HTMLInputElement)?.focus();
+
+                // Close button functionality
+                const closeBtn = document.getElementById('closeBtn') as HTMLButtonElement;
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        Swal.close();
+                    });
+                }
+
+                // Position buttons to the right corner with Cancel on left, Save on right
+                const buttonContainer = document.querySelector('.swal2-actions') as HTMLElement;
+                if (buttonContainer) {
+                    buttonContainer.style.justifyContent = 'flex-end';
+                    buttonContainer.style.gap = '12px';
+                    buttonContainer.style.flexDirection = 'row-reverse';
+                    buttonContainer.style.marginRight = '20px';
+                }
+
+                // Add hover effects to inputs
+                const inputs = document.querySelectorAll('input[type="text"]');
+                inputs.forEach((input) => {
+                    (input as HTMLElement).style.transition = 'all 0.3s ease';
+                    input.addEventListener('focus', () => {
+                        (input as HTMLElement).style.borderColor = '#667eea';
+                        (input as HTMLElement).style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.15)';
+                        (input as HTMLElement).style.background = '#fff';
+                    });
+                    input.addEventListener('blur', () => {
+                        (input as HTMLElement).style.borderColor = '#e0e0e0';
+                        (input as HTMLElement).style.boxShadow = 'none';
+                    });
+                });
             },
             preConfirm: () => {
                 const assetNameVal = (document.getElementById('assetName') as HTMLInputElement)?.value.trim();
