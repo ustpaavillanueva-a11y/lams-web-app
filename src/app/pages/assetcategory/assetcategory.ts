@@ -54,8 +54,7 @@ abstract class AssetCategoryBase implements OnInit {
         return item.name || item.brandName || item.locationName || item.supplierName || item.programName || item.colorName || '';
     }
 
-    onSelectionChange(event: any) {
-    }
+    onSelectionChange(event: any) {}
 
     openNewDialog() {}
 
@@ -385,17 +384,17 @@ export class SupplierComponent extends AssetCategoryBase {
                 const supplierName = (document.getElementById('supplierName') as HTMLInputElement).value.trim();
                 const supplierAddress = (document.getElementById('supplierAddress') as HTMLInputElement).value.trim();
                 const supplierContactNumber = (document.getElementById('supplierContactNumber') as HTMLInputElement).value.trim();
-                
+
                 if (!supplierName) {
                     Swal.showValidationMessage('Supplier name is required');
                     return false;
                 }
-                
+
                 if (supplierContactNumber && !this.isValidPhilippinePhoneNumber(supplierContactNumber)) {
                     Swal.showValidationMessage('Contact number must be a valid Philippine phone number +63');
                     return false;
                 }
-                
+
                 return { supplierName, supplierAddress, supplierContactNumber };
             }
         }).then((r) => {
@@ -424,17 +423,17 @@ export class SupplierComponent extends AssetCategoryBase {
                 const supplierName = (document.getElementById('supplierName') as HTMLInputElement).value.trim();
                 const supplierAddress = (document.getElementById('supplierAddress') as HTMLInputElement).value.trim();
                 const supplierContactNumber = (document.getElementById('supplierContactNumber') as HTMLInputElement).value.trim();
-                
+
                 if (!supplierName) {
                     Swal.showValidationMessage('Supplier name is required');
                     return false;
                 }
-                
+
                 if (supplierContactNumber && !this.isValidPhilippinePhoneNumber(supplierContactNumber)) {
                     Swal.showValidationMessage('Contact number must be a valid Philippine phone number +63');
                     return false;
                 }
-                
+
                 return { supplierName, supplierAddress, supplierContactNumber };
             }
         }).then((r) => {
