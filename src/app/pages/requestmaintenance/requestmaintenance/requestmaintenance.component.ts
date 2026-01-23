@@ -89,41 +89,42 @@ import { TabsModule } from 'primeng/tabs';
                         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pending requests"
                         [showCurrentPageReport]="true"
                         [tableStyle]="{ 'min-width': '120rem' }"
+                        styleClass="p-datatable-sm p-datatable-striped"
                     >
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                                <th style="min-width:20rem">ID</th>
-                                <th pSortableColumn="maintenanceName" style="min-width:18rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
-                                <th style="min-width:15rem">Maintenance Type</th>
-                                <th style="min-width:15rem">Service Name</th>
-                                <th style="min-width:12rem">Priority</th>
-                                <th style="min-width:12rem">Request Date</th>
-                                <th style="min-width:15rem">Requested By</th>
-                                <th style="min-width:12rem">Status</th>
-                                <th style="min-width:12rem">Actions</th>
+                                <th style="width:3rem;padding:0.25rem"><p-tableHeaderCheckbox /></th>
+                                <th style="min-width:10rem;padding:0.25rem">ID</th>
+                                <th pSortableColumn="maintenanceName" style="min-width:12rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
+                                <th style="min-width:11rem;padding:0.25rem">Maintenance Type</th>
+                                <th style="min-width:11rem;padding:0.25rem">Service Name</th>
+                                <th style="min-width:9rem;padding:0.25rem">Priority</th>
+                                <th style="min-width:10rem;padding:0.25rem">Request Date</th>
+                                <th style="min-width:11rem;padding:0.25rem">Requested By</th>
+                                <th style="min-width:9rem;padding:0.25rem">Status</th>
+                                <th style="min-width:9rem;padding:0.25rem">Actions</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-row>
                             <tr>
-                                <td><p-tableCheckbox [value]="row" /></td>
-                                <td>{{ row.requestId }}</td>
-                                <td>{{ row.maintenanceName }}</td>
-                                <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
-                                <td>{{ row.serviceMaintenance?.serviceName || 'N/A' }}</td>
-                                <td><p-tag [value]="row.priorityLevel?.priorityLevelName" [severity]="getPrioritySeverity(row.priorityLevel?.priorityLevelName)" /></td>
-                                <td>{{ row.requestDate || row.createdAt | date: 'short' }}</td>
-                                <td>{{ getFullName(row) }}</td>
-                                <td><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
-                                <td>
-                                    <div class="flex gap-2">
+                                <td style="padding:0.25rem"><p-tableCheckbox [value]="row" /></td>
+                                <td style="padding:0.25rem">{{ row.requestId }}</td>
+                                <td style="padding:0.25rem">{{ row.maintenanceName }}</td>
+                                <td style="padding:0.25rem">{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
+                                <td style="padding:0.25rem">{{ row.serviceMaintenance?.serviceName || 'N/A' }}</td>
+                                <td style="padding:0.25rem"><p-tag [value]="row.priorityLevel?.priorityLevelName" [severity]="getPrioritySeverity(row.priorityLevel?.priorityLevelName)" /></td>
+                                <td style="padding:0.25rem">{{ row.requestDate || row.createdAt | date: 'short' }}</td>
+                                <td style="padding:0.25rem">{{ getFullName(row) }}</td>
+                                <td style="padding:0.25rem"><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
+                                <td style="padding:0.25rem">
+                                    <div class="flex gap-1">
                                         <ng-container *ngIf="isLabTech() || isCampusAdmin()">
-                                            <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" />
-                                            <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" pTooltip="Decline" (onClick)="decline(row)" />
+                                            <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" size="small" />
+                                            <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" pTooltip="Decline" (onClick)="decline(row)" size="small" />
                                         </ng-container>
                                         <ng-container *ngIf="!isLabTech() && !isCampusAdmin()">
-                                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
-                                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
+                                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" size="small" />
+                                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" size="small" />
                                         </ng-container>
                                     </div>
                                 </td>
@@ -153,42 +154,39 @@ import { TabsModule } from 'primeng/tabs';
                             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} approved requests"
                             [showCurrentPageReport]="true"
                             [tableStyle]="{ 'min-width': '70rem' }"
+                            styleClass="p-datatable-sm p-datatable-striped"
+                            [scrollable]="true"
+                            scrollHeight="flex"
                         >
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                                    <th style="min-width:25rem">ID</th>
-                                    <th pSortableColumn="maintenanceRequest.maintenanceName" style="min-width:20rem">Maintenance Name <p-sortIcon field="maintenanceRequest.maintenanceName" /></th>
-                                    <th style="min-width:15rem">Assigned Technician</th>
-                                    <th style="min-width:15rem">Scheduled Date</th>
-                                    <th style="min-width:15rem">Status</th>
-                                    <th style="min-width:12rem">Actions</th>
+                                    <th style="width:3rem;padding:0.25rem"><p-tableHeaderCheckbox /></th>
+                                    <th style="min-width:12rem;padding:0.25rem">ID</th>
+                                    <th pSortableColumn="maintenanceRequest.maintenanceName" style="min-width:14rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceRequest.maintenanceName" /></th>
+                                    <th style="min-width:12rem;padding:0.25rem">Assigned Technician</th>
+                                    <th style="min-width:10rem;padding:0.25rem">Scheduled Date</th>
+                                    <th style="min-width:10rem;padding:0.25rem">Status</th>
+                                    <th style="min-width:10rem;padding:0.25rem" *ngIf="isLabTech()">Actions</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-row>
                                 <tr>
-                                    <td><p-tableCheckbox [value]="row" /></td>
-                                    <td>{{ row.maintenanceRequest?.requestId }}</td>
-                                    <td>{{ row.maintenanceRequest?.maintenanceName }}</td>
-                                    <td>{{ row.assignedTechnician?.firstName }} {{ row.assignedTechnician?.lastName || '' }}</td>
-                                    <td>{{ row.scheduledAt | date: 'short' }}</td>
-                                    <td><p-tag [value]="row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending'" /></td>
-                                    <td>
+                                    <td style="padding:0.25rem"><p-tableCheckbox [value]="row" /></td>
+                                    <td style="padding:0.25rem">{{ row.maintenanceRequest?.requestId }}</td>
+                                    <td style="padding:0.25rem">{{ row.maintenanceRequest?.maintenanceName }}</td>
+                                    <td style="padding:0.25rem">{{ row.assignedTechnician?.firstName }} {{ row.assignedTechnician?.lastName || '' }}</td>
+                                    <td style="padding:0.25rem">{{ row.scheduledAt | date: 'short' }}</td>
+                                    <td style="padding:0.25rem"><p-tag [value]="row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending'" /></td>
+                                    <td style="padding:0.25rem" *ngIf="isLabTech()">
                                         <div class="flex gap-2">
-                                            <ng-container *ngIf="isLabTech() || isCampusAdmin()">
-                                                <p-button label="Confirm" icon="pi pi-check" severity="success" [rounded]="true" [text]="false" (onClick)="confirm(row)" pTooltip="Confirm completion" />
-                                            </ng-container>
-                                            <ng-container *ngIf="!isLabTech() && !isCampusAdmin()">
-                                                <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
-                                                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
-                                            </ng-container>
+                                            <p-button label="Confirm" icon="pi pi-check" severity="success" [rounded]="true" [text]="false" (onClick)="confirm(row)" pTooltip="Confirm completion" size="small" />
                                         </div>
                                     </td>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="emptymessage">
                                 <tr>
-                                    <td colspan="6" class="text-center py-5">No approved requests found</td>
+                                    <td [attr.colspan]="isLabTech() ? 7 : 6" class="text-center py-5">No approved requests found</td>
                                 </tr>
                             </ng-template>
                         </p-table>
@@ -211,26 +209,27 @@ import { TabsModule } from 'primeng/tabs';
                             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} completed requests"
                             [showCurrentPageReport]="true"
                             [tableStyle]="{ 'min-width': '70rem' }"
+                            styleClass="p-datatable-sm p-datatable-striped"
                         >
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                                    <th style="min-width:25rem">ID</th>
-                                    <th pSortableColumn="maintenanceName" style="min-width:20rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
-                                    <th style="min-width:15rem">Status</th>
-                                    <th style="min-width:12rem">Actions</th>
+                                    <th style="width:3rem;padding:0.25rem"><p-tableHeaderCheckbox /></th>
+                                    <th style="min-width:12rem;padding:0.25rem">ID</th>
+                                    <th pSortableColumn="maintenanceName" style="min-width:14rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
+                                    <th style="min-width:10rem;padding:0.25rem">Status</th>
+                                    <th style="min-width:9rem;padding:0.25rem">Actions</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-row>
                                 <tr>
-                                    <td><p-tableCheckbox [value]="row" /></td>
-                                    <td>{{ row.requestId }}</td>
-                                    <td>{{ row.maintenanceName }}</td>
-                                    <td><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
-                                    <td>
-                                        <div class="flex gap-2">
-                                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
-                                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
+                                    <td style="padding:0.25rem"><p-tableCheckbox [value]="row" /></td>
+                                    <td style="padding:0.25rem">{{ row.requestId }}</td>
+                                    <td style="padding:0.25rem">{{ row.maintenanceName }}</td>
+                                    <td style="padding:0.25rem"><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
+                                    <td style="padding:0.25rem">
+                                        <div class="flex gap-1">
+                                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" size="small" />
+                                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" size="small" />
                                         </div>
                                     </td>
                                 </tr>
