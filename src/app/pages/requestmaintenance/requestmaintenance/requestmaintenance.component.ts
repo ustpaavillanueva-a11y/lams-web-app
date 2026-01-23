@@ -308,7 +308,10 @@ import { TabsModule } from 'primeng/tabs';
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-slate-700">Scheduled Date</label>
-                        <p-datepicker [(ngModel)]="approveFormData.scheduledAt" dateFormat="yy-mm-dd" appendTo="body" [styleClass]="'w-full'" placeholder="Select date" />
+                        <p-iconfield class="w-full">
+                            <p-inputicon styleClass="pi pi-calendar text-slate-400" />
+                            <p-datepicker [(ngModel)]="approveFormData.scheduledAt" dateFormat="yy-mm-dd" appendTo="body" [styleClass]="'w-full'" placeholder="Select date" />
+                        </p-iconfield>
                     </div>
 
                     <div class="space-y-2">
