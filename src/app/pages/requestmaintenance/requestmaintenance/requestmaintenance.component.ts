@@ -94,15 +94,15 @@ import { TabsModule } from 'primeng/tabs';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width:3rem;padding:0.25rem"><p-tableHeaderCheckbox /></th>
-                                <th style="min-width:10rem;padding:0.25rem">ID</th>
-                                <th pSortableColumn="maintenanceName" style="min-width:12rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
-                                <th style="min-width:11rem;padding:0.25rem">Maintenance Type</th>
-                                <th style="min-width:11rem;padding:0.25rem">Service Name</th>
-                                <th style="min-width:9rem;padding:0.25rem">Priority</th>
-                                <th style="min-width:10rem;padding:0.25rem">Request Date</th>
-                                <th style="min-width:11rem;padding:0.25rem">Requested By</th>
-                                <th style="min-width:9rem;padding:0.25rem">Status</th>
-                                <th style="min-width:9rem;padding:0.25rem">Actions</th>
+                                <th style="min-width:8rem;padding:0.25rem">ID</th>
+                                <th pSortableColumn="maintenanceName" style="min-width:10rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
+                                <th style="min-width:9rem;padding:0.25rem">Maintenance Type</th>
+                                <th style="min-width:9rem;padding:0.25rem">Service Name</th>
+                                <th style="min-width:8rem;padding:0.25rem">Priority</th>
+                                <th style="min-width:8rem;padding:0.25rem">Request Date</th>
+                                <th style="min-width:9rem;padding:0.25rem">Requested By</th>
+                                <th style="min-width:8rem;padding:0.25rem">Status</th>
+                                <th style="min-width:8rem;padding:0.25rem">Actions</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-row>
