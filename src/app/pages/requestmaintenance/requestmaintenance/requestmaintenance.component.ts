@@ -142,7 +142,7 @@ import { TabsModule } from 'primeng/tabs';
                 <p-tabpanel value="1">
                     <div *ngIf="activeTabIndex === 1">
                         <p-table
-                            [value]="approvedItems"
+                            [value]="getFilteredApprovedItems()"
                             [rows]="10"
                             [paginator]="true"
                             [rowsPerPageOptions]="[10, 20, 30]"
@@ -436,6 +436,32 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     isCampusAdmin(): boolean {
         const user = this.authService.getCurrentUser();
         return user?.role?.toLowerCase() === 'campusadmin';
+    }
+
+    isCurrentUserTechnician(technicianUserId: string): boolean {
+        const currentUser = this.authService.getCurrentUser();
+        // The API returns userId, not user_id
+        const currentUserId = (currentUser as any)?.userId;
+        const isMatch = currentUserId === technicianUserId;
+        console.log('🔍 Comparing:', { currentUserId, technicianUserId, isMatch });
+        return isMatch;
+    }
+
+    getFilteredApprovedItems(): any[] {
+        console.log('📋 All approved items:', this.approvedItems);
+        console.log('👤 Current user:', this.authService.getCurrentUser());
+        console.log('🔬 Is LabTech?', this.isLabTech());
+
+        if (this.isLabTech()) {
+            const filtered = this.approvedItems.filter((item) => {
+                const isMatch = this.isCurrentUserTechnician(item.assignedTechnician?.userId);
+                console.log(`Item: ${item.maintenanceRequest?.maintenanceName} - Assigned: ${item.assignedTechnician?.userId} - Match: ${isMatch}`);
+                return isMatch;
+            });
+            console.log('✅ Filtered items for LabTech:', filtered);
+            return filtered;
+        }
+        return this.approvedItems;
     }
 
     getFullName(row: any): string {
