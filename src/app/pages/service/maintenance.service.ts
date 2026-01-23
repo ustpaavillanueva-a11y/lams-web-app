@@ -132,6 +132,13 @@ export class MaintenanceService {
         return this.http.post<any>(url, approvalData);
     }
 
+    // Assign Technician to Maintenance Request
+    assignTechnician(requestId: string, assignmentData: any): Observable<any> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${requestId}/assign-technician`;
+        console.log('📡 Assigning Technician:', url, assignmentData);
+        return this.http.post<any>(url, assignmentData);
+    }
+
     // Complete Maintenance Approval
     completeMaintenanceApproval(id: string, completionData: any): Observable<any> {
         const url = `${this.baseApiUrl}/maintenance-approvals/${id}`;

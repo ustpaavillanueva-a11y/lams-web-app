@@ -101,7 +101,7 @@ import Swal from 'sweetalert2';
         <p-toolbar styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
-                    <p-button *ngIf="!isSuperAdmin" label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+                    <p-button *ngIf="!isSuperAdmin && !isCampusAdmin()" label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
                     <p-button label="Delete Selected" icon="pi pi-trash" severity="secondary" outlined (onClick)="deleteSelected()" [disabled]="!selectedAssets.length" />
                 </div>
             </ng-template>
@@ -636,6 +636,11 @@ export class AssetsComponent implements OnInit {
         this.isLabTech = currentUser?.role === 'LabTech';
         this.isSuperAdmin = currentUser?.role === 'SuperAdmin';
         console.log('👤 Current user role:', currentUser?.role, 'Is LabTech:', this.isLabTech, 'Is SuperAdmin:', this.isSuperAdmin);
+    }
+
+    isCampusAdmin(): boolean {
+        const user = this.authService.getCurrentUser();
+        return user?.role?.toLowerCase() === 'campusadmin';
     }
 
     loadReferenceData() {

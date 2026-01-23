@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild, Inject } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, Inject, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
@@ -67,7 +67,7 @@ import { TabsModule } from 'primeng/tabs';
             </ng-template>
         </p-toolbar>
 
-        <p-tabs>
+        <p-tabs (activeIndexChange)="onActiveIndexChange($event)">
             <p-tablist>
                 <p-tab value="0" (click)="activeTabIndex = 0">Pending</p-tab>
                 <p-tab value="1" (click)="activeTabIndex = 1">Approved</p-tab>
@@ -117,11 +117,11 @@ import { TabsModule } from 'primeng/tabs';
                                 <td><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
                                 <td>
                                     <div class="flex gap-2">
-                                        <ng-container *ngIf="isLabTech()">
+                                        <ng-container *ngIf="isLabTech() || isCampusAdmin()">
                                             <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" />
                                             <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" pTooltip="Decline" (onClick)="decline(row)" />
                                         </ng-container>
-                                        <ng-container *ngIf="!isLabTech()">
+                                        <ng-container *ngIf="!isLabTech() && !isCampusAdmin()">
                                             <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
                                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
                                         </ng-container>
@@ -173,10 +173,10 @@ import { TabsModule } from 'primeng/tabs';
                                     <td><p-tag [value]="row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending'" /></td>
                                     <td>
                                         <div class="flex gap-2">
-                                            <ng-container *ngIf="isLabTech()">
+                                            <ng-container *ngIf="isLabTech() || isCampusAdmin()">
                                                 <p-button label="Confirm" icon="pi pi-check" severity="success" [rounded]="true" [text]="false" (onClick)="confirm(row)" pTooltip="Confirm completion" />
                                             </ng-container>
-                                            <ng-container *ngIf="!isLabTech()">
+                                            <ng-container *ngIf="!isLabTech() && !isCampusAdmin()">
                                                 <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
                                                 <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
                                             </ng-container>
@@ -303,20 +303,31 @@ import { TabsModule } from 'primeng/tabs';
             </p-tabpanels>
         </p-tabs>
 
-        <p-dialog [(visible)]="approveModalVisible" [header]="'Approve Maintenance Request'" [modal]="true" [style]="{ width: '50vw' }">
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Date Scheduled</label>
-                    <p-datepicker [(ngModel)]="approveFormData.dateScheduled" dateFormat="yy-mm-dd" icon="pi pi-calendar" appendTo="body" />
+        <p-dialog [(visible)]="approveModalVisible" [header]="'Assign Technician'" [modal]="true" [contentStyle]="{ padding: '2rem' }">
+            <div class="space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700">Scheduled Date</label>
+                        <p-datepicker [(ngModel)]="approveFormData.scheduledAt" dateFormat="yy-mm-dd" appendTo="body" [styleClass]="'w-full'" placeholder="Select date" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-700">Technician</label>
+                        <p-select [(ngModel)]="approveFormData.technicianId" [options]="technicians" optionLabel="firstName" optionValue="userId" placeholder="Select technician" [styleClass]="'w-full'" [panelStyleClass]="'rounded'" appendTo="body" />
+                    </div>
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="font-semibold">Remarks</label>
-                    <textarea pInputTextarea [(ngModel)]="approveFormData.remarks" rows="5" placeholder="Enter remarks..."></textarea>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">Remarks</label>
+                    <textarea pInputTextarea [(ngModel)]="approveFormData.remarks" rows="4" placeholder="Enter remarks..." class="w-full text-sm resize-none"></textarea>
                 </div>
             </div>
+
             <ng-template pTemplate="footer">
-                <p-button label="Cancel" (onClick)="approveModalVisible = false" severity="secondary" />
-                <p-button label="Approve" (onClick)="confirmApprove()" severity="success" />
+                <div class="flex gap-2 justify-end pt-4">
+                    <p-button label="Cancel" (onClick)="approveModalVisible = false" severity="secondary" outlined />
+                    <p-button label="Assign" (onClick)="confirmApprove()" severity="success" icon="pi pi-check" />
+                </div>
             </ng-template>
         </p-dialog>
 
@@ -351,7 +362,7 @@ import { TabsModule } from 'primeng/tabs';
     `,
     providers: [MessageService, AssetService, ConfirmationService]
 })
-export class RequestmaintenanceComponent implements OnInit {
+export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     @ViewChild('dt') dt!: Table;
 
     items: any[] = [];
@@ -365,7 +376,8 @@ export class RequestmaintenanceComponent implements OnInit {
     activeTabIndex: number = 0;
     approveModalVisible: boolean = false;
     confirmModalVisible: boolean = false;
-    approveFormData: any = { dateScheduled: null, remarks: '' };
+    technicians: any[] = [];
+    approveFormData: any = { technicianId: null, remarks: '', scheduledAt: null };
     confirmFormData: any = {
         remarks: '',
         actionTaken: '',
@@ -398,6 +410,16 @@ export class RequestmaintenanceComponent implements OnInit {
         this.loadItems();
     }
 
+    ngAfterViewInit() {
+        // Manually set the active tab after view initialization
+        setTimeout(() => {
+            const tabs = document.querySelector('p-tabs');
+            if (tabs) {
+                (tabs as any).activeIndex = this.activeTabIndex;
+            }
+        }, 100);
+    }
+
     checkUserRole() {
         const currentUser = this.authService.getCurrentUser();
     }
@@ -405,6 +427,11 @@ export class RequestmaintenanceComponent implements OnInit {
     isLabTech(): boolean {
         const user = this.authService.getCurrentUser();
         return user?.role?.toLowerCase() === 'labtech';
+    }
+
+    isCampusAdmin(): boolean {
+        const user = this.authService.getCurrentUser();
+        return user?.role?.toLowerCase() === 'campusadmin';
     }
 
     getFullName(row: any): string {
@@ -501,6 +528,11 @@ export class RequestmaintenanceComponent implements OnInit {
         this.selectedItems = [];
     }
 
+    onActiveIndexChange(event: any) {
+        this.activeTabIndex = event as number;
+        this.selectedItems = [];
+    }
+
     filter() {
         this.filterByTab();
     }
@@ -512,13 +544,41 @@ export class RequestmaintenanceComponent implements OnInit {
     approve(item: any) {
         console.log('Approve clicked - Selected item:', item);
         this.selectedItem = item;
-        this.approveFormData = { dateScheduled: null, remarks: '' };
+        this.approveFormData = { technicianId: null, remarks: '', scheduledAt: null };
+        this.loadTechnicians(item.asset?.campus?.campusId);
         this.approveModalVisible = true;
     }
 
+    loadTechnicians(campusId: string) {
+        if (!campusId) {
+            this.technicians = [];
+            return;
+        }
+        // TODO: Replace with actual API call to get technicians by campus
+        // this.maintenanceService.getTechniciansByCompus(campusId).subscribe({
+        //     next: (data) => {
+        //         this.technicians = data;
+        //     },
+        //     error: () => {
+        //         this.technicians = [];
+        //     }
+        // });
+
+        // For now, using mock data - replace with actual API call
+        this.technicians = [
+            { userId: 'USER-00001', firstName: 'Technician One' },
+            { userId: 'USER-00002', firstName: 'Technician Two' },
+            { userId: 'USER-00003', firstName: 'Technician Three' }
+        ];
+    }
+
     confirmApprove() {
-        if (!this.approveFormData.dateScheduled) {
-            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Date Scheduled is required' });
+        if (!this.approveFormData.technicianId) {
+            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Technician is required' });
+            return;
+        }
+        if (!this.approveFormData.scheduledAt) {
+            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Scheduled Date is required' });
             return;
         }
         if (!this.approveFormData.remarks.trim()) {
@@ -526,25 +586,26 @@ export class RequestmaintenanceComponent implements OnInit {
             return;
         }
 
-        const approvalPayload = {
-            maintenanceRequest: this.selectedItem.requestId,
+        const assignmentPayload = {
+            technicianId: this.approveFormData.technicianId,
             remarks: this.approveFormData.remarks.trim(),
-            scheduledAt: this.approveFormData.dateScheduled,
-            isApproved: true
+            scheduledAt: this.approveFormData.scheduledAt
         };
 
-        console.log('Sending approval payload:', approvalPayload);
+        console.log('Sending technician assignment payload:', assignmentPayload);
 
-        this.maintenanceService.approveMaintenanceRequest(approvalPayload).subscribe({
+        // Use new endpoint: POST /api/maintenance-approvals/{requestId}/assign-technician
+        this.maintenanceService.assignTechnician(this.selectedItem.requestId, assignmentPayload).subscribe({
             next: (response) => {
-                console.log('Maintenance request approved successfully:', response);
-                this.messageService.add({ severity: 'success', summary: 'Approved', detail: `Maintenance request approved for ${this.approveFormData.dateScheduled.toLocaleDateString()}` });
+                console.log('Technician assigned successfully:', response);
+                const technicianName = this.technicians.find((t) => t.userId === this.approveFormData.technicianId)?.firstName;
+                this.messageService.add({ severity: 'success', summary: 'Assigned', detail: `Maintenance assigned to ${technicianName}` });
                 this.approveModalVisible = false;
                 this.loadItems();
             },
             error: (error) => {
-                console.error('Error approving maintenance request:', error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to approve maintenance request: ' + (error.error?.message || error.message) });
+                console.error('Error assigning technician:', error);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to assign technician: ' + (error.error?.message || error.message) });
             }
         });
     }
