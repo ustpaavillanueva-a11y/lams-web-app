@@ -9,6 +9,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../service/user.service';
@@ -18,7 +19,7 @@ import Swal from 'sweetalert2';
 @Component({
     selector: 'app-users',
     standalone: true,
-    imports: [CommonModule, CardModule, ButtonModule, TableModule, InputTextModule, TooltipModule, ToolbarModule, ToastModule, IconFieldModule, InputIconModule, FormsModule],
+    imports: [CommonModule, CardModule, ButtonModule, TableModule, InputTextModule, TooltipModule, ToolbarModule, ToastModule, IconFieldModule, InputIconModule, TagModule, FormsModule],
     styleUrls: ['../../../assets/pages/_users.scss'],
     providers: [MessageService],
     template: `
@@ -59,10 +60,12 @@ import Swal from 'sweetalert2';
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                    <th style="min-width:25rem">ID</th>
-
-                    <th pSortableColumn="FirstName" style="min-width:20rem">Name <p-sortIcon field="FirstName" /></th>
-                    <th style="min-width:12rem">Actions</th>
+                    <th pSortableColumn="userId" style="min-width:10rem">ID <p-sortIcon field="userId" /></th>
+                    <th pSortableColumn="firstName" style="min-width:15rem">Name <p-sortIcon field="firstName" /></th>
+                    <th pSortableColumn="campus.campusName" style="min-width:12rem">Campus <p-sortIcon field="campus.campusName" /></th>
+                    <th pSortableColumn="role" style="min-width:10rem">Role <p-sortIcon field="role" /></th>
+                    <th pSortableColumn="isActive" style="min-width:8rem">Status <p-sortIcon field="isActive" /></th>
+                    <th style="min-width:10rem">Actions</th>
                 </tr>
             </ng-template>
             <ng-template #body let-user>
@@ -70,9 +73,13 @@ import Swal from 'sweetalert2';
                     <td style="width: 3rem">
                         <p-tableCheckbox [value]="user" />
                     </td>
-                    <td>{{ user.userId || user.user_id }}</td>
-
-                    <td>{{ user.firstName || user.FirstName }} {{ user.middleName || user.MiddleName || '' }} {{ user.lastName || user.LastName }}</td>
+                    <td>{{ user.userId }}</td>
+                    <td>{{ user.firstName }} {{ user.middleName || '' }} {{ user.lastName }}</td>
+                    <td>{{ user.campus?.campusName || 'N/A' }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>
+                        <p-tag [value]="user.isActive ? 'Active' : 'Inactive'" [severity]="user.isActive ? 'success' : 'danger'" />
+                    </td>
                     <td>
                         <div class="flex gap-2">
                             <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="viewUser(user)" />
@@ -84,7 +91,7 @@ import Swal from 'sweetalert2';
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="4" class="text-center py-5">No users found</td>
+                    <td colspan="7" class="text-center py-5">No users found</td>
                 </tr>
             </ng-template>
         </p-table>
@@ -192,7 +199,13 @@ export class UsersComponent implements OnInit {
 
         const search = this.searchValue.toLowerCase();
         this.filteredUsers = this.users.filter(
-            (user) => user.FirstName?.toLowerCase().includes(search) || user.LastName?.toLowerCase().includes(search) || user.email?.toLowerCase().includes(search) || user.Department?.toLowerCase().includes(search)
+            (user) =>
+                user.userId?.toLowerCase().includes(search) ||
+                user.firstName?.toLowerCase().includes(search) ||
+                user.lastName?.toLowerCase().includes(search) ||
+                user.middleName?.toLowerCase().includes(search) ||
+                user.campus?.campusName?.toLowerCase().includes(search) ||
+                user.role?.toLowerCase().includes(search)
         );
     }
 
