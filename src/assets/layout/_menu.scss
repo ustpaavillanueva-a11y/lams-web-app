@@ -116,16 +116,25 @@
             border-radius: var(--content-border-radius);
             transition:
                 background-color var(--element-transition-duration),
-                box-shadow var(--element-transition-duration);
+                box-shadow var(--element-transition-duration),
+                padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                justify-content 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
             .layout-menuitem-icon {
                 margin-right: 0.5rem;
+                transition: margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .layout-menuitem-text {
+                white-space: nowrap;
+                overflow: hidden;
+                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             .layout-submenu-toggler {
                 font-size: 75%;
                 margin-left: auto;
-                transition: transform var(--element-transition-duration);
+                transition: transform var(--element-transition-duration), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             &.active-route {

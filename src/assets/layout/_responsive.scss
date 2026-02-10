@@ -73,7 +73,9 @@
                             opacity: 0;
                             width: 0;
                             overflow: hidden;
-                            transition: opacity 0.2s ease-out, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            transition:
+                                opacity 0.2s ease-out,
+                                width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
                     }
 
@@ -82,7 +84,10 @@
                         height: 0;
                         margin: 0;
                         overflow: hidden;
-                        transition: opacity 0.2s ease-out, height 0.2s ease-out, margin 0.2s ease-out;
+                        transition:
+                            opacity 0.2s ease-out,
+                            height 0.2s ease-out,
+                            margin 0.2s ease-out;
                     }
 
                     a {
@@ -95,19 +100,25 @@
                             width: 0;
                             overflow: hidden;
                             white-space: nowrap;
-                            transition: opacity 0.2s ease-out, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            transition:
+                                opacity 0.2s ease-out,
+                                width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
 
                         .layout-submenu-toggler {
                             opacity: 0;
                             width: 0;
-                            transition: opacity 0.2s ease-out, width 0.2s ease-out;
+                            transition:
+                                opacity 0.2s ease-out,
+                                width 0.2s ease-out;
                         }
 
                         .layout-menuitem-icon {
                             margin-right: 0;
                             font-size: 1.25rem;
-                            transition: font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            transition:
+                                font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                                margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
                     }
 
