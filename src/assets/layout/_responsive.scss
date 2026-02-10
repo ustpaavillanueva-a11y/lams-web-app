@@ -42,6 +42,7 @@
         &.layout-static {
             .layout-main-container {
                 margin-left: 22rem;
+                transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             &.layout-static-inactive {
@@ -58,38 +59,55 @@
                     .user-panel {
                         justify-content: center;
                         padding: 0.5rem;
+                        transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
                         .user-panel-avatar-container {
                             .user-panel-avatar {
                                 width: 2.5rem;
                                 height: 2.5rem;
+                                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                             }
                         }
 
                         .user-panel-info {
-                            display: none;
+                            opacity: 0;
+                            width: 0;
+                            overflow: hidden;
+                            transition: opacity 0.2s ease-out, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
                     }
 
                     .layout-menuitem-root-text {
-                        display: none;
+                        opacity: 0;
+                        height: 0;
+                        margin: 0;
+                        overflow: hidden;
+                        transition: opacity 0.2s ease-out, height 0.2s ease-out, margin 0.2s ease-out;
                     }
 
                     a {
                         justify-content: center;
                         padding: 0.75rem;
+                        transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
                         .layout-menuitem-text {
-                            display: none;
+                            opacity: 0;
+                            width: 0;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            transition: opacity 0.2s ease-out, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
 
                         .layout-submenu-toggler {
-                            display: none;
+                            opacity: 0;
+                            width: 0;
+                            transition: opacity 0.2s ease-out, width 0.2s ease-out;
                         }
 
                         .layout-menuitem-icon {
                             margin-right: 0;
                             font-size: 1.25rem;
+                            transition: font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
                     }
 
