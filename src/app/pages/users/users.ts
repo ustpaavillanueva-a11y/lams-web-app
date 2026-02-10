@@ -200,12 +200,24 @@ export class UsersComponent implements OnInit {
         const search = this.searchValue.toLowerCase();
         this.filteredUsers = this.users.filter(
             (user) =>
-                user.userId?.toLowerCase().includes(search) ||
-                user.firstName?.toLowerCase().includes(search) ||
-                user.lastName?.toLowerCase().includes(search) ||
-                user.middleName?.toLowerCase().includes(search) ||
-                user.campus?.campusName?.toLowerCase().includes(search) ||
-                user.role?.toLowerCase().includes(search)
+                String(user.userId || '')
+                    .toLowerCase()
+                    .includes(search) ||
+                String(user.firstName || '')
+                    .toLowerCase()
+                    .includes(search) ||
+                String(user.lastName || '')
+                    .toLowerCase()
+                    .includes(search) ||
+                String(user.middleName || '')
+                    .toLowerCase()
+                    .includes(search) ||
+                String(user.campus?.campusName || '')
+                    .toLowerCase()
+                    .includes(search) ||
+                String(user.role || '')
+                    .toLowerCase()
+                    .includes(search)
         );
     }
 
@@ -290,12 +302,13 @@ export class UsersComponent implements OnInit {
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0; cursor: pointer;" onclick="document.getElementById('isActive').click();">
-                        <label style="font-weight: 500; color: #555; margin: 0; font-size: 13px; flex: 1; cursor: pointer;">Active Status</label>
+                        <label style="font-weight: 500; color: #555; margin: 0; font-size: 13px; cursor: pointer;">Active Status</label>
                         <div style="position: relative; display: inline-block; width: 48px; height: 24px;">
                             <input id="isActive" type="checkbox" ${editData.isActive ? 'checked' : ''} style="opacity: 0; width: 0; height: 0; cursor: pointer;" />
                             <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${editData.isActive ? '#667eea' : '#ddd'}; transition: 0.3s; border-radius: 24px;"></span>
                             <span style="position: absolute; content: ''; height: 20px; width: 20px; left: ${editData.isActive ? '24px' : '2px'}; bottom: 2px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
                         </div>
+                        <span id="statusText" style="font-size: 12px; color: ${editData.isActive ? '#22c55e' : '#ef4444'}; font-weight: 500;">${editData.isActive ? 'Active' : 'Inactive'}</span>
                     </div>
                 </div>
             `,
@@ -314,12 +327,17 @@ export class UsersComponent implements OnInit {
                 const toggleDiv = checkbox?.parentElement?.parentElement as HTMLElement;
                 const toggleSpan = checkbox?.parentElement?.querySelector('span:nth-child(2)') as HTMLElement;
                 const toggleCircle = checkbox?.parentElement?.querySelector('span:nth-child(3)') as HTMLElement;
+                const statusText = document.getElementById('statusText') as HTMLElement;
 
                 if (checkbox && toggleSpan && toggleCircle && toggleDiv) {
                     // Toggle on checkbox change
                     checkbox.addEventListener('change', () => {
                         toggleSpan.style.backgroundColor = checkbox.checked ? '#667eea' : '#ddd';
                         toggleCircle.style.left = checkbox.checked ? '24px' : '2px';
+                        if (statusText) {
+                            statusText.textContent = checkbox.checked ? 'Active' : 'Inactive';
+                            statusText.style.color = checkbox.checked ? '#22c55e' : '#ef4444';
+                        }
                     });
 
                     // Make entire div clickable
