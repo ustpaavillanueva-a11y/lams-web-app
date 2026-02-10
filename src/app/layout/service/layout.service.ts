@@ -74,6 +74,8 @@ export class LayoutService {
 
     isOverlay = computed(() => this.layoutConfig().menuMode === 'overlay');
 
+    isMenuCollapsed = computed(() => this.layoutState().staticMenuDesktopInactive && this.layoutConfig().menuMode === 'static');
+
     transitionComplete = signal<boolean>(false);
 
     private initialized = false;

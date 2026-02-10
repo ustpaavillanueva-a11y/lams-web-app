@@ -7,19 +7,21 @@ import { UserService } from '../../pages/service/user.service';
 import { AvatarModule } from 'primeng/avatar';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { LayoutService } from '../service/layout.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
     selector: 'app-menu',
     standalone: true,
-    imports: [CommonModule, AppMenuitem, RouterModule, AvatarModule],
+    imports: [CommonModule, AppMenuitem, RouterModule, AvatarModule, TooltipModule],
     styleUrls: ['../../../assets/layout/_menu.scss'],
     template: `<ul class="layout-menu">
-        <div class="user-panel" *ngIf="currentUser">
+        <div class="user-panel" *ngIf="currentUser" [pTooltip]="layoutService.isMenuCollapsed() ? currentUser?.firstName + ' ' + currentUser?.lastName : undefined" tooltipPosition="right">
             <div class="user-panel-avatar-container">
                 <img *ngIf="currentUser?.profilePicture" [src]="currentUser.profilePicture" width="64" class="user-panel-avatar" alt="avatar" />
                 <p-avatar *ngIf="!currentUser?.profilePicture" [label]="getInitials()" shape="circle" size="xlarge" styleClass="user-panel-avatar"></p-avatar>
             </div>
-            <div class="user-panel-info">
+            <div class="user-panel-info" *ngIf="!layoutService.isMenuCollapsed()">
                 <span
                     ><b>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</b></span
                 >
@@ -40,7 +42,8 @@ export class AppMenu implements OnInit {
 
     constructor(
         private userService: UserService,
-        private http: HttpClient
+        private http: HttpClient,
+        public layoutService: LayoutService
     ) {}
 
     ngOnInit() {

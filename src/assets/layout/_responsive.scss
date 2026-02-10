@@ -46,13 +46,62 @@
 
             &.layout-static-inactive {
                 .layout-sidebar {
-                    transform: translateX(-100%);
-                    left: 0;
+                    width: 5rem;
+                    padding: 0.5rem;
                 }
 
                 .layout-main-container {
-                    margin-left: 0;
-                    padding-left: 2rem;
+                    margin-left: 7rem;
+                }
+
+                .layout-menu {
+                    .user-panel {
+                        justify-content: center;
+                        padding: 0.5rem;
+
+                        .user-panel-avatar-container {
+                            .user-panel-avatar {
+                                width: 2.5rem;
+                                height: 2.5rem;
+                            }
+                        }
+
+                        .user-panel-info {
+                            display: none;
+                        }
+                    }
+
+                    .layout-menuitem-root-text {
+                        display: none;
+                    }
+
+                    a {
+                        justify-content: center;
+                        padding: 0.75rem;
+
+                        .layout-menuitem-text {
+                            display: none;
+                        }
+
+                        .layout-submenu-toggler {
+                            display: none;
+                        }
+
+                        .layout-menuitem-icon {
+                            margin-right: 0;
+                            font-size: 1.25rem;
+                        }
+                    }
+
+                    ul {
+                        ul {
+                            padding-left: 0;
+
+                            a {
+                                padding: 0.5rem;
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -94,15 +94,15 @@ import { TabsModule } from 'primeng/tabs';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width:3rem;padding:0.25rem"><p-tableHeaderCheckbox /></th>
-                                <th style="min-width:8rem;padding:0.25rem">ID</th>
-                                <th pSortableColumn="maintenanceName" style="min-width:10rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceName" /></th>
-                                <th style="min-width:9rem;padding:0.25rem">Maintenance Type</th>
-                                <th style="min-width:9rem;padding:0.25rem">Service Name</th>
-                                <th style="min-width:8rem;padding:0.25rem">Priority</th>
-                                <th style="min-width:8rem;padding:0.25rem">Request Date</th>
-                                <th style="min-width:9rem;padding:0.25rem">Requested By</th>
-                                <th style="min-width:8rem;padding:0.25rem">Status</th>
-                                <th style="min-width:8rem;padding:0.25rem">Actions</th>
+                                <th style="min-width:7rem;padding:0.25rem">ID</th>
+                                <th pSortableColumn="maintenanceName" style="min-width:9rem;padding:0.25rem">Asset Name <p-sortIcon field="maintenanceName" /></th>
+                                <th style="min-width:8rem;padding:0.25rem">Maintenance Type</th>
+                                <th style="min-width:8rem;padding:0.25rem">Service Name</th>
+                                <th style="min-width:7rem;padding:0.25rem">Priority</th>
+                                <th style="min-width:7rem;padding:0.25rem">Request Date</th>
+                                <th style="min-width:8rem;padding:0.25rem">Requested By</th>
+                                <th style="min-width:7rem;padding:0.25rem">Status</th>
+                                <th style="min-width:7rem;padding:0.25rem">Actions</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-row>
@@ -117,7 +117,7 @@ import { TabsModule } from 'primeng/tabs';
                                 <td style="padding:0.25rem">{{ getFullName(row) }}</td>
                                 <td style="padding:0.25rem"><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
                                 <td style="padding:0.25rem">
-                                    <div class="flex gap-1">
+                                    <div class="flex gap-0.5">
                                         <ng-container *ngIf="isLabTech() || isCampusAdmin()">
                                             <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" size="small" />
                                             <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" pTooltip="Decline" (onClick)="decline(row)" size="small" />
@@ -161,12 +161,12 @@ import { TabsModule } from 'primeng/tabs';
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th style="width:3rem;padding:0.25rem"><p-tableHeaderCheckbox /></th>
-                                    <th style="min-width:12rem;padding:0.25rem">ID</th>
-                                    <th pSortableColumn="maintenanceRequest.maintenanceName" style="min-width:14rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceRequest.maintenanceName" /></th>
-                                    <th style="min-width:12rem;padding:0.25rem">Assigned Technician</th>
-                                    <th style="min-width:10rem;padding:0.25rem">Scheduled Date</th>
-                                    <th style="min-width:10rem;padding:0.25rem">Status</th>
-                                    <th style="min-width:10rem;padding:0.25rem" *ngIf="isLabTech()">Actions</th>
+                                    <th style="min-width:8rem;padding:0.25rem">ID</th>
+                                    <th pSortableColumn="maintenanceRequest.maintenanceName" style="min-width:10rem;padding:0.25rem">Maintenance Name <p-sortIcon field="maintenanceRequest.maintenanceName" /></th>
+                                    <th style="min-width:10rem;padding:0.25rem">Assigned Technician</th>
+                                    <th style="min-width:8rem;padding:0.25rem">Scheduled Date</th>
+                                    <th style="min-width:8rem;padding:0.25rem">Status</th>
+                                    <th style="min-width:8rem;padding:0.25rem" *ngIf="isLabTech()">Actions</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-row>
@@ -178,7 +178,7 @@ import { TabsModule } from 'primeng/tabs';
                                     <td style="padding:0.25rem">{{ row.scheduledAt | date: 'short' }}</td>
                                     <td style="padding:0.25rem"><p-tag [value]="row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending'" /></td>
                                     <td style="padding:0.25rem" *ngIf="isLabTech()">
-                                        <div class="flex gap-2">
+                                        <div class="flex gap-0.5">
                                             <p-button label="Confirm" icon="pi pi-check" severity="success" [rounded]="true" [text]="false" (onClick)="confirm(row)" pTooltip="Confirm completion" size="small" />
                                         </div>
                                     </td>
@@ -227,7 +227,7 @@ import { TabsModule } from 'primeng/tabs';
                                     <td style="padding:0.25rem">{{ row.maintenanceName }}</td>
                                     <td style="padding:0.25rem"><p-tag [value]="row.maintenanceStatus?.requestStatusName" /></td>
                                     <td style="padding:0.25rem">
-                                        <div class="flex gap-1">
+                                        <div class="flex gap-0.5">
                                             <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" size="small" />
                                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" size="small" />
                                         </div>
