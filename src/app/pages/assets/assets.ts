@@ -1126,8 +1126,37 @@ export class AssetsComponent implements OnInit {
     view(item: Asset) {
         console.log('👁️ Viewing asset:', item);
         const assetName = item.assetName || item.AssetName || 'Unknown Asset';
+        const icsData = item.inventoryCustodianSlip || {};
+        const icsTableData = this.getIcsTableData(icsData);
+        
+        let icsHtml = '';
+        if (icsTableData.length > 0) {
+            icsHtml = `
+                <div style="margin-top: 20px; border-top: 2px solid #ddd; padding-top: 20px;">
+                    <h3 style="color: #1f2937; margin-bottom: 12px; font-size: 16px; font-weight: 600;">📋 Inventory Custodian Slip (ICS) Details</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #f3f4f6;">
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; font-size: 13px;">Field</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; font-size: 13px;">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${icsTableData.map((row, idx) => `
+                                <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f9fafb'};">
+                                    <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">${row.field}</td>
+                                    <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${row.value}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
         const html = `
-            <div style="text-align: left;">
+            <div style="text-align: left; max-height: 70vh; overflow-y: auto;">
+                <h3 style="color: #1f2937; margin-bottom: 12px; font-size: 16px; font-weight: 600;">📦 Asset Details</h3>
                 <p><strong>Asset Name:</strong> ${assetName}</p>
                 <p><strong>Asset ID:</strong> ${item.assetId || 'N/A'}</p>
                 <p><strong>Property Number:</strong> ${item.propertyNumber || item.PropertyNo || 'N/A'}</p>
@@ -1136,13 +1165,15 @@ export class AssetsComponent implements OnInit {
                 <p><strong>Issued To:</strong> ${item.issuedTo || item.IssuedTo || 'N/A'}</p>
                 <p><strong>Purpose:</strong> ${item.purpose || item.Purpose || 'N/A'}</p>
                 <p><strong>Date Acquired:</strong> ${item.assetCreated || item.DateAcquired || 'N/A'}</p>
+                ${icsHtml}
             </div>
         `;
         Swal.fire({
             title: 'Asset Details',
             html,
             icon: 'info',
-            confirmButtonText: 'Close'
+            confirmButtonText: 'Close',
+            width: '700px'
         });
     }
 
