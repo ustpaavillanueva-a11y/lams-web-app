@@ -5,6 +5,9 @@ import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface Asset {
+    [x: string]: any;
+    supplier: any;
+    laboratories: any;
     campus: any;
     assetId?: string;
     assetName?: string;

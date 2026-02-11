@@ -810,13 +810,30 @@ export class AssetsComponent implements OnInit {
 
     filter() {
         this.filteredAssets = this.assets.filter((asset) => {
+            const searchTerm = this.searchValue.toLowerCase();
             const matchesSearch =
                 !this.searchValue ||
-                asset.propertyNumber?.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-                asset.assetName?.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-                asset.category?.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-                asset.foundCluster?.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-                asset.issuedTo?.toLowerCase().includes(this.searchValue.toLowerCase());
+                asset.assetId?.toLowerCase().includes(searchTerm) ||
+                this.getShortAssetId(asset.assetId)?.toLowerCase().includes(searchTerm) ||
+                asset.assetName?.toLowerCase().includes(searchTerm) ||
+                asset.propertyNumber?.toLowerCase().includes(searchTerm) ||
+                asset.category?.toLowerCase().includes(searchTerm) ||
+                asset.foundCluster?.toLowerCase().includes(searchTerm) ||
+                asset.purpose?.toLowerCase().includes(searchTerm) ||
+                asset.issuedTo?.toLowerCase().includes(searchTerm) ||
+                asset.supplier?.toLowerCase().includes(searchTerm) ||
+                asset.laboratories?.laboratoryName?.toLowerCase().includes(searchTerm) ||
+                asset.campus?.campusName?.toLowerCase().includes(searchTerm) ||
+                // Search in ICS details
+                asset.inventoryCustodianSlip?.icsNo?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.uoM?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.description?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.specifications?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.package?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.material?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.serialNumber?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.modelNumber?.toLowerCase().includes(searchTerm) ||
+                asset.inventoryCustodianSlip?.estimatedUsefullLife?.toLowerCase().includes(searchTerm);
 
             const matchesCampus = !this.selectedCampus || asset.campus?.campusId === this.selectedCampus;
 
