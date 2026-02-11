@@ -814,6 +814,7 @@ export class AssetsComponent implements OnInit {
 
             return matchesSearch && matchesCampus;
         });
+        console.log('🔍 Filtered assets:', this.filteredAssets);
     }
 
     onSelectionChange(event: any) {
