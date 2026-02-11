@@ -120,30 +120,38 @@ import Swal from 'sweetalert2';
             table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 0.875rem;
+                font-size: 14px;
             }
 
             table thead {
-                background: #f9fafb;
+                background: #f3f4f6;
                 border-bottom: 2px solid #e5e7eb;
             }
 
             table th {
-                padding: 0.75rem;
+                padding: 6px 8px;
                 text-align: left;
+                font-size: 15px;
                 font-weight: 600;
                 color: #374151;
                 white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             table td {
-                padding: 0.75rem;
+                padding: 6px 8px;
                 border-bottom: 1px solid #e5e7eb;
                 color: #1f2937;
+                font-size: 14px;
+                height: 32px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             table tbody tr:hover {
-                background: #f9fafb;
+                background: #eff6ff;
             }
 
             table tbody tr:last-child td {
@@ -181,6 +189,77 @@ import Swal from 'sweetalert2';
             .actions {
                 display: flex;
                 gap: 0.5rem;
+            }
+
+            .paginator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.5rem 1rem;
+                background: transparent;
+                border-top: 1px solid var(--p-datatable-border-color, #dee2e6);
+                font-size: 14px;
+                gap: 0.25rem;
+            }
+
+            .paginator select {
+                padding: 0.5rem 2rem 0.5rem 0.75rem;
+                border: 1px solid var(--p-select-border-color, #ced4da);
+                border-radius: 6px;
+                font-size: 14px;
+                background: white;
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 0.5rem center;
+            }
+
+            .paginator button {
+                width: 2.5rem;
+                height: 2.5rem;
+                padding: 0;
+                border: none;
+                border-radius: 50%;
+                background: transparent;
+                cursor: pointer;
+                font-size: 14px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--p-text-color, #495057);
+                transition:
+                    background-color 0.2s,
+                    color 0.2s;
+            }
+
+            .paginator button:hover:not(:disabled) {
+                background: var(--p-content-hover-background, rgba(0, 0, 0, 0.04));
+            }
+
+            .paginator button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .paginator button i {
+                font-size: 14px;
+            }
+
+            .paginator-info {
+                color: var(--p-text-muted-color, #6c757d);
+                padding: 0 0.5rem;
+            }
+
+            .paginator .page-number {
+                width: 2.5rem;
+                height: 2.5rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: var(--p-primary-color, #3b82f6);
+                color: white;
+                font-weight: 500;
             }
 
             .empty-message {
@@ -317,7 +396,7 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let row of filteredPendingItems">
+                                <tr *ngFor="let row of paginatedPendingItems">
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
@@ -349,6 +428,18 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- Paginator for Pending -->
+                        <div class="paginator" *ngIf="filteredPendingItems.length > 0">
+                            <span class="paginator-info">Showing {{ getPageStart('pending') }} to {{ getPageEnd('pending') }} of {{ getTotalItems('pending') }} requests</span>
+                            <button [disabled]="pendingPage === 1" (click)="goToPage('pending', 1)"><i class="pi pi-angle-double-left"></i></button>
+                            <button [disabled]="pendingPage === 1" (click)="goToPage('pending', pendingPage - 1)"><i class="pi pi-angle-left"></i></button>
+                            <span class="page-number">{{ pendingPage }}</span>
+                            <button [disabled]="pendingPage === getTotalPages('pending')" (click)="goToPage('pending', pendingPage + 1)"><i class="pi pi-angle-right"></i></button>
+                            <button [disabled]="pendingPage === getTotalPages('pending')" (click)="goToPage('pending', getTotalPages('pending'))"><i class="pi pi-angle-double-right"></i></button>
+                            <select [value]="rowsPerPage" (change)="onRowsPerPageChange($event)">
+                                <option *ngFor="let opt of rowsPerPageOptions" [value]="opt">{{ opt }}</option>
+                            </select>
+                        </div>
                         <div class="empty-message" *ngIf="filteredPendingItems.length === 0">No pending requests found</div>
                     </div>
                 </div>
@@ -371,7 +462,7 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let row of filteredApprovedItems">
+                                <tr *ngFor="let row of paginatedApprovedItems">
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
@@ -392,6 +483,18 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- Paginator for Approved -->
+                        <div class="paginator" *ngIf="filteredApprovedItems.length > 0">
+                            <span class="paginator-info">Showing {{ getPageStart('approved') }} to {{ getPageEnd('approved') }} of {{ getTotalItems('approved') }} requests</span>
+                            <button [disabled]="approvedPage === 1" (click)="goToPage('approved', 1)"><i class="pi pi-angle-double-left"></i></button>
+                            <button [disabled]="approvedPage === 1" (click)="goToPage('approved', approvedPage - 1)"><i class="pi pi-angle-left"></i></button>
+                            <span class="page-number">{{ approvedPage }}</span>
+                            <button [disabled]="approvedPage === getTotalPages('approved')" (click)="goToPage('approved', approvedPage + 1)"><i class="pi pi-angle-right"></i></button>
+                            <button [disabled]="approvedPage === getTotalPages('approved')" (click)="goToPage('approved', getTotalPages('approved'))"><i class="pi pi-angle-double-right"></i></button>
+                            <select [value]="rowsPerPage" (change)="onRowsPerPageChange($event)">
+                                <option *ngFor="let opt of rowsPerPageOptions" [value]="opt">{{ opt }}</option>
+                            </select>
+                        </div>
                         <div class="empty-message" *ngIf="filteredApprovedItems.length === 0">No approved requests found</div>
                     </div>
                 </div>
@@ -412,7 +515,7 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let row of filteredCompletedItems">
+                                <tr *ngFor="let row of paginatedCompletedItems">
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
@@ -430,6 +533,18 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- Paginator for Completed -->
+                        <div class="paginator" *ngIf="filteredCompletedItems.length > 0">
+                            <span class="paginator-info">Showing {{ getPageStart('completed') }} to {{ getPageEnd('completed') }} of {{ getTotalItems('completed') }} requests</span>
+                            <button [disabled]="completedPage === 1" (click)="goToPage('completed', 1)"><i class="pi pi-angle-double-left"></i></button>
+                            <button [disabled]="completedPage === 1" (click)="goToPage('completed', completedPage - 1)"><i class="pi pi-angle-left"></i></button>
+                            <span class="page-number">{{ completedPage }}</span>
+                            <button [disabled]="completedPage === getTotalPages('completed')" (click)="goToPage('completed', completedPage + 1)"><i class="pi pi-angle-right"></i></button>
+                            <button [disabled]="completedPage === getTotalPages('completed')" (click)="goToPage('completed', getTotalPages('completed'))"><i class="pi pi-angle-double-right"></i></button>
+                            <select [value]="rowsPerPage" (change)="onRowsPerPageChange($event)">
+                                <option *ngFor="let opt of rowsPerPageOptions" [value]="opt">{{ opt }}</option>
+                            </select>
+                        </div>
                         <div class="empty-message" *ngIf="filteredCompletedItems.length === 0">No completed requests found</div>
                     </div>
                 </div>
@@ -510,6 +625,13 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     selectedItems: any[] = [];
     searchValue: string = '';
     loading: boolean = true;
+
+    // Pagination state
+    pendingPage: number = 1;
+    approvedPage: number = 1;
+    completedPage: number = 1;
+    rowsPerPage: number = 10;
+    rowsPerPageOptions: number[] = [10, 20, 30];
     activeTabIndex: number = 0;
     approveModalVisible: boolean = false;
     confirmModalVisible: boolean = false;
@@ -679,6 +801,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
     filter() {
         this.filterByTab();
+        // Reset pages when filtering
+        this.pendingPage = 1;
+        this.approvedPage = 1;
+        this.completedPage = 1;
     }
 
     // Computed properties for filtered items
@@ -715,6 +841,78 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 (item.maintenanceRequest?.requestId || '').toLowerCase().includes(searchLower) ||
                 false
         );
+    }
+
+    // Paginated getters
+    get paginatedPendingItems(): any[] {
+        const start = (this.pendingPage - 1) * this.rowsPerPage;
+        return this.filteredPendingItems.slice(start, start + this.rowsPerPage);
+    }
+
+    get paginatedApprovedItems(): any[] {
+        const start = (this.approvedPage - 1) * this.rowsPerPage;
+        return this.filteredApprovedItems.slice(start, start + this.rowsPerPage);
+    }
+
+    get paginatedCompletedItems(): any[] {
+        const start = (this.completedPage - 1) * this.rowsPerPage;
+        return this.filteredCompletedItems.slice(start, start + this.rowsPerPage);
+    }
+
+    // Pagination helper methods
+    getTotalPages(tab: 'pending' | 'approved' | 'completed'): number {
+        let total = 0;
+        if (tab === 'pending') total = this.filteredPendingItems.length;
+        else if (tab === 'approved') total = this.filteredApprovedItems.length;
+        else if (tab === 'completed') total = this.filteredCompletedItems.length;
+        return Math.ceil(total / this.rowsPerPage) || 1;
+    }
+
+    getCurrentPage(tab: 'pending' | 'approved' | 'completed'): number {
+        if (tab === 'pending') return this.pendingPage;
+        if (tab === 'approved') return this.approvedPage;
+        return this.completedPage;
+    }
+
+    goToPage(tab: 'pending' | 'approved' | 'completed', page: number) {
+        const totalPages = this.getTotalPages(tab);
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        if (tab === 'pending') this.pendingPage = page;
+        else if (tab === 'approved') this.approvedPage = page;
+        else if (tab === 'completed') this.completedPage = page;
+    }
+
+    onRowsPerPageChange(event: any) {
+        this.rowsPerPage = +event.target.value;
+        this.pendingPage = 1;
+        this.approvedPage = 1;
+        this.completedPage = 1;
+    }
+
+    getPageStart(tab: 'pending' | 'approved' | 'completed'): number {
+        const page = this.getCurrentPage(tab);
+        let total = 0;
+        if (tab === 'pending') total = this.filteredPendingItems.length;
+        else if (tab === 'approved') total = this.filteredApprovedItems.length;
+        else if (tab === 'completed') total = this.filteredCompletedItems.length;
+        if (total === 0) return 0;
+        return (page - 1) * this.rowsPerPage + 1;
+    }
+
+    getPageEnd(tab: 'pending' | 'approved' | 'completed'): number {
+        const page = this.getCurrentPage(tab);
+        let total = 0;
+        if (tab === 'pending') total = this.filteredPendingItems.length;
+        else if (tab === 'approved') total = this.filteredApprovedItems.length;
+        else if (tab === 'completed') total = this.filteredCompletedItems.length;
+        return Math.min(page * this.rowsPerPage, total);
+    }
+
+    getTotalItems(tab: 'pending' | 'approved' | 'completed'): number {
+        if (tab === 'pending') return this.filteredPendingItems.length;
+        if (tab === 'approved') return this.filteredApprovedItems.length;
+        return this.filteredCompletedItems.length;
     }
 
     // Selection management methods
