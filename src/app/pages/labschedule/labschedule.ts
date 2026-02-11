@@ -78,7 +78,14 @@ import { AuthService } from '../service/auth.service';
             </ng-template>
         </p-toolbar>
 
-        <div class="lab-schedule-container">
+        <!-- Show message when no laboratory is selected -->
+        <div *ngIf="!selectedLaboratory" class="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg mt-4">
+            <i class="pi pi-calendar text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-500 mb-2">No Campus and Laboratory Selected</h3>
+            <p class="text-gray-400">Please select a campus and laboratory to view the schedule.</p>
+        </div>
+
+        <div class="lab-schedule-container" *ngIf="selectedLaboratory">
             <div class="schedule-table-wrapper">
                 <table class="schedule-table">
                     <thead>
