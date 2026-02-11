@@ -161,7 +161,21 @@ import Swal from 'sweetalert2';
             </ng-template>
         </p-toolbar>
 
-        <p-table #dt [value]="filteredAssets" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [loading]="loading" [rowHover]="true" dataKey="assetId" [(selection)]="selectedAssets" (selectionChange)="onSelectionChange($event)" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} assets" [showCurrentPageReport]="true" styleClass="p-datatable-compact">
+        <p-table
+            #dt
+            [value]="filteredAssets"
+            [rows]="10"
+            [paginator]="true"
+            [rowsPerPageOptions]="[10, 20, 30]"
+            [loading]="loading"
+            [rowHover]="true"
+            dataKey="assetId"
+            [(selection)]="selectedAssets"
+            (selectionChange)="onSelectionChange($event)"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} assets"
+            [showCurrentPageReport]="true"
+            styleClass="p-datatable-compact"
+        >
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:3rem"><p-tableHeaderCheckbox /></th>
@@ -305,12 +319,14 @@ import Swal from 'sweetalert2';
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Issued To</label>
-                                <input
-                                    pInputText
-                                    [(ngModel)]="newAsset.issuedTo"
-                                    placeholder="Enter person/department"
-                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
-                                />
+                                <p-select [(ngModel)]="newAsset.issuedTo" [options]="users" placeholder="Select user" class="w-full" appendTo="body" optionLabel="lastName" [showClear]="true">
+                                    <ng-template let-value pTemplate="selectedItem">
+                                        <div *ngIf="value">{{ getFullName(value) }}</div>
+                                    </ng-template>
+                                    <ng-template let-option pTemplate="item">
+                                        <div>{{ getFullName(option) }}</div>
+                                    </ng-template>
+                                </p-select>
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Program</label>
@@ -565,6 +581,7 @@ export class AssetsComponent implements OnInit {
     colors: Color[] = [];
     brands: Brand[] = [];
     campuses: any[] = [];
+    users: any[] = [];
     categoryOptions = [
         { label: 'Software', value: 'Software' },
         { label: 'Hardware', value: 'Hardware' }
@@ -734,6 +751,17 @@ export class AssetsComponent implements OnInit {
                 console.error('❌ Error loading campuses:', error);
             }
         });
+
+        this.assetService.getUsers().subscribe({
+            next: (data) => {
+                if (data && data.length > 0) {
+                }
+                this.users = data || [];
+            },
+            error: (error) => {
+                console.error('❌ Error loading users:', error);
+            }
+        });
     }
 
     loadMaintenanceDialogOptions() {
@@ -805,6 +833,14 @@ export class AssetsComponent implements OnInit {
         // Result: "004-002-001"
         const parts = assetId.split('-');
         return parts.map((part) => part.replace(/[^\d]/g, '')).join('-');
+    }
+
+    getFullName(user: any): string {
+        if (!user) return '';
+        const firstName = user.firstName || '';
+        const middleName = user.middleName || '';
+        const lastName = user.lastName || '';
+        return [firstName, middleName, lastName].filter((name) => name).join(' ');
     }
 
     onSelectionChange(event: any) {
@@ -1076,6 +1112,12 @@ export class AssetsComponent implements OnInit {
         // laboratories field must be a string (laboratory ID)
         if (!assetToSend.laboratories || typeof assetToSend.laboratories !== 'string') {
             assetToSend.laboratories = '';
+        }
+
+        // issuedTo field must be a string (full name)
+        if (assetToSend.issuedTo && typeof assetToSend.issuedTo === 'object') {
+            // Convert user object to full name string
+            assetToSend.issuedTo = this.getFullName(assetToSend.issuedTo);
         }
 
         // Step 1: Create the asset first
