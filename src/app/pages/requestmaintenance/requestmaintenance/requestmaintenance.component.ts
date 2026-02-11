@@ -809,38 +809,67 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
     // Computed properties for filtered items
     get filteredPendingItems(): any[] {
-        const searchLower = this.searchValue.toLowerCase();
-        return this.pendingItems.filter((item) => item.maintenanceName?.toLowerCase().includes(searchLower) || false || item.requestId?.toLowerCase().includes(searchLower) || false);
+        const searchLower = this.searchValue.toLowerCase().trim();
+        if (!searchLower) return this.pendingItems;
+
+        return this.pendingItems.filter((item) => {
+            const formattedId = this.formatId(item.requestId).toLowerCase();
+            const maintenanceName = (item.maintenanceName || '').toLowerCase();
+            const maintenanceType = (item.maintenanceType?.maintenanceTypeName || '').toLowerCase();
+            const serviceName = (item.serviceMaintenance?.serviceName || '').toLowerCase();
+            const priority = (item.priorityLevel?.priorityLevelName || '').toLowerCase();
+            const status = (item.maintenanceStatus?.requestStatusName || '').toLowerCase();
+            const requestedBy = this.getFullName(item).toLowerCase();
+            const rawId = (item.requestId || '').toLowerCase();
+
+            return (
+                formattedId.includes(searchLower) ||
+                maintenanceName.includes(searchLower) ||
+                maintenanceType.includes(searchLower) ||
+                serviceName.includes(searchLower) ||
+                priority.includes(searchLower) ||
+                status.includes(searchLower) ||
+                requestedBy.includes(searchLower) ||
+                rawId.includes(searchLower)
+            );
+        });
     }
 
     get filteredApprovedItems(): any[] {
-        const searchLower = this.searchValue.toLowerCase();
+        const searchLower = this.searchValue.toLowerCase().trim();
         const filtered = this.getFilteredApprovedItems();
+        if (!searchLower) return filtered;
+
         return filtered.filter((item) => {
-            const maintenanceName = item.maintenanceRequest?.maintenanceName || item.maintenanceName || '';
             const requestId = item.maintenanceRequest?.requestId || item.requestId || '';
-            return maintenanceName.toLowerCase().includes(searchLower) || requestId.toLowerCase().includes(searchLower);
+            const formattedId = this.formatId(requestId).toLowerCase();
+            const maintenanceName = (item.maintenanceRequest?.maintenanceName || item.maintenanceName || '').toLowerCase();
+            const technicianName = `${item.assignedTechnician?.firstName || ''} ${item.assignedTechnician?.lastName || ''}`.toLowerCase();
+            const status = item.isCompleted ? 'completed' : item.isApproved ? 'approved' : 'pending';
+            const rawId = requestId.toLowerCase();
+
+            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || technicianName.includes(searchLower) || status.includes(searchLower) || rawId.includes(searchLower);
         });
     }
 
     get filteredCompletedItems(): any[] {
-        const searchLower = this.searchValue.toLowerCase();
+        const searchLower = this.searchValue.toLowerCase().trim();
         let items: any[] = [];
 
         // Include both completed requests and completed approvals
         items = [...this.completedItems, ...this.completedApprovedItems];
 
-        return items.filter(
-            (item) =>
-                item.maintenanceName?.toLowerCase().includes(searchLower) ||
-                false ||
-                (item.maintenanceRequest?.maintenanceName || '').toLowerCase().includes(searchLower) ||
-                false ||
-                item.requestId?.toLowerCase().includes(searchLower) ||
-                false ||
-                (item.maintenanceRequest?.requestId || '').toLowerCase().includes(searchLower) ||
-                false
-        );
+        if (!searchLower) return items;
+
+        return items.filter((item) => {
+            const requestId = item.requestId || item.maintenanceRequest?.requestId || '';
+            const formattedId = this.formatId(requestId).toLowerCase();
+            const maintenanceName = (item.maintenanceName || item.maintenanceRequest?.maintenanceName || '').toLowerCase();
+            const status = (item.maintenanceStatus?.requestStatusName || 'Completed').toLowerCase();
+            const rawId = requestId.toLowerCase();
+
+            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || status.includes(searchLower) || rawId.includes(searchLower);
+        });
     }
 
     // Paginated getters
