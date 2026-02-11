@@ -78,11 +78,18 @@ import { AuthService } from '../service/auth.service';
             </ng-template>
         </p-toolbar>
 
-        <!-- Show message when no laboratory is selected -->
-        <div *ngIf="!selectedLaboratory" class="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg mt-4">
+        <!-- Show message when no laboratory is selected - SuperAdmin -->
+        <div *ngIf="!selectedLaboratory && isSuperAdmin" class="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg mt-4">
             <i class="pi pi-calendar text-6xl text-gray-300 mb-4"></i>
             <h3 class="text-xl font-semibold text-gray-500 mb-2">No Campus and Laboratory Selected</h3>
             <p class="text-gray-400">Please select a campus and laboratory to view the schedule.</p>
+        </div>
+
+        <!-- Show message when no laboratory is selected - CampusAdmin/LabTech -->
+        <div *ngIf="!selectedLaboratory && !isSuperAdmin" class="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg mt-4">
+            <i class="pi pi-calendar text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-500 mb-2">No Laboratory Selected</h3>
+            <p class="text-gray-400">Please select a laboratory to view the schedule.</p>
         </div>
 
         <div class="lab-schedule-container" *ngIf="selectedLaboratory">
@@ -367,12 +374,7 @@ export class LabScheduleComponent implements OnInit {
                 this.laboratories = data || [];
                 this.filteredLaboratories = [...this.laboratories];
 
-                // For SuperAdmin, don't auto-select - they should choose campus first
-                // For other users, auto-select first laboratory
-                if (!this.isSuperAdmin && this.filteredLaboratories.length > 0) {
-                    this.selectedLaboratory = this.filteredLaboratories[0];
-                    this.onLaboratoryFilterChange();
-                }
+                // Don't auto-select - users should manually choose a laboratory
             },
             error: (error: any) => {
                 console.error('❌ Error loading laboratories:', error);
