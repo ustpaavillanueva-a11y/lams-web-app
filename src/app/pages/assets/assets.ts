@@ -119,7 +119,7 @@ import Swal from 'sweetalert2';
 
         <p-table
             #dt
-            [value]="assets"
+            [value]="filteredAssets"
             [rows]="10"
             [paginator]="true"
             [rowsPerPageOptions]="[10, 20, 30]"
@@ -814,6 +814,8 @@ export class AssetsComponent implements OnInit {
 
             return matchesSearch && matchesCampus;
         });
+        console.log('🔍 Filter applied - Campus:', this.selectedCampus, 'Search:', this.searchValue);
+        console.log('🔍 Filtered assets count:', this.filteredAssets.length);
         console.log('🔍 Filtered assets:', this.filteredAssets);
     }
 
