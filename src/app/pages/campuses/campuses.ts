@@ -58,16 +58,18 @@ import Swal from 'sweetalert2';
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                    <th style="min-width:25rem">ID</th>
-                    <th pSortableColumn="campusName" style="min-width:20rem">Campus <p-sortIcon field="campusName" /></th>
+                    <th style="min-width:20rem">ID</th>
+                    <th pSortableColumn="campusName" style="min-width:15rem">Campus <p-sortIcon field="campusName" /></th>
+                    <th pSortableColumn="campusDirector" style="min-width:15rem">Campus Director <p-sortIcon field="campusDirector" /></th>
                     <th style="min-width:12rem">Actions</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-campus>
                 <tr>
                     <td><p-tableCheckbox [value]="campus" /></td>
-                    <td>{{ campus.campusId }}</td>
+                    <td>{{ formatId(campus.campusId) }}</td>
                     <td>{{ campus.campusName }}</td>
+                    <td>{{ campus.campusDirector || 'N/A' }}</td>
                     <td>
                         <div class="flex gap-2">
                             <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="viewCampus(campus)" />
@@ -79,7 +81,7 @@ import Swal from 'sweetalert2';
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="4" class="text-center py-5">No campuses found</td>
+                    <td colspan="5" class="text-center py-5">No campuses found</td>
                 </tr>
             </ng-template>
         </p-table>
@@ -435,5 +437,11 @@ export class CampusesComponent implements OnInit {
         const csvContent = [headers.join(','), ...rows.map((row) => row.map((cell) => `"${cell}"`).join(','))].join('\n');
 
         return csvContent;
+    }
+
+    // Format ID to show only numbers (e.g., CAMPUS001 → 001)
+    formatId(id: string): string {
+        if (!id) return '';
+        return id.replace(/[^0-9]/g, '');
     }
 }

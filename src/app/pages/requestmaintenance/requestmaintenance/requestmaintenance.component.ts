@@ -788,6 +788,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
     filter() {
         this.filterByTab();
+        // Reset pages when filtering
+        this.pendingPage = 1;
+        this.approvedPage = 1;
+        this.completedPage = 1;
     }
 
     // Computed properties for filtered items
