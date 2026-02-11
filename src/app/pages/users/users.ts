@@ -536,7 +536,11 @@ export class UsersComponent implements OnInit {
                             <input id="newLastName" type="text" placeholder="Last" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #e0e0e0; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent;" onfocus="this.style.borderBottomColor='#667eea'" onblur="this.style.borderBottomColor='#e0e0e0'" />
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">User ID *</label>
+                            <input id="newUserId" type="text" placeholder="user123" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #e0e0e0; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent;" onfocus="this.style.borderBottomColor='#667eea'" onblur="this.style.borderBottomColor='#e0e0e0'" />
+                        </div>
                         <div>
                             <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">Username *</label>
                             <input id="newUserName" type="text" placeholder="username" style="width: 100%; padding: 8px 10px; border: none; border-bottom: 1.5px solid #e0e0e0; border-radius: 0; font-size: 13px; box-sizing: border-box; background: transparent;" onfocus="this.style.borderBottomColor='#667eea'" onblur="this.style.borderBottomColor='#e0e0e0'" />
@@ -716,6 +720,7 @@ export class UsersComponent implements OnInit {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Get form values with null checks
+                const userIdElement = document.getElementById('newUserId') as HTMLInputElement;
                 const firstNameElement = document.getElementById('newFirstName') as HTMLInputElement;
                 const lastNameElement = document.getElementById('newLastName') as HTMLInputElement;
                 const userNameElement = document.getElementById('newUserName') as HTMLInputElement;
@@ -726,6 +731,7 @@ export class UsersComponent implements OnInit {
                 const departmentElement = document.getElementById('newDepartment') as HTMLSelectElement | HTMLInputElement;
                 const departmentIdElement = document.getElementById('newDepartmentId') as HTMLInputElement;
 
+                const userId = userIdElement ? userIdElement.value.trim() : '';
                 const firstName = firstNameElement ? firstNameElement.value.trim() : '';
                 const lastName = lastNameElement ? lastNameElement.value.trim() : '';
                 const userName = userNameElement ? userNameElement.value.trim() : '';
@@ -759,6 +765,10 @@ export class UsersComponent implements OnInit {
                 const isActive = isActiveElement ? isActiveElement.checked : true;
 
                 // Validation
+                if (!userId) {
+                    Swal.fire({ title: 'Error', text: 'User ID is required', icon: 'error' });
+                    return;
+                }
                 if (!firstName) {
                     Swal.fire({ title: 'Error', text: 'First Name is required', icon: 'error' });
                     return;
@@ -790,6 +800,7 @@ export class UsersComponent implements OnInit {
                 }
 
                 const newUserPayload: any = {
+                    userId,
                     userName,
                     email,
                     password,
