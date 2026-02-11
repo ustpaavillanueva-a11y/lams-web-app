@@ -31,6 +31,7 @@ export interface MaintenanceRequestPayload {
     serviceMaintenance: string; // ID
     asset: string; // asset ID
     priorityLevel: string; // ID
+    reason: string; // Reason for maintenance request
 }
 
 @Injectable({ providedIn: 'root' })

@@ -533,6 +533,10 @@ import Swal from 'sweetalert2';
                         <label class="block font-bold mb-2">Priority Level</label>
                         <p-select [(ngModel)]="maintenanceRequest.priorityLevel" [options]="priorityLevelsOptions" optionLabel="label" optionValue="value" placeholder="Select priority" class="w-full" appendTo="body" />
                     </div>
+                    <div class="col-span-12">
+                        <label class="block font-bold mb-2">Reason *</label>
+                        <textarea pInputTextarea [(ngModel)]="maintenanceRequest.reason" rows="3" placeholder="Describe the reason for maintenance request..." class="w-full"></textarea>
+                    </div>
                 </div>
             </ng-template>
             <ng-template #footer>
@@ -566,7 +570,14 @@ export class AssetsComponent implements OnInit {
     // Request maintenance dialog state
     requestDialog: boolean = false;
     requestAsset: Asset | null = null;
-    maintenanceRequest: { maintenanceName: string; maintenanceType: string; serviceMaintenance: string; asset: string; priorityLevel: string } = { maintenanceName: '', maintenanceType: '', serviceMaintenance: '', asset: '', priorityLevel: '' };
+    maintenanceRequest: { maintenanceName: string; maintenanceType: string; serviceMaintenance: string; asset: string; priorityLevel: string; reason: string } = {
+        maintenanceName: '',
+        maintenanceType: '',
+        serviceMaintenance: '',
+        asset: '',
+        priorityLevel: '',
+        reason: ''
+    };
     // Dropdown option arrays (label/value)
     maintenanceTypesOptions: { label: string; value: string }[] = [];
     serviceMaintenancesOptions: { label: string; value: string }[] = [];
@@ -1073,7 +1084,7 @@ export class AssetsComponent implements OnInit {
         console.log('Asset ID:', asset.assetId);
         console.log('Asset Name:', asset.assetName);
         this.requestAsset = asset;
-        this.maintenanceRequest = { maintenanceName: asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '' };
+        this.maintenanceRequest = { maintenanceName: asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '', reason: '' };
         this.requestDialog = true;
     }
 
@@ -1087,7 +1098,14 @@ export class AssetsComponent implements OnInit {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Missing asset ID' });
             return;
         }
-        if (!this.maintenanceRequest.maintenanceName || !this.maintenanceRequest.priorityLevel || !this.maintenanceRequest.maintenanceType || !this.maintenanceRequest.asset || !this.maintenanceRequest.serviceMaintenance) {
+        if (
+            !this.maintenanceRequest.maintenanceName ||
+            !this.maintenanceRequest.priorityLevel ||
+            !this.maintenanceRequest.maintenanceType ||
+            !this.maintenanceRequest.asset ||
+            !this.maintenanceRequest.serviceMaintenance ||
+            !this.maintenanceRequest.reason?.trim()
+        ) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'All fields are required' });
             return;
         }

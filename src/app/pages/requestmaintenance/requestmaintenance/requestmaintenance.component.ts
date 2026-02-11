@@ -349,7 +349,7 @@ import Swal from 'sweetalert2';
                                     <th style="width: 3rem;">
                                         <input type="checkbox" (change)="toggleSelectAll('pending')" />
                                     </th>
-                                    <th>ID</th>
+                                    <th>Request ID</th>
                                     <th>Asset Name</th>
                                     <th>Maintenance Type</th>
                                     <th>Service Name</th>
@@ -365,7 +365,7 @@ import Swal from 'sweetalert2';
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
-                                    <td>{{ row.requestId }}</td>
+                                    <td>{{ formatId(row.requestId) }}</td>
                                     <td>{{ row.maintenanceName }}</td>
                                     <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
                                     <td>{{ row.serviceMaintenance?.serviceName || 'N/A' }}</td>
@@ -386,7 +386,6 @@ import Swal from 'sweetalert2';
                                                 <button class="btn-icon btn-icon-decline" (click)="decline(row)" title="Decline">✕</button>
                                             </ng-container>
                                             <ng-container *ngIf="!isLabTech() && !isCampusAdmin()">
-                                                <button class="btn-icon btn-icon-view" (click)="view(row)" title="View">👁</button>
                                                 <button class="btn-icon btn-icon-delete" (click)="delete(row)" title="Delete">🗑</button>
                                             </ng-container>
                                         </div>
@@ -420,7 +419,7 @@ import Swal from 'sweetalert2';
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
-                                    <td>{{ row.maintenanceRequest?.requestId }}</td>
+                                    <td>{{ formatId(row.maintenanceRequest?.requestId) }}</td>
                                     <td>{{ row.maintenanceRequest?.maintenanceName }}</td>
                                     <td>{{ row.assignedTechnician?.firstName }} {{ row.assignedTechnician?.lastName || '' }}</td>
                                     <td>{{ row.scheduledAt | date: 'short' }}</td>
@@ -461,10 +460,10 @@ import Swal from 'sweetalert2';
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
-                                    <td>{{ row.requestId }}</td>
-                                    <td>{{ row.maintenanceName }}</td>
+                                    <td>{{ formatId(row.requestId || row.maintenanceRequest?.requestId) }}</td>
+                                    <td>{{ row.maintenanceName || row.maintenanceRequest?.maintenanceName }}</td>
                                     <td>
-                                        <span class="tag tag-success">{{ row.maintenanceStatus?.requestStatusName }}</span>
+                                        <span class="tag tag-success">{{ row.maintenanceStatus?.requestStatusName || 'Completed' }}</span>
                                     </td>
                                     <td>
                                         <div class="actions">
@@ -815,6 +814,16 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             return 'success';
         }
         return 'info';
+    }
+
+    // Format ID to show only numbers from each segment (e.g., CAMPUS004-LAB002-021126-MR001 → 004-002-021126-001)
+    formatId(id: string): string {
+        if (!id) return '';
+        // Split by dash, remove letters from each segment, rejoin with dash
+        return id
+            .split('-')
+            .map((segment) => segment.replace(/[^0-9]/g, ''))
+            .join('-');
     }
 
     onSelectionChange(event: any) {
