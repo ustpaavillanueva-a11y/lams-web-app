@@ -5,15 +5,15 @@ import {
   ConnectedOverlayScrollHandler
 } from "./chunk-P6SMTJBG.js";
 import {
-  BindModule
-} from "./chunk-246XFSKK.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
+import {
+  BindModule
+} from "./chunk-246XFSKK.js";
 import {
   $,
   C2 as C,
@@ -922,4 +922,4 @@ export {
   Tooltip,
   TooltipModule
 };
-//# sourceMappingURL=chunk-37ZIGYKF.js.map
+//# sourceMappingURL=chunk-BBYYXDZM.js.map

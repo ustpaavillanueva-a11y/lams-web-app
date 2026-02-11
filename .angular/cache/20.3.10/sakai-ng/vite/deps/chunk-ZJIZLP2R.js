@@ -1,13 +1,13 @@
 import {
-  Bind
-} from "./chunk-246XFSKK.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
+import {
+  Bind
+} from "./chunk-246XFSKK.js";
 import {
   PrimeTemplate,
   SharedModule
@@ -382,4 +382,4 @@ export {
   ProgressBar,
   ProgressBarModule
 };
-//# sourceMappingURL=chunk-NU3YSTH4.js.map
+//# sourceMappingURL=chunk-ZJIZLP2R.js.map

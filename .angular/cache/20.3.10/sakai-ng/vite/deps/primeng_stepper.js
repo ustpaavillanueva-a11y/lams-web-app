@@ -2,16 +2,16 @@ import {
   transformToBoolean
 } from "./chunk-CMVOE67Z.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-246XFSKK.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-246XFSKK.js";
 import {
   PrimeTemplate,
   SharedModule
@@ -90,8 +90,8 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-3OV72XIM.js";
 

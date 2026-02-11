@@ -7,15 +7,15 @@ import {
   DomHandler
 } from "./chunk-P6SMTJBG.js";
 import {
-  Bind
-} from "./chunk-246XFSKK.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
+import {
+  Bind
+} from "./chunk-246XFSKK.js";
 import {
   OverlayService,
   PrimeTemplate,
@@ -1080,4 +1080,4 @@ var OverlayModule = class _OverlayModule {
 export {
   Overlay
 };
-//# sourceMappingURL=chunk-OEW6C3OW.js.map
+//# sourceMappingURL=chunk-K34KOS7U.js.map

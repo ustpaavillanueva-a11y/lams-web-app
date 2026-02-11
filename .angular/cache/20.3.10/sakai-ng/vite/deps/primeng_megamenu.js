@@ -1,27 +1,24 @@
 import {
   Tooltip,
   TooltipModule
-} from "./chunk-37ZIGYKF.js";
+} from "./chunk-BBYYXDZM.js";
+import {
+  Badge,
+  BadgeModule
+} from "./chunk-FTXTKGMV.js";
 import {
   zindexutils
 } from "./chunk-CMVOE67Z.js";
-import "./chunk-P6SMTJBG.js";
 import {
   Ripple
 } from "./chunk-RFZJG26N.js";
+import "./chunk-P6SMTJBG.js";
 import {
   AngleDownIcon,
   AngleRightIcon,
   BarsIcon
 } from "./chunk-RUJSBIO3.js";
 import "./chunk-NKBIU3HO.js";
-import {
-  Badge,
-  BadgeModule
-} from "./chunk-3VGMHEZZ.js";
-import {
-  Bind
-} from "./chunk-246XFSKK.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -30,17 +27,12 @@ import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
 import {
-  RouterLink,
-  RouterLinkActive,
-  RouterModule
-} from "./chunk-JQU33M2K.js";
+  Bind
+} from "./chunk-246XFSKK.js";
 import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
-import "./chunk-WGXPQ2Y2.js";
-import "./chunk-XI5EKNQ2.js";
-import "./chunk-RS4JDN4Z.js";
 import "./chunk-OTTARZB5.js";
 import {
   J,
@@ -53,6 +45,14 @@ import {
   s3 as s2,
   z2 as z
 } from "./chunk-U4LT4ZJN.js";
+import {
+  RouterLink,
+  RouterLinkActive,
+  RouterModule
+} from "./chunk-JQU33M2K.js";
+import "./chunk-WGXPQ2Y2.js";
+import "./chunk-XI5EKNQ2.js";
+import "./chunk-RS4JDN4Z.js";
 import {
   CommonModule,
   NgForOf,
@@ -127,8 +127,8 @@ import {
   ɵɵtextInterpolate1,
   ɵɵviewQuery
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-3OV72XIM.js";
 

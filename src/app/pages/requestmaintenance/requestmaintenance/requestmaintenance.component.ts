@@ -767,25 +767,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     filterByTab() {
+        // Just re-categorize items - the computed getters (filteredPendingItems, etc.) handle the actual search filtering
         this.categorizeItems();
-
-        const searchLower = this.searchValue.toLowerCase();
-
-        this.pendingItems = this.pendingItems.filter((item) => item.maintenanceName?.toLowerCase().includes(searchLower) || item.requestId?.toLowerCase().includes(searchLower));
-
-        this.approvedItems = this.approvedItems.filter((item) => {
-            const maintenanceName = item.maintenanceRequest?.maintenanceName || item.maintenanceName || '';
-            const requestId = item.maintenanceRequest?.requestId || item.requestId || '';
-            return maintenanceName.toLowerCase().includes(searchLower) || requestId.toLowerCase().includes(searchLower);
-        });
-
-        this.completedItems = this.completedItems.filter((item) => item.maintenanceName?.toLowerCase().includes(searchLower) || item.requestId?.toLowerCase().includes(searchLower));
-
-        this.completedApprovedItems = this.completedApprovedItems.filter((item) => {
-            const maintenanceName = item.maintenanceRequest?.maintenanceName || item.maintenanceName || '';
-            const requestId = item.maintenanceRequest?.requestId || item.requestId || '';
-            return maintenanceName.toLowerCase().includes(searchLower) || requestId.toLowerCase().includes(searchLower);
-        });
+        // Reset pages when search changes
+        this.pendingPage = 1;
+        this.approvedPage = 1;
+        this.completedPage = 1;
     }
 
     onTabChange(event: any) {
@@ -801,10 +788,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
     filter() {
         this.filterByTab();
-        // Reset pages when filtering
-        this.pendingPage = 1;
-        this.approvedPage = 1;
-        this.completedPage = 1;
     }
 
     // Computed properties for filtered items
