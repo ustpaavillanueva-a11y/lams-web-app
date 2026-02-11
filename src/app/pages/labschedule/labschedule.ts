@@ -90,9 +90,6 @@ import { AuthService } from '../service/auth.service';
                                     class="p-3 rounded cursor-pointer hover:opacity-80 transition-opacity text-white flex flex-col items-center justify-center relative"
                                     (click)="viewSchedule(schedule)"
                                 >
-                                    <button class="delete-schedule-btn" (click)="deleteSchedule(schedule, $event)" pTooltip="Delete schedule">
-                                        <i class="pi pi-times"></i>
-                                    </button>
                                     <div class="text-sm font-bold">{{ schedule.subject?.subjectCode }}</div>
                                     <div class="text-xs mt-1">{{ schedule.faculty?.firstName }} {{ schedule.faculty?.lastName }}</div>
                                     <div class="text-xs mt-1 font-semibold">{{ schedule.startTime }} - {{ schedule.endTime }}</div>
@@ -172,6 +169,50 @@ import { AuthService } from '../service/auth.service';
                 </div>
             </ng-template>
         </p-dialog>
+
+        <!-- Schedule Details Dialog -->
+        <p-dialog [(visible)]="scheduleDetailsDialog" [style]="{ width: '450px' }" header="Schedule Details" [modal]="true" [closable]="true">
+            <ng-template #content>
+                <div class="flex flex-col gap-4" *ngIf="selectedSchedule">
+                    <div class="flex items-center gap-3 p-3 bg-gray-100 rounded-lg">
+                        <i class="pi pi-book text-2xl text-blue-500"></i>
+                        <div>
+                            <div class="font-bold text-lg">{{ selectedSchedule.subject?.subjectCode }}</div>
+                            <div class="text-gray-600">{{ selectedSchedule.subject?.subjectName }}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="pi pi-user text-gray-500"></i>
+                        <span>{{ selectedSchedule.faculty?.firstName }} {{ selectedSchedule.faculty?.lastName }}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="pi pi-calendar text-gray-500"></i>
+                        <span>{{ selectedSchedule.dayOfWeek }}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="pi pi-clock text-gray-500"></i>
+                        <span>{{ selectedSchedule.startTime }} - {{ selectedSchedule.endTime }}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="pi pi-building text-gray-500"></i>
+                        <span>{{ selectedLaboratory?.laboratoryName || 'N/A' }}</span>
+                    </div>
+                    <div class="flex items-center gap-3" *ngIf="selectedSchedule.isLocked !== undefined">
+                        <i class="pi" [ngClass]="selectedSchedule.isLocked ? 'pi-lock text-orange-500' : 'pi-lock-open text-green-500'"></i>
+                        <span>{{ selectedSchedule.isLocked ? 'Locked' : 'Unlocked' }}</span>
+                    </div>
+                </div>
+            </ng-template>
+            <ng-template #footer>
+                <div class="flex justify-between w-full">
+                    <p-button [label]="selectedSchedule?.isLocked ? 'Unlock' : 'Lock'" [icon]="selectedSchedule?.isLocked ? 'pi pi-lock-open' : 'pi pi-lock'" severity="warn" (click)="toggleLockSchedule()" />
+                    <div class="flex gap-2">
+                        <p-button label="Close" icon="pi pi-times" severity="secondary" text (click)="closeScheduleDetailsDialog()" />
+                        <p-button label="Delete" icon="pi pi-trash" severity="danger" (click)="confirmDeleteSchedule()" />
+                    </div>
+                </div>
+            </ng-template>
+        </p-dialog>
     `
 })
 export class LabScheduleComponent implements OnInit {
@@ -193,6 +234,8 @@ export class LabScheduleComponent implements OnInit {
     newSchedule: any = this.getEmptySchedule();
     subjectDialog: boolean = false;
     newSubject: any = this.getEmptySubject();
+    scheduleDetailsDialog: boolean = false;
+    selectedSchedule: any = null;
 
     private apiUrl = `${environment.apiUrl}/laboratories`;
 
@@ -638,22 +681,57 @@ export class LabScheduleComponent implements OnInit {
         return colors[0];
     }
 
-    // View schedule details
+    // View schedule details - opens modal
     viewSchedule(schedule: any) {
         console.log('👁️ Viewing schedule:', schedule);
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Schedule Details',
-            detail: `${schedule.subject?.subjectName} - ${schedule.faculty?.firstName} ${schedule.faculty?.lastName}`
+        this.selectedSchedule = schedule;
+        this.scheduleDetailsDialog = true;
+    }
+
+    // Close schedule details dialog
+    closeScheduleDetailsDialog() {
+        this.scheduleDetailsDialog = false;
+        this.selectedSchedule = null;
+    }
+
+    // Toggle lock/unlock schedule
+    toggleLockSchedule() {
+        if (!this.selectedSchedule) return;
+
+        const laboratoryId = this.selectedLaboratory?.laboratoryId || this.selectedSchedule.laboratory?.laboratoryId;
+        const scheduleId = this.selectedSchedule.scheduleId;
+        const newLockStatus = !this.selectedSchedule.isLocked;
+
+        const lockUrl = `${environment.apiUrl}/laboratories/${laboratoryId}/schedules/${scheduleId}/lock`;
+        console.log('🔒 Toggling lock status:', lockUrl);
+
+        this.http.patch(lockUrl, { isLocked: newLockStatus }).subscribe({
+            next: () => {
+                this.selectedSchedule.isLocked = newLockStatus;
+                this.messageService.add({
+                    severity: 'success',
+                    summary: newLockStatus ? 'Locked' : 'Unlocked',
+                    detail: `Schedule ${newLockStatus ? 'locked' : 'unlocked'} successfully`
+                });
+                this.loadSchedules();
+            },
+            error: (error: any) => {
+                console.error('❌ Error toggling lock:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to update lock status: ' + (error?.error?.message || error?.message)
+                });
+            }
         });
     }
 
-    // Delete schedule
-    deleteSchedule(schedule: any, event: Event) {
-        event.stopPropagation(); // Prevent triggering viewSchedule
+    // Confirm and delete schedule
+    confirmDeleteSchedule() {
+        if (!this.selectedSchedule) return;
 
-        const laboratoryId = this.selectedLaboratory?.laboratoryId || schedule.laboratory?.laboratoryId;
-        const scheduleId = schedule.scheduleId;
+        const laboratoryId = this.selectedLaboratory?.laboratoryId || this.selectedSchedule.laboratory?.laboratoryId;
+        const scheduleId = this.selectedSchedule.scheduleId;
 
         if (!laboratoryId || !scheduleId) {
             this.messageService.add({
@@ -665,7 +743,7 @@ export class LabScheduleComponent implements OnInit {
         }
 
         // Confirm deletion
-        if (confirm(`Are you sure you want to delete "${schedule.subject?.subjectName || 'this schedule'}"?`)) {
+        if (confirm(`Are you sure you want to delete "${this.selectedSchedule.subject?.subjectName || 'this schedule'}"?`)) {
             const deleteUrl = `${environment.apiUrl}/laboratories/${laboratoryId}/schedules/${scheduleId}`;
             console.log('🗑️ Deleting schedule:', deleteUrl);
 
@@ -677,7 +755,8 @@ export class LabScheduleComponent implements OnInit {
                         summary: 'Deleted',
                         detail: 'Schedule deleted successfully'
                     });
-                    this.loadSchedules(); // Reload schedules
+                    this.closeScheduleDetailsDialog();
+                    this.loadSchedules();
                 },
                 error: (error: any) => {
                     console.error('❌ Error deleting schedule:', error);
