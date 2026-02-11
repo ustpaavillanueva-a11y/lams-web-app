@@ -1128,7 +1128,7 @@ export class AssetsComponent implements OnInit {
         const assetName = item.assetName || item.AssetName || 'Unknown Asset';
         const icsData = item.inventoryCustodianSlip || {};
         const icsTableData = this.getIcsTableData(icsData);
-        
+
         let icsHtml = '';
         if (icsTableData.length > 0) {
             icsHtml = `
@@ -1142,36 +1142,73 @@ export class AssetsComponent implements OnInit {
                             </tr>
                         </thead>
                         <tbody>
-                            ${icsTableData.map((row, idx) => `
+                            ${icsTableData
+                                .map(
+                                    (row, idx) => `
                                 <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f9fafb'};">
                                     <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">${row.field}</td>
                                     <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${row.value}</td>
                                 </tr>
-                            `).join('')}
+                            `
+                                )
+                                .join('')}
                         </tbody>
                     </table>
                 </div>
             `;
         }
-        
+
         const html = `
             <div style="text-align: left; max-height: 70vh; overflow-y: auto;">
                 <h3 style="color: #1f2937; margin-bottom: 12px; font-size: 16px; font-weight: 600;">📦 Asset Details</h3>
-                <p><strong>Asset Name:</strong> ${assetName}</p>
-                <p><strong>Asset ID:</strong> ${item.assetId || 'N/A'}</p>
-                <p><strong>Property Number:</strong> ${item.propertyNumber || item.PropertyNo || 'N/A'}</p>
-                <p><strong>Category:</strong> ${item.category || item.Category || 'N/A'}</p>
-                <p><strong>Found Cluster:</strong> ${item.foundCluster || item.FoundCluster || 'N/A'}</p>
-                <p><strong>Issued To:</strong> ${item.issuedTo || item.IssuedTo || 'N/A'}</p>
-                <p><strong>Purpose:</strong> ${item.purpose || item.Purpose || 'N/A'}</p>
-                <p><strong>Date Acquired:</strong> ${item.assetCreated || item.DateAcquired || 'N/A'}</p>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f3f4f6;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; font-size: 13px;">Field</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: 600; font-size: 13px;">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background-color: #ffffff;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Asset Name</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${assetName}</td>
+                        </tr>
+                        <tr style="background-color: #f9fafb;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Asset ID</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.assetId || 'N/A'}</td>
+                        </tr>
+                        <tr style="background-color: #ffffff;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Property Number</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.propertyNumber || item.PropertyNo || 'N/A'}</td>
+                        </tr>
+                        <tr style="background-color: #f9fafb;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Category</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.category || item.Category || 'N/A'}</td>
+                        </tr>
+                        <tr style="background-color: #ffffff;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Found Cluster</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.foundCluster || item.FoundCluster || 'N/A'}</td>
+                        </tr>
+                        <tr style="background-color: #f9fafb;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Issued To</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.issuedTo || item.IssuedTo || 'N/A'}</td>
+                        </tr>
+                        <tr style="background-color: #ffffff;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Purpose</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.purpose || item.Purpose || 'N/A'}</td>
+                        </tr>
+                        <tr style="background-color: #f9fafb;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Date Acquired</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${item.assetCreated || item.DateAcquired || 'N/A'}</td>
+                        </tr>
+                    </tbody>
+                </table>
                 ${icsHtml}
             </div>
         `;
         Swal.fire({
             title: 'Asset Details',
             html,
-            icon: 'info',
             confirmButtonText: 'Close',
             width: '700px'
         });
