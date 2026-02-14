@@ -392,7 +392,7 @@ import Swal from 'sweetalert2';
                                     <th>Request Date</th>
                                     <th>Requested By</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th *ngIf="isCampusAdmin()">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -414,15 +414,10 @@ import Swal from 'sweetalert2';
                                     <td>
                                         <span class="tag tag-info">{{ row.maintenanceStatus?.requestStatusName }}</span>
                                     </td>
-                                    <td>
+                                    <td *ngIf="isCampusAdmin()">
                                         <div class="actions">
-                                            <ng-container *ngIf="isLabTech() || isCampusAdmin()">
-                                                <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" />
-                                                <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" pTooltip="Decline" (onClick)="decline(row)" />
-                                            </ng-container>
-                                            <ng-container *ngIf="!isLabTech() && !isCampusAdmin()">
-                                                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" pTooltip="Delete" (onClick)="delete(row)" />
-                                            </ng-container>
+                                            <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" />
+                                            <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" pTooltip="Decline" (onClick)="decline(row)" />
                                         </div>
                                     </td>
                                 </tr>
