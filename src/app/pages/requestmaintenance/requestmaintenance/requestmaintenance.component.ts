@@ -560,7 +560,8 @@ import Swal from 'sweetalert2';
                         <label class="form-label">Scheduled Date *</label>
                         <input type="date" class="form-control" [(ngModel)]="approveFormData.scheduledAt" />
                     </div>
-                    <div class="form-group">
+                    <!-- Show dropdown for CampusAdmin -->
+                    <div class="form-group" *ngIf="isCampusAdmin()">
                         <label class="form-label">Technician *</label>
                         <select class="form-control" [(ngModel)]="approveFormData.technicianId">
                             <option value="">-- Select Technician --</option>
@@ -568,6 +569,11 @@ import Swal from 'sweetalert2';
                                 {{ tech.fullName }}
                             </option>
                         </select>
+                    </div>
+                    <!-- Show static text for LabTech (auto-assigned to themselves) -->
+                    <div class="form-group" *ngIf="isLabTech()">
+                        <label class="form-label">Assigned Technician</label>
+                        <input type="text" class="form-control" [value]="getCurrentUserFullName()" disabled />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Remarks *</label>
@@ -672,6 +678,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     isCampusAdmin(): boolean {
         const user = this.authService.getCurrentUser();
         return user?.role?.toLowerCase() === 'campusadmin';
+    }
+
+    getCurrentUserFullName(): string {
+        const user = this.authService.getCurrentUser() as any;
+        if (!user) return '';
+        return [user.firstName, user.middleName, user.lastName].filter((name) => name && name.trim()).join(' ');
     }
 
     isCurrentUserTechnician(technicianUserId: string): boolean {
@@ -1002,8 +1014,21 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     approve(item: any) {
         console.log('Approve clicked - Selected item:', item);
         this.selectedItem = item;
-        this.approveFormData = { technicianId: null, remarks: '', scheduledAt: null };
-        this.loadTechnicians(item.asset?.campus?.campusId);
+
+        // For LabTech, auto-assign themselves as technician
+        if (this.isLabTech()) {
+            const currentUser = this.authService.getCurrentUser();
+            this.approveFormData = {
+                technicianId: (currentUser as any)?.userId,
+                remarks: '',
+                scheduledAt: null
+            };
+        } else {
+            // For CampusAdmin, let them choose a technician
+            this.approveFormData = { technicianId: null, remarks: '', scheduledAt: null };
+            this.loadTechnicians(item.asset?.campus?.campusId);
+        }
+
         this.approveModalVisible = true;
     }
 
