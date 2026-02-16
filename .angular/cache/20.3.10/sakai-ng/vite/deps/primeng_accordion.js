@@ -1,7 +1,4 @@
 import {
-  transformToBoolean
-} from "./chunk-CMVOE67Z.js";
-import {
   Ripple
 } from "./chunk-RFZJG26N.js";
 import {
@@ -10,16 +7,19 @@ import {
 } from "./chunk-RUJSBIO3.js";
 import "./chunk-NKBIU3HO.js";
 import {
+  transformToBoolean
+} from "./chunk-CMVOE67Z.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-246XFSKK.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-246XFSKK.js";
 import {
   SharedModule
 } from "./chunk-JCDWLVR7.js";
@@ -94,8 +94,8 @@ import {
   ɵɵstyleProp,
   ɵɵtemplate
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-3OV72XIM.js";
 

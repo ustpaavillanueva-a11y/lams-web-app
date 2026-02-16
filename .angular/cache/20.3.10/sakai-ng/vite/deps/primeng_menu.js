@@ -1,21 +1,25 @@
 import {
-  Tooltip,
-  TooltipModule
-} from "./chunk-BBYYXDZM.js";
-import {
   Badge,
   BadgeModule
-} from "./chunk-FTXTKGMV.js";
+} from "./chunk-3VGMHEZZ.js";
 import {
-  zindexutils
-} from "./chunk-CMVOE67Z.js";
-import {
-  Ripple
-} from "./chunk-RFZJG26N.js";
+  Tooltip,
+  TooltipModule
+} from "./chunk-KZDBN5KI.js";
 import {
   ConnectedOverlayScrollHandler,
   DomHandler
 } from "./chunk-P6SMTJBG.js";
+import {
+  Ripple
+} from "./chunk-RFZJG26N.js";
+import {
+  zindexutils
+} from "./chunk-CMVOE67Z.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-246XFSKK.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -23,10 +27,6 @@ import {
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-246XFSKK.js";
 import {
   OverlayService,
   PrimeTemplate,
@@ -135,8 +135,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-3OV72XIM.js";
 

@@ -317,6 +317,7 @@ var Validators = class {
    * ```ts
    * const control = new FormControl(2, Validators.min(3));
    *
+   * console.log(control.errors); // {min: {min: 3, actual: 2}}
    * ```
    *
    * @returns A validator function that returns an error map with the
@@ -339,6 +340,7 @@ var Validators = class {
    * ```ts
    * const control = new FormControl(16, Validators.max(15));
    *
+   * console.log(control.errors); // {max: {max: 15, actual: 16}}
    * ```
    *
    * @returns A validator function that returns an error map with the
@@ -361,6 +363,7 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('', Validators.required);
    *
+   * console.log(control.errors); // {required: true}
    * ```
    *
    * @returns An error map with the `required` property
@@ -384,6 +387,7 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('some value', Validators.requiredTrue);
    *
+   * console.log(control.errors); // {required: true}
    * ```
    *
    * @returns An error map that contains the `required` property

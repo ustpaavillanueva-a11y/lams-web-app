@@ -1,13 +1,13 @@
 import {
+  Bind,
+  BindModule
+} from "./chunk-246XFSKK.js";
+import {
   BaseComponent
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-246XFSKK.js";
 import {
   SharedModule
 } from "./chunk-JCDWLVR7.js";
@@ -50,8 +50,8 @@ import {
   ɵɵproperty,
   ɵɵstyleMap
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import {
   __spreadProps,

@@ -1,14 +1,14 @@
 import {
+  Bind,
+  BindModule
+} from "./chunk-246XFSKK.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-246XFSKK.js";
 import {
   CommonModule
 } from "./chunk-R2OVIKVM.js";
@@ -201,4 +201,4 @@ export {
   IconField,
   IconFieldModule
 };
-//# sourceMappingURL=chunk-3I52677U.js.map
+//# sourceMappingURL=chunk-5LYA7AKX.js.map

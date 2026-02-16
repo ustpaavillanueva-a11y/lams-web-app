@@ -2,8 +2,15 @@ import {
   BaseEditableHolder
 } from "./chunk-3GM4W2GJ.js";
 import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-C225D66Z.js";
+import {
   Ripple
 } from "./chunk-RFZJG26N.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-246XFSKK.js";
 import {
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
@@ -11,16 +18,9 @@ import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-246XFSKK.js";
-import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-C225D66Z.js";
 import {
   CommonModule,
   NgTemplateOutlet
@@ -611,4 +611,4 @@ export {
   ToggleButton,
   ToggleButtonModule
 };
-//# sourceMappingURL=chunk-G6KXXX56.js.map
+//# sourceMappingURL=chunk-MPQCO4ZZ.js.map

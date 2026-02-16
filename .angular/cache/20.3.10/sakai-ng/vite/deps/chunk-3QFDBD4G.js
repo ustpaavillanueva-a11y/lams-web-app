@@ -1,13 +1,13 @@
 import {
+  Bind
+} from "./chunk-246XFSKK.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-VM5VBBK4.js";
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
-import {
-  Bind
-} from "./chunk-246XFSKK.js";
 import {
   CommonModule
 } from "./chunk-R2OVIKVM.js";
@@ -163,4 +163,4 @@ export {
   Fluid,
   FluidModule
 };
-//# sourceMappingURL=chunk-TNKCNNDS.js.map
+//# sourceMappingURL=chunk-3QFDBD4G.js.map
