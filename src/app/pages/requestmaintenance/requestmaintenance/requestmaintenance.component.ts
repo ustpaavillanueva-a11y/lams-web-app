@@ -588,8 +588,8 @@ import Swal from 'sweetalert2';
                 <div class="modal-header">Complete Maintenance Request</div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="form-label">Remarks *</label>
-                        <textarea class="form-control" [(ngModel)]="confirmFormData.remarks" placeholder="Enter remarks..."></textarea>
+                        <label class="form-label">Reason *</label>
+                        <textarea class="form-control" [(ngModel)]="confirmFormData.reason" placeholder="Enter reason..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Action Taken</label>
@@ -639,7 +639,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     technicians: any[] = [];
     approveFormData: any = { technicianId: null, remarks: '', scheduledAt: null };
     confirmFormData: any = {
-        remarks: '',
+        reason: '',
         actionTaken: '',
         observations: '',
         expectedReading: '',
@@ -1276,6 +1276,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     confirm(row: any) {
+        console.log('🔵 Confirm clicked - Row data:', row);
+        console.log('🔵 Maintenance Approval ID:', row.maintenanceApprovalId);
+        console.log('🔵 Request ID:', row.maintenanceRequest?.requestId || row.requestId);
+
         this.selectedItem = row;
         this.loading = true;
 
@@ -1283,7 +1287,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         this.maintenanceService.getMaintenanceApprovalDetails(row.maintenanceApprovalId).subscribe({
             next: (data: any) => {
                 this.confirmFormData = {
-                    remarks: data.remarks || '',
+                    reason: data.reason || '',
                     actionTaken: data.actionTaken || '',
                     observations: data.observations || '',
                     expectedReading: data.expectedReading || '',
@@ -1301,14 +1305,14 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     confirmCompletion() {
-        if (!this.confirmFormData.remarks.trim()) {
-            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Remarks is required' });
+        if (!this.confirmFormData.reason.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Reason is required' });
             return;
         }
 
         const completionPayload = {
             maintenanceRequest: this.selectedItem.maintenanceRequest?.requestId || this.selectedItem.requestId,
-            remarks: this.confirmFormData.remarks.trim(),
+            reason: this.confirmFormData.reason.trim(),
             scheduledAt: this.selectedItem.scheduledAt || new Date(),
             isApproved: true,
             isCompleted: true,
@@ -1317,6 +1321,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             expectedReading: this.confirmFormData.expectedReading.trim(),
             actualReading: this.confirmFormData.actualReading.trim()
         };
+
+        console.log('🟢 Selected Item:', this.selectedItem);
+        console.log('🟢 Maintenance Approval ID:', this.selectedItem.maintenanceApprovalId);
+        console.log('🟢 Completion Payload:', completionPayload);
 
         this.maintenanceService.completeMaintenanceApproval(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
             next: (response: any) => {
