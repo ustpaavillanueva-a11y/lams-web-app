@@ -1134,35 +1134,118 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         // Check if it's an approval item (has maintenanceApprovalId) or a request item
         if (item.maintenanceApprovalId) {
             // It's a completed approval - show approval details
+            const scheduledDate = item.scheduledAt ? new Date(item.scheduledAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
             const html = `
-                <div style="text-align: left;">
-                    <p><strong>Maintenance Name:</strong> ${item.maintenanceRequest?.maintenanceName || 'N/A'}</p>
-                    <p><strong>Scheduled Date:</strong> ${new Date(item.scheduledAt).toLocaleDateString() || 'N/A'}</p>
-                    <p><strong>Remarks:</strong> ${item.remarks || 'N/A'}</p>
-                    <p><strong>Action Taken:</strong> ${item.actionTaken || 'N/A'}</p>
-                    <p><strong>Observations:</strong> ${item.observations || 'N/A'}</p>
-                    <p><strong>Expected Reading:</strong> ${item.expectedReading || 'N/A'}</p>
-                    <p><strong>Actual Reading:</strong> ${item.actualReading || 'N/A'}</p>
+                <div style="text-align: left; max-height: 60vh; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tbody>
+                            <tr style="background: #f8fafc;">
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569; width: 40%;">Maintenance Name</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.maintenanceRequest?.maintenanceName || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Scheduled Date</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${scheduledDate}</td>
+                            </tr>
+                            <tr style="background: #f8fafc;">
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Remarks</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.remarks || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Action Taken</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.actionTaken || 'N/A'}</td>
+                            </tr>
+                            <tr style="background: #f8fafc;">
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Observations</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.observations || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Expected Reading</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.expectedReading || 'N/A'}</td>
+                            </tr>
+                            <tr style="background: #f8fafc;">
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Actual Reading</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.actualReading || 'N/A'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             `;
-            Swal.fire({ title: 'Maintenance Approval Details', html, icon: 'info' });
+            Swal.fire({
+                title: '<span style="font-size: 18px; font-weight: 600; color: #1e293b;">Maintenance Approval Details</span>',
+                html,
+                width: 500,
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: { popup: 'swal-wide' }
+            });
         } else {
             // It's a request item - fetch from API
             const requestId = item.maintenanceRequestId || item.id || item.requestId;
             this.maintenanceService.getMaintenanceRequest(requestId).subscribe({
                 next: (data: any) => {
+                    const getPriorityBadge = (priority: string) => {
+                        const colors: any = {
+                            High: 'background: #fee2e2; color: #991b1b;',
+                            Medium: 'background: #fef08a; color: #92400e;',
+                            Low: 'background: #dcfce7; color: #166534;'
+                        };
+                        return colors[priority] || 'background: #e2e8f0; color: #475569;';
+                    };
+                    const getStatusBadge = (status: string) => {
+                        if (status?.toLowerCase().includes('completed')) return 'background: #dcfce7; color: #166534;';
+                        if (status?.toLowerCase().includes('pending')) return 'background: #fef08a; color: #92400e;';
+                        if (status?.toLowerCase().includes('approved')) return 'background: #dbeafe; color: #1e40af;';
+                        return 'background: #e2e8f0; color: #475569;';
+                    };
                     const html = `
-                        <div style="text-align: left;">
-                            <p><strong>Name:</strong> ${data.maintenanceName || 'N/A'}</p>
-                            <p><strong>Type:</strong> ${data.maintenanceType?.maintenanceTypeName || 'N/A'}</p>
-                            <p><strong>Service:</strong> ${data.serviceMaintenance?.serviceName || 'N/A'}</p>
-                            <p><strong>Asset:</strong> ${data.asset?.assetName || 'N/A'}</p>
-                            <p><strong>Priority:</strong> ${data.priorityLevel?.priorityLevelName || 'N/A'}</p>
-                            <p><strong>Status:</strong> ${data.maintenanceStatus?.requestStatusName || 'N/A'}</p>
-                            <p><strong>Description:</strong> ${data.description || 'N/A'}</p>
+                        <div style="text-align: left; max-height: 60vh; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                <tbody>
+                                    <tr style="background: #f8fafc;">
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569; width: 35%;">Name</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b; font-weight: 500;">${data.maintenanceName || 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Type</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.maintenanceType?.maintenanceTypeName || 'N/A'}</td>
+                                    </tr>
+                                    <tr style="background: #f8fafc;">
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Service</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.serviceMaintenance?.serviceName || 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Asset</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.asset?.assetName || 'N/A'}</td>
+                                    </tr>
+                                    <tr style="background: #f8fafc;">
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Priority</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0;">
+                                            <span style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; ${getPriorityBadge(data.priorityLevel?.priorityLevelName)}">${data.priorityLevel?.priorityLevelName || 'N/A'}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Status</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0;">
+                                            <span style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; ${getStatusBadge(data.maintenanceStatus?.requestStatusName)}">${data.maintenanceStatus?.requestStatusName || 'N/A'}</span>
+                                        </td>
+                                    </tr>
+                                    <tr style="background: #f8fafc;">
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Reason</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.reason || 'N/A'}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     `;
-                    Swal.fire({ title: 'Maintenance Request Details', html, icon: 'info' });
+                    Swal.fire({
+                        title: '<span style="font-size: 18px; font-weight: 600; color: #1e293b;">Maintenance Request Details</span>',
+                        html,
+                        width: 480,
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        customClass: { popup: 'swal-wide' }
+                    });
                 }
             });
         }
