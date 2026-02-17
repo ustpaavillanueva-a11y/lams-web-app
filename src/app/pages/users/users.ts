@@ -47,11 +47,13 @@ import Swal from 'sweetalert2';
                         [showClear]="true"
                         (onChange)="filterUsers()"
                     />
-                    <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
                     <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
                         <input pInputText type="text" [(ngModel)]="searchValue" (input)="filterUsers()" placeholder="Search users..." />
                     </p-iconfield>
+                    <p-button icon="pi pi-file-excel" severity="success" pTooltip="Export to Excel" (onClick)="exportToExcel()" [rounded]="true" [text]="true" />
+                    <p-button icon="pi pi-file-pdf" severity="danger" pTooltip="Export to PDF" (onClick)="exportToPdf()" [rounded]="true" [text]="true" />
+                    <p-button icon="pi pi-print" severity="info" pTooltip="Print" (onClick)="printUsers()" [rounded]="true" [text]="true" />
                 </div>
             </ng-template>
         </p-toolbar>
@@ -898,33 +900,284 @@ export class UsersComponent implements OnInit {
         });
     }
 
-    exportCSV() {
+    exportToExcel() {
         if (this.filteredUsers.length === 0) {
             this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'No data to export' });
             return;
         }
 
-        const csv = this.generateCSV(this.filteredUsers);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const data = this.filteredUsers.map((user) => ({
+            'User ID': user.userId || '',
+            'First Name': user.firstName || '',
+            'Middle Name': user.middleName || '',
+            'Last Name': user.lastName || '',
+            Email: user.email || '',
+            Contact: user.contactNumber || '',
+            Campus: user.campus?.campusName || '',
+            Department: user.department?.departmentName || '',
+            Role: user.role || '',
+            Status: user.isActive ? 'Active' : 'Inactive'
+        }));
+
+        // Convert to CSV
+        const headers = Object.keys(data[0] || {});
+        const csvContent = [
+            headers.join(','),
+            ...data.map((row) =>
+                headers
+                    .map((header) => {
+                        const value = (row as any)[header] || '';
+                        const escaped = String(value).replace(/"/g, '""');
+                        return escaped.includes(',') || escaped.includes('"') ? `"${escaped}"` : escaped;
+                    })
+                    .join(',')
+            )
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
+        const campusName = this.selectedCampus ? this.campuses.find((c) => c.campusId === this.selectedCampus)?.campusName || 'filtered' : 'all';
+        const filename = `users_${campusName}_${new Date().toISOString().split('T')[0]}.csv`;
 
         link.setAttribute('href', url);
-        link.setAttribute('download', 'users_export.csv');
+        link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Users exported to CSV' });
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Exported',
+            detail: `${this.filteredUsers.length} users exported to ${filename}`,
+            life: 3000
+        });
     }
 
-    private generateCSV(data: any[]): string {
-        const headers = ['Name', 'Email', 'Department', 'Campus', 'Role'];
-        const rows = data.map((user) => [`${user.FirstName || ''} ${user.LastName || ''}`, user.email || '', user.Department || '', user.Campus || '', user.role || '']);
+    exportToPdf() {
+        if (this.filteredUsers.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'No data to export' });
+            return;
+        }
 
-        const csvContent = [headers.join(','), ...rows.map((row) => row.map((cell) => `"${cell}"`).join(','))].join('\n');
+        const campusName = this.selectedCampus ? this.campuses.find((c) => c.campusId === this.selectedCampus)?.campusName || 'Filtered' : 'All Campuses';
 
-        return csvContent;
+        const pdfContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Users Report - ${campusName}</title>
+                <style>
+                    @page { 
+                        size: A4 landscape; 
+                        margin: 10mm; 
+                    }
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        padding: 15px;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    .header { 
+                        text-align: center; 
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #333;
+                        padding-bottom: 10px;
+                    }
+                    .header h1 { 
+                        margin: 0; 
+                        font-size: 24px; 
+                        color: #333;
+                    }
+                    .header h3 { 
+                        margin: 5px 0 0 0; 
+                        font-size: 16px; 
+                        color: #666; 
+                        font-weight: normal;
+                    }
+                    .meta-info {
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 11px;
+                        color: #888;
+                        margin-bottom: 15px;
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        font-size: 10px; 
+                    }
+                    th { 
+                        background-color: #2563eb !important; 
+                        color: white !important;
+                        padding: 10px 6px; 
+                        text-align: left; 
+                        font-weight: bold;
+                        border: 1px solid #1d4ed8;
+                    }
+                    td { 
+                        border: 1px solid #ddd; 
+                        padding: 8px 6px; 
+                        text-align: left; 
+                    }
+                    tr:nth-child(even) { background-color: #f8fafc !important; }
+                    .footer { 
+                        margin-top: 15px; 
+                        padding-top: 10px;
+                        border-top: 1px solid #ddd;
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 12px;
+                    }
+                    .total { font-weight: bold; }
+                    .status-active { color: #16a34a; font-weight: 500; }
+                    .status-inactive { color: #dc2626; font-weight: 500; }
+                    @media print {
+                        body { margin: 0; }
+                        table { page-break-inside: auto; }
+                        tr { page-break-inside: avoid; page-break-after: auto; }
+                        thead { display: table-header-group; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>User Management</h1>
+                    <h3>Users Report - ${campusName}</h3>
+                </div>
+                <div class="meta-info">
+                    <span>Generated: ${new Date().toLocaleString()}</span>
+                    <span>Total Records: ${this.filteredUsers.length}</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Campus</th>
+                            <th>Department</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${this.filteredUsers
+                            .map(
+                                (user) => `
+                            <tr>
+                                <td>${user.userId || ''}</td>
+                                <td>${user.firstName || ''} ${user.middleName || ''} ${user.lastName || ''}</td>
+                                <td>${user.email || ''}</td>
+                                <td>${user.contactNumber || ''}</td>
+                                <td>${user.campus?.campusName || ''}</td>
+                                <td>${user.department?.departmentName || ''}</td>
+                                <td>${user.role || ''}</td>
+                                <td class="${user.isActive ? 'status-active' : 'status-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</td>
+                            </tr>
+                        `
+                            )
+                            .join('')}
+                    </tbody>
+                </table>
+                <div class="footer">
+                    <span class="total">Total Users: ${this.filteredUsers.length}</span>
+                    <span>LAMS - User Management</span>
+                </div>
+                <script>
+                    window.onload = function() { window.print(); }
+                </script>
+            </body>
+            </html>
+        `;
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(pdfContent);
+            printWindow.document.close();
+        }
+    }
+
+    printUsers() {
+        if (this.filteredUsers.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'No data to print' });
+            return;
+        }
+
+        const campusName = this.selectedCampus ? this.campuses.find((c) => c.campusId === this.selectedCampus)?.campusName || 'Filtered' : 'All Campuses';
+
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Users Report - ${campusName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h1 { text-align: center; margin-bottom: 5px; }
+                    h3 { text-align: center; color: #666; margin-top: 0; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f4f4f4; font-weight: bold; }
+                    tr:nth-child(even) { background-color: #f9f9f9; }
+                    .print-date { text-align: right; font-size: 11px; color: #888; margin-bottom: 10px; }
+                    .total { margin-top: 10px; font-weight: bold; }
+                    .status-active { color: green; }
+                    .status-inactive { color: red; }
+                    @media print {
+                        body { margin: 0; }
+                        table { page-break-inside: auto; }
+                        tr { page-break-inside: avoid; page-break-after: auto; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Users Report</h1>
+                <h3>${campusName}</h3>
+                <div class="print-date">Generated: ${new Date().toLocaleString()}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Campus</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${this.filteredUsers
+                            .map(
+                                (user) => `
+                            <tr>
+                                <td>${user.userId || ''}</td>
+                                <td>${user.firstName || ''} ${user.middleName || ''} ${user.lastName || ''}</td>
+                                <td>${user.email || ''}</td>
+                                <td>${user.contactNumber || ''}</td>
+                                <td>${user.campus?.campusName || ''}</td>
+                                <td>${user.role || ''}</td>
+                                <td class="${user.isActive ? 'status-active' : 'status-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</td>
+                            </tr>
+                        `
+                            )
+                            .join('')}
+                    </tbody>
+                </table>
+                <div class="total">Total Users: ${this.filteredUsers.length}</div>
+            </body>
+            </html>
+        `;
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.onload = () => {
+                printWindow.print();
+            };
+        }
     }
 }
