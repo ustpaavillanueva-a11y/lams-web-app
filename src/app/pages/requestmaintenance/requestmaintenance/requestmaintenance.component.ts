@@ -1335,11 +1335,36 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             text: `Delete ${this.selectedItems.length} maintenance request(s)?`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Delete'
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel'
         }).then((res) => {
             if (res.isConfirmed) {
-                this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Selected maintenance requests deleted' });
-                this.loadItems();
+                const deletePromises = this.selectedItems.map((item: any) => {
+                    const requestId = item.requestId || item.maintenanceRequestId || item.id;
+                    return this.maintenanceService.deleteMaintenanceRequest(requestId).toPromise();
+                });
+
+                Promise.all(deletePromises)
+                    .then(() => {
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: `${this.selectedItems.length} maintenance request(s) deleted successfully.`,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                        this.selectedItems = [];
+                        this.loadItems();
+                    })
+                    .catch((err) => {
+                        console.error('Error deleting selected maintenance requests:', err);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to delete some maintenance requests.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        this.loadItems();
+                    });
             }
         });
     }

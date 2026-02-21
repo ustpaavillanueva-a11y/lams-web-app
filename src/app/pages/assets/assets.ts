@@ -981,7 +981,7 @@ export class AssetsComponent implements OnInit {
             this.newAsset.inventoryCustodianSlip.length = null;
             this.newAsset.inventoryCustodianSlip.material = '';
             // Set default color for Software category
-            this.newAsset.inventoryCustodianSlip.color = 'COLOR001';
+            this.newAsset.inventoryCustodianSlip.color = 'CLR001';
         } else {
             // Clear color when switching back to Hardware
             this.newAsset.inventoryCustodianSlip.color = '';
@@ -1293,6 +1293,11 @@ export class AssetsComponent implements OnInit {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Asset data is missing' });
             return;
         }
+
+        // Console log all asset data
+        console.log('📝 Edit Asset - Full Data:', item);
+        console.table(item);
+
         const assetId = item.assetId;
         const assetName = item.assetName || item.AssetName || '';
         const propertyNumber = item.propertyNumber || item.PropertyNo || '';
@@ -1300,75 +1305,150 @@ export class AssetsComponent implements OnInit {
         const foundCluster = item.foundCluster || item.FoundCluster || '';
         const purpose = item.purpose || item.Purpose || '';
         const issuedTo = item.issuedTo || item.IssuedTo || '';
-        const program = item.Program_id || '';
-        const status = item.Status_id || '';
-        const supplier = item.Supplier_id || '';
-        const location = item.Location_id || '';
+        const program = (item as any).program?.programId || (item as any).Program_id || '';
+        const supplier = (item as any).supplier?.supplierId || (item as any).Supplier_id || '';
+        const laboratories = (item as any).laboratories?.laboratoryId || (item as any).Laboratory_id || '';
+
+        // ICS data
+        const ics = (item as any).inventoryCustodianSlip || {};
+        const icsNo = ics.icsNo || '';
+        const quantity = ics.quantity || 0;
+        const uoM = ics.uoM || '';
+        const unitCost = ics.unitCost || 0;
+        const description = ics.description || '';
+        const specifications = ics.specifications || '';
+        const height = ics.height || 0;
+        const width = ics.width || 0;
+        const length = ics.length || 0;
+        const packageVal = ics.package || '';
+        const material = ics.material || '';
+        const serialNumber = ics.serialNumber || '';
+        const modelNumber = ics.modelNumber || '';
+        const estimatedUsefullLife = ics.estimatedUsefullLife || '';
+        const brand = ics.brand || '';
+        const color = ics.color || '';
 
         const html = `
-            <div style="text-align: left; max-width: 650px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;">
-                <!-- Minimal Header with Close Button -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 0 20px 0; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
+            <div style="text-align: left; max-width: 750px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 0 16px 0; margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: white; z-index: 10;">
                     <div>
-                        <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.3px;">Edit Asset</h2>
-                        <p style="margin: 8px 0 0 0; font-size: 13px; color: #999;">ID: ${assetId}</p>
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">Edit Asset</h2>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #999;">ID: ${assetId}</p>
                     </div>
-                    <button id="closeBtn" style="background: none; border: none; font-size: 24px; color: #999; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='#f5f5f5'; this.style.color='#1a1a1a';" onmouseout="this.style.background='none'; this.style.color='#999';">✕</button>
                 </div>
                 
-                <!-- Minimal Form Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Asset Name *</label>
-                        <input type="text" id="assetName" value="${assetName}" placeholder="Asset name" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Property Number</label>
-                        <input type="text" id="propertyNumber" value="${propertyNumber}" placeholder="Property number" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                <!-- Basic Info Section -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #667eea; text-transform: uppercase; letter-spacing: 0.5px;">Basic Information</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Asset Name</label>
+                            <input type="text" id="assetName" value="${assetName}" placeholder="Asset name" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Property Number</label>
+                            <input type="text" id="propertyNumber" value="${propertyNumber}" placeholder="Property number" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Category</label>
+                            <input type="text" id="category" value="${category}" placeholder="Hardware / Software" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Found Cluster</label>
+                            <input type="text" id="foundCluster" value="${foundCluster}" placeholder="Cluster" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Purpose</label>
+                            <input type="text" id="purpose" value="${purpose}" placeholder="Purpose" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Issued To</label>
+                            <input type="text" id="issuedTo" value="${issuedTo}" placeholder="Person/Department" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Program</label>
+                            <input type="text" id="program" value="${program}" placeholder="Program ID" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Supplier</label>
+                            <input type="text" id="supplier" value="${supplier}" placeholder="Supplier ID" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Laboratory</label>
+                            <input type="text" id="laboratories" value="${laboratories}" placeholder="Laboratory ID" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Category</label>
-                        <input type="text" id="category" value="${category}" placeholder="Hardware / Software" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Found Cluster</label>
-                        <input type="text" id="foundCluster" value="${foundCluster}" placeholder="Cluster" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Purpose</label>
-                        <input type="text" id="purpose" value="${purpose}" placeholder="Purpose of asset" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Issued To</label>
-                        <input type="text" id="issuedTo" value="${issuedTo}" placeholder="Person/Department" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Program</label>
-                        <input type="text" id="program" value="${program}" placeholder="Program" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Status</label>
-                        <input type="text" id="status" value="${status}" placeholder="Status" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Supplier</label>
-                        <input type="text" id="supplier" value="${supplier}" placeholder="Supplier" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Location</label>
-                        <input type="text" id="location" value="${location}" placeholder="Location" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: #fafafa; transition: all 0.2s; font-weight: 400;" />
+                <!-- ICS Section -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #667eea; text-transform: uppercase; letter-spacing: 0.5px;">Inventory Custodian Slip</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">ICS No</label>
+                            <input type="text" id="icsNo" value="${icsNo}" placeholder="ICS No" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Quantity</label>
+                            <input type="number" id="quantity" value="${quantity}" placeholder="0" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Unit of Measure</label>
+                            <input type="text" id="uoM" value="${uoM}" placeholder="UoM" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Unit Cost</label>
+                            <input type="number" id="unitCost" value="${unitCost}" placeholder="0" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Serial Number</label>
+                            <input type="text" id="serialNumber" value="${serialNumber}" placeholder="Serial No" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Model Number</label>
+                            <input type="text" id="modelNumber" value="${modelNumber}" placeholder="Model No" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div style="grid-column: span 3;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Description</label>
+                            <input type="text" id="description" value="${description}" placeholder="Description" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div style="grid-column: span 3;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Specifications</label>
+                            <input type="text" id="specifications" value="${specifications}" placeholder="Specifications" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Height</label>
+                            <input type="number" id="height" value="${height}" placeholder="0" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Width</label>
+                            <input type="number" id="width" value="${width}" placeholder="0" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Length</label>
+                            <input type="number" id="length" value="${length}" placeholder="0" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Package</label>
+                            <input type="text" id="package" value="${packageVal}" placeholder="Package" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Material</label>
+                            <input type="text" id="material" value="${material}" placeholder="Material" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Est. Useful Life</label>
+                            <input type="text" id="estimatedUsefullLife" value="${estimatedUsefullLife}" placeholder="e.g. 5 years" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Brand</label>
+                            <input type="text" id="brand" value="${brand}" placeholder="Brand" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 12px;">Color</label>
+                            <input type="text" id="color" value="${color}" placeholder="Color" style="width: 100%; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1377,66 +1457,44 @@ export class AssetsComponent implements OnInit {
         Swal.fire({
             title: '',
             html,
-            width: '750px',
+            width: '800px',
             confirmButtonText: '💾 Save Changes',
             cancelButtonText: 'Cancel',
             showCancelButton: true,
             confirmButtonColor: '#667eea',
             cancelButtonColor: '#6c757d',
             didOpen: () => {
-                // Auto-focus first input
                 (document.getElementById('assetName') as HTMLInputElement)?.focus();
-
-                // Close button functionality
-                const closeBtn = document.getElementById('closeBtn') as HTMLButtonElement;
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', () => {
-                        Swal.close();
-                    });
-                }
-
-                // Position buttons to the right corner with Cancel on left, Save on right
-                const buttonContainer = document.querySelector('.swal2-actions') as HTMLElement;
-                if (buttonContainer) {
-                    buttonContainer.style.justifyContent = 'flex-end';
-                    buttonContainer.style.gap = '12px';
-                    buttonContainer.style.flexDirection = 'row-reverse';
-                    buttonContainer.style.marginRight = '20px';
-                }
-
-                // Add hover effects to inputs
-                const inputs = document.querySelectorAll('input[type="text"]');
-                inputs.forEach((input) => {
-                    (input as HTMLElement).style.transition = 'all 0.3s ease';
-                    input.addEventListener('focus', () => {
-                        (input as HTMLElement).style.borderColor = '#667eea';
-                        (input as HTMLElement).style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.15)';
-                        (input as HTMLElement).style.background = '#fff';
-                    });
-                    input.addEventListener('blur', () => {
-                        (input as HTMLElement).style.borderColor = '#e0e0e0';
-                        (input as HTMLElement).style.boxShadow = 'none';
-                    });
-                });
             },
             preConfirm: () => {
-                const assetNameVal = (document.getElementById('assetName') as HTMLInputElement)?.value.trim();
-                if (!assetNameVal) {
-                    Swal.showValidationMessage('Asset name is required');
-                    return false;
-                }
-
                 return {
-                    assetName: assetNameVal,
-                    propertyNumber: (document.getElementById('propertyNumber') as HTMLInputElement)?.value.trim(),
-                    category: (document.getElementById('category') as HTMLInputElement)?.value.trim(),
-                    foundCluster: (document.getElementById('foundCluster') as HTMLInputElement)?.value.trim(),
-                    purpose: (document.getElementById('purpose') as HTMLInputElement)?.value.trim(),
-                    issuedTo: (document.getElementById('issuedTo') as HTMLInputElement)?.value.trim(),
-                    Program_id: (document.getElementById('program') as HTMLInputElement)?.value.trim(),
-                    Status_id: (document.getElementById('status') as HTMLInputElement)?.value.trim(),
-                    Supplier_id: (document.getElementById('supplier') as HTMLInputElement)?.value.trim(),
-                    Location_id: (document.getElementById('location') as HTMLInputElement)?.value.trim()
+                    assetName: (document.getElementById('assetName') as HTMLInputElement)?.value.trim() || '',
+                    propertyNumber: (document.getElementById('propertyNumber') as HTMLInputElement)?.value.trim() || '',
+                    category: (document.getElementById('category') as HTMLInputElement)?.value.trim() || '',
+                    foundCluster: (document.getElementById('foundCluster') as HTMLInputElement)?.value.trim() || '',
+                    purpose: (document.getElementById('purpose') as HTMLInputElement)?.value.trim() || '',
+                    issuedTo: (document.getElementById('issuedTo') as HTMLInputElement)?.value.trim() || '',
+                    program: (document.getElementById('program') as HTMLInputElement)?.value.trim() || '',
+                    supplier: (document.getElementById('supplier') as HTMLInputElement)?.value.trim() || '',
+                    laboratories: (document.getElementById('laboratories') as HTMLInputElement)?.value.trim() || '',
+                    inventoryCustodianSlip: {
+                        icsNo: (document.getElementById('icsNo') as HTMLInputElement)?.value.trim() || '',
+                        quantity: Number((document.getElementById('quantity') as HTMLInputElement)?.value) || 0,
+                        uoM: (document.getElementById('uoM') as HTMLInputElement)?.value.trim() || '',
+                        unitCost: Number((document.getElementById('unitCost') as HTMLInputElement)?.value) || 0,
+                        description: (document.getElementById('description') as HTMLInputElement)?.value.trim() || '',
+                        specifications: (document.getElementById('specifications') as HTMLInputElement)?.value.trim() || '',
+                        height: Number((document.getElementById('height') as HTMLInputElement)?.value) || 0,
+                        width: Number((document.getElementById('width') as HTMLInputElement)?.value) || 0,
+                        length: Number((document.getElementById('length') as HTMLInputElement)?.value) || 0,
+                        package: (document.getElementById('package') as HTMLInputElement)?.value.trim() || '',
+                        material: (document.getElementById('material') as HTMLInputElement)?.value.trim() || '',
+                        serialNumber: (document.getElementById('serialNumber') as HTMLInputElement)?.value.trim() || '',
+                        modelNumber: (document.getElementById('modelNumber') as HTMLInputElement)?.value.trim() || '',
+                        estimatedUsefullLife: (document.getElementById('estimatedUsefullLife') as HTMLInputElement)?.value.trim() || '',
+                        brand: (document.getElementById('brand') as HTMLInputElement)?.value.trim() || '',
+                        color: (document.getElementById('color') as HTMLInputElement)?.value.trim() || ''
+                    }
                 };
             }
         }).then((result) => {
