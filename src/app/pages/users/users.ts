@@ -702,21 +702,22 @@ export class UsersComponent implements OnInit {
                     `
                     }
                     <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
-                        <label style="font-weight: 500; color: #555; margin: 0; font-size: 13px; flex: 1;">Active Status</label>
                         <div style="position: relative; display: inline-block; width: 48px; height: 24px;">
                             <input id="newIsActive" type="checkbox" checked style="opacity: 0; width: 0; height: 0; cursor: pointer;" />
                             <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #667eea; transition: 0.3s; border-radius: 24px;"></span>
                             <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 24px; bottom: 2px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
                         </div>
+                        <label style="font-weight: 500; color: #555; margin: 0; font-size: 13px;">Active Status</label>
+                        <div style="margin-left: auto; display: flex; gap: 8px;">
+                            <button id="cancelUserBtn" type="button" style="padding: 8px 20px; border: 1px solid #e0e0e0; border-radius: 6px; background: #fff; color: #666; font-size: 13px; cursor: pointer; transition: all 0.2s;">Cancel</button>
+                            <button id="createUserBtn" type="button" style="padding: 8px 20px; border: none; border-radius: 6px; background: #667eea; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s;">Create User</button>
+                        </div>
                     </div>
                 </div>
             `,
             width: '750px',
-            showCancelButton: true,
-            confirmButtonText: 'Create User',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#667eea',
-            cancelButtonColor: '#e0e0e0',
+            showCancelButton: false,
+            showConfirmButton: false,
             didOpen: () => {
                 const firstNameInput = document.getElementById('newFirstName') as HTMLInputElement;
                 if (firstNameInput) firstNameInput.focus();
@@ -792,6 +793,34 @@ export class UsersComponent implements OnInit {
                     toggleCircle?.addEventListener('click', () => {
                         toggleCheckbox.checked = !toggleCheckbox.checked;
                         toggleCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                }
+
+                // Custom button handlers
+                const createUserBtn = document.getElementById('createUserBtn');
+                const cancelUserBtn = document.getElementById('cancelUserBtn');
+
+                if (createUserBtn) {
+                    createUserBtn.addEventListener('click', () => {
+                        Swal.clickConfirm();
+                    });
+                    createUserBtn.addEventListener('mouseenter', () => {
+                        createUserBtn.style.background = '#5a67d8';
+                    });
+                    createUserBtn.addEventListener('mouseleave', () => {
+                        createUserBtn.style.background = '#667eea';
+                    });
+                }
+
+                if (cancelUserBtn) {
+                    cancelUserBtn.addEventListener('click', () => {
+                        Swal.close();
+                    });
+                    cancelUserBtn.addEventListener('mouseenter', () => {
+                        cancelUserBtn.style.background = '#f5f5f5';
+                    });
+                    cancelUserBtn.addEventListener('mouseleave', () => {
+                        cancelUserBtn.style.background = '#fff';
                     });
                 }
             }
