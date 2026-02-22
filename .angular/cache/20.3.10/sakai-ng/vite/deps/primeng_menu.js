@@ -1,8 +1,4 @@
 import {
-  Badge,
-  BadgeModule
-} from "./chunk-3VGMHEZZ.js";
-import {
   Tooltip,
   TooltipModule
 } from "./chunk-KZDBN5KI.js";
@@ -11,11 +7,15 @@ import {
   DomHandler
 } from "./chunk-P6SMTJBG.js";
 import {
+  zindexutils
+} from "./chunk-CMVOE67Z.js";
+import {
   Ripple
 } from "./chunk-RFZJG26N.js";
 import {
-  zindexutils
-} from "./chunk-CMVOE67Z.js";
+  Badge,
+  BadgeModule
+} from "./chunk-3VGMHEZZ.js";
 import {
   Bind,
   BindModule
@@ -32,13 +32,6 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
-import "./chunk-Y3VPSMBK.js";
-import {
-  animate,
-  style,
-  transition,
-  trigger
-} from "./chunk-GGMOGVES.js";
 import "./chunk-OTTARZB5.js";
 import {
   D,
@@ -49,6 +42,13 @@ import {
   s3 as s,
   z2 as z
 } from "./chunk-U4LT4ZJN.js";
+import "./chunk-Y3VPSMBK.js";
+import {
+  animate,
+  style,
+  transition,
+  trigger
+} from "./chunk-GGMOGVES.js";
 import {
   RouterLink,
   RouterLinkActive,
@@ -135,8 +135,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-3OV72XIM.js";
 

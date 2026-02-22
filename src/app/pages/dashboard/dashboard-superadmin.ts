@@ -1,18 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import listPlugin from '@fullcalendar/list';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { UIChart } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
+import { FullCalendarModule } from '@fullcalendar/angular';
+import { CalendarOptions, DateSelectArg, EventClickArg, EventApi } from '@fullcalendar/core';
+import interactionPlugin from '@fullcalendar/interaction';
+import dayGridPlugin from '@fullcalendar/daygrid';
+
+const INITIAL_EVENTS = [
+    {
+        id: 'demo-event-1',
+        title: 'Event 1',
+        start: new Date().toISOString().split('T')[0],
+        allDay: true
+    }
+];
+
+function createEventId() {
+    return String(Math.random());
+}
 
 @Component({
     selector: 'app-dashboard-superadmin',
     standalone: true,
-    imports: [CommonModule, UIChart, TableModule],
+    imports: [CommonModule, UIChart, TableModule, FullCalendarModule],
     template: `
         <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Total Campuses Card -->
+            <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -25,7 +43,6 @@ import { TableModule } from 'primeng/table';
                     </div>
                 </div>
 
-                <!-- Total Users Card -->
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -38,7 +55,6 @@ import { TableModule } from 'primeng/table';
                     </div>
                 </div>
 
-                <!-- Total Assets Card -->
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -51,7 +67,6 @@ import { TableModule } from 'primeng/table';
                     </div>
                 </div>
 
-                <!-- Total Laboratories Card -->
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -65,22 +80,18 @@ import { TableModule } from 'primeng/table';
                 </div>
             </div>
 
-            <!-- Charts Row -->
             <div class="flex gap-6 mt-6">
-                <!-- Assets by Campus Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Campus</h3>
                     <p-chart type="bar" [data]="assetsByCampusChartData" [options]="chartOptions"></p-chart>
                 </div>
 
-                <!-- Maintenance Requests by Campus Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Maintenance Requests by Campus</h3>
                     <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="getHorizontalChartOptions()"></p-chart>
                 </div>
             </div>
 
-            <!-- Recent Activity Table -->
             <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 mt-6">
                 <h3 class="text-xl font-semibold mb-4 dark:text-white">Recent Activity</h3>
                 <p-table
@@ -119,18 +130,136 @@ import { TableModule } from 'primeng/table';
                         </tr>
                     </ng-template>
                 </p-table>
+            </div> -->
+            <div class="demo-app">
+                <div class="demo-app-sidebar">
+                    <div class="demo-app-sidebar-section">
+                        <h2>Instructions</h2>
+                        <ul>
+                            <li>Select dates and you will be prompted to create a new event</li>
+                            <li>Drag, drop, and resize events</li>
+                            <li>Click an event to delete it</li>
+                        </ul>
+                    </div>
+                    <div class="demo-app-sidebar-section">
+                        <label>
+                            <input type="checkbox" [checked]="calendarVisible()" (change)="handleCalendarToggle()" />
+                            toggle whole calendar
+                        </label>
+                    </div>
+                    <div class="demo-app-sidebar-section">
+                        <label>
+                            <input type="checkbox" [checked]="calendarOptions().weekends" (change)="handleWeekendsToggle()" />
+                            toggle weekends
+                        </label>
+                    </div>
+                    <div class="demo-app-sidebar-section">
+                        <h2>All Events ({{ currentEvents().length }})</h2>
+                        <ul>
+                            <li *ngFor="let event of currentEvents()">
+                                <b>{{ event.startStr }}</b>
+                                <i>{{ event.title }}</i>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="demo-app-main">
+                    <full-calendar *ngIf="calendarVisible()" [options]="calendarOptions()">
+                        <ng-template #eventContent let-arg>
+                            <b>{{ arg.timeText }}</b>
+                            <i>{{ arg.event.title }}</i>
+                        </ng-template>
+                    </full-calendar>
+                </div>
             </div>
         </div>
     `,
     styles: [
         `
-            :host {
-                display: block;
+            h2 {
+                margin: 0;
+                font-size: 16px;
+            }
+
+            ul {
+                margin: 0;
+                padding: 0 0 0 1.5em;
+            }
+
+            li {
+                margin: 1.5em 0;
+                padding: 0;
+            }
+
+            b {
+                /* used for event dates/times */
+                margin-right: 3px;
+            }
+
+            .demo-app {
+                display: flex;
+                min-height: 100%;
+                font-family:
+                    Arial,
+                    Helvetica Neue,
+                    Helvetica,
+                    sans-serif;
+                font-size: 14px;
+            }
+
+            .demo-app-sidebar {
+                width: 300px;
+                line-height: 1.5;
+                background: #eaf9ff;
+                border-right: 1px solid #d3e2e8;
+            }
+
+            .demo-app-sidebar-section {
+                padding: 2em;
+            }
+
+            .demo-app-main {
+                flex-grow: 1;
+                padding: 3em;
+            }
+
+            .fc {
+                /* the calendar root */
+                max-width: 1100px;
+                margin: 0 auto;
             }
         `
     ]
 })
 export class DashboardSuperAdmin implements OnInit {
+    calendarVisible = signal(true);
+    currentEvents = signal<EventApi[]>([]);
+    calendarOptions = signal<CalendarOptions>({
+        plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        initialView: 'dayGridMonth',
+        initialEvents: INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
+        weekends: true,
+        editable: true,
+        selectable: true,
+        selectMirror: true,
+        dayMaxEvents: true,
+        select: this.handleDateSelect.bind(this),
+        eventClick: this.handleEventClick.bind(this),
+        eventsSet: this.handleEvents.bind(this)
+        /* you can update a remote database when these fire:
+    eventAdd:
+    eventChange:
+    eventRemove:
+    */
+    });
+
+    //////////////// Dashboard Data Properties ///////////
     campusCount: number = 0;
     userCount: number = 0;
     assetCount: number = 0;
@@ -139,8 +268,13 @@ export class DashboardSuperAdmin implements OnInit {
     maintenanceRequestsChartData: any;
     chartOptions: any;
     activities: any[] = [];
+    // handleDateSelect: any;
+    // handleEventClick: any;
 
-    constructor(private http: HttpClient) {}
+    constructor(
+        private http: HttpClient,
+        private changeDetector: ChangeDetectorRef
+    ) {}
 
     ngOnInit() {
         this.loadCampusCount();
@@ -264,7 +398,6 @@ export class DashboardSuperAdmin implements OnInit {
 
                 // Sort by timestamp descending (newest first)
                 this.activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
             },
             error: (error) => {
                 console.error('Error loading activities:', error);
@@ -384,5 +517,46 @@ export class DashboardSuperAdmin implements OnInit {
             USER_DELETED: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
         };
         return classes[actionType] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+    }
+
+    //// calendar functions
+
+    handleCalendarToggle() {
+        this.calendarVisible.update((bool) => !bool);
+    }
+
+    handleWeekendsToggle() {
+        this.calendarOptions.update((options) => ({
+            ...options,
+            weekends: !options.weekends
+        }));
+    }
+
+    handleDateSelect(selectInfo: DateSelectArg) {
+        const title = prompt('Please enter a new title for your event');
+        const calendarApi = selectInfo.view.calendar;
+
+        calendarApi.unselect(); // clear date selection
+
+        if (title) {
+            calendarApi.addEvent({
+                id: createEventId(),
+                title,
+                start: selectInfo.startStr,
+                end: selectInfo.endStr,
+                allDay: selectInfo.allDay
+            });
+        }
+    }
+
+    handleEventClick(clickInfo: EventClickArg) {
+        if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
+            clickInfo.event.remove();
+        }
+    }
+
+    handleEvents(events: EventApi[]) {
+        this.currentEvents.set(events);
+        this.changeDetector.detectChanges(); // workaround for pressionChangedAfterItHasBeenCheckedError
     }
 }

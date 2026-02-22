@@ -1,12 +1,11 @@
 import {
-  Badge,
-  BadgeModule
-} from "./chunk-3VGMHEZZ.js";
-import {
   Tooltip,
   TooltipModule
 } from "./chunk-KZDBN5KI.js";
 import "./chunk-P6SMTJBG.js";
+import {
+  zindexutils
+} from "./chunk-CMVOE67Z.js";
 import {
   Ripple
 } from "./chunk-RFZJG26N.js";
@@ -17,8 +16,9 @@ import {
 } from "./chunk-RUJSBIO3.js";
 import "./chunk-NKBIU3HO.js";
 import {
-  zindexutils
-} from "./chunk-CMVOE67Z.js";
+  Badge,
+  BadgeModule
+} from "./chunk-3VGMHEZZ.js";
 import {
   Bind,
   BindModule
@@ -132,8 +132,8 @@ import {
   ɵɵtextInterpolate1,
   ɵɵviewQuery
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import {
   Subject,
   debounce,

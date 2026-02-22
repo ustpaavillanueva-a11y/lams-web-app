@@ -7,9 +7,6 @@ import {
 } from "./chunk-ND4G73L4.js";
 import "./chunk-P6SMTJBG.js";
 import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-C225D66Z.js";
-import {
   Bind,
   BindModule
 } from "./chunk-246XFSKK.js";
@@ -23,6 +20,9 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-C225D66Z.js";
 import "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";
 import {
@@ -80,8 +80,8 @@ import {
   ɵɵtemplate,
   ɵɵviewQuery
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-3OV72XIM.js";
 

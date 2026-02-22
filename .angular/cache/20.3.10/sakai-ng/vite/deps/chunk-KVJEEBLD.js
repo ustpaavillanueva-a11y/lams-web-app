@@ -1,12 +1,9 @@
 import {
-  Fluid
-} from "./chunk-3QFDBD4G.js";
-import {
   BaseModelHolder
 } from "./chunk-TG5GUYVN.js";
 import {
-  NgControl
-} from "./chunk-C225D66Z.js";
+  Fluid
+} from "./chunk-3QFDBD4G.js";
 import {
   Bind
 } from "./chunk-246XFSKK.js";
@@ -16,6 +13,9 @@ import {
 import {
   BaseStyle
 } from "./chunk-DCGH7JIK.js";
+import {
+  NgControl
+} from "./chunk-C225D66Z.js";
 import {
   Directive,
   HostListener,
@@ -272,4 +272,4 @@ export {
   InputText,
   InputTextModule
 };
-//# sourceMappingURL=chunk-4CZ5DEDR.js.map
+//# sourceMappingURL=chunk-KVJEEBLD.js.map

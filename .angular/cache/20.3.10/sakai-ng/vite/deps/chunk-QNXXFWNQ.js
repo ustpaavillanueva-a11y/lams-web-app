@@ -1,14 +1,9 @@
 import {
   Select
-} from "./chunk-E6PVEREJ.js";
+} from "./chunk-CHSIZHJA.js";
 import {
   InputNumber
-} from "./chunk-EPAPCEEZ.js";
-import {
-  FormsModule,
-  NgControlStatus,
-  NgModel
-} from "./chunk-C225D66Z.js";
+} from "./chunk-NPLCPJQR.js";
 import {
   Ripple
 } from "./chunk-RFZJG26N.js";
@@ -32,6 +27,11 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
+import {
+  FormsModule,
+  NgControlStatus,
+  NgModel
+} from "./chunk-C225D66Z.js";
 import {
   CommonModule,
   NgForOf,
@@ -1382,4 +1382,4 @@ export {
   Paginator,
   PaginatorModule
 };
-//# sourceMappingURL=chunk-ECWG5MEI.js.map
+//# sourceMappingURL=chunk-QNXXFWNQ.js.map
