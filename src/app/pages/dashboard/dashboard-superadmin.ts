@@ -30,7 +30,7 @@ function createEventId() {
     imports: [CommonModule, UIChart, TableModule, FullCalendarModule],
     template: `
         <div class="p-6">
-            <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -130,7 +130,7 @@ function createEventId() {
                         </tr>
                     </ng-template>
                 </p-table>
-            </div> -->
+            </div>
             <div class="demo-app">
                 <div class="demo-app-sidebar">
                     <div class="demo-app-sidebar-section">
