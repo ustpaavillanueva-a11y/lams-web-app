@@ -114,18 +114,51 @@ export function createEventId() {
                 display: block;
             }
 
-            .fc {
+            :host ::ng-deep .fc {
                 max-width: 100%;
             }
 
-            .fc .fc-toolbar-title {
-                font-size: 1.25em;
+            :host ::ng-deep .fc .fc-toolbar-title {
+                font-size: 1em;
                 font-weight: 300;
             }
 
-            .fc .fc-button {
-                padding: 0.3rem 0.6rem;
-                font-size: 0.75rem;
+            :host ::ng-deep .fc .fc-button {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
+                background-color: var(--primary-color) !important;
+                border-color: var(--primary-color) !important;
+                color: var(--primary-contrast-color) !important;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+            }
+
+            :host ::ng-deep .fc .fc-button:hover {
+                background-color: var(--primary-600) !important;
+                border-color: var(--primary-600) !important;
+                transform: translateY(-1px);
+                filter: brightness(0.75);
+                color: #000000 !important;
+            }
+
+            :host ::ng-deep .fc .fc-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            :host ::ng-deep .fc .fc-button-active {
+                background-color: var(--primary-800) !important;
+                border-color: var(--primary-800) !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                color: #000000 !important;
+            }
+
+            :host ::ng-deep .fc .fc-button-group {
+                gap: 2px;
+            }
+
+            :host ::ng-deep .fc .fc-toolbar {
+                gap: 0.5rem;
             }
         `
     ]
