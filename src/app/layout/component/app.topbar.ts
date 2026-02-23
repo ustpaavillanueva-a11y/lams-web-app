@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -62,12 +62,68 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
                 <div class="layout-topbar-menu hidden lg:block">
                     <div class="layout-topbar-menu-content">
-                        <button type="button" class="layout-topbar-action" (click)="showProfileMenu($event)" #profileMenuButton>
-                            <i class="pi pi-user"></i>
-                            <span>{{ currentUser?.FirstName || 'Profile' }}</span>
-                            <i class="pi pi-angle-down ml-2"></i>
+                        <button type="button" class="layout-topbar-action profile-button" (click)="toggleProfileDropdown($event)" #profileMenuButton>
+                            <div class="profile-avatar">
+                                <i class="pi pi-user"></i>
+                            </div>
+                            <span class="profile-name">{{ currentUser?.FirstName || 'Profile' }}</span>
+                            <i class="pi pi-chevron-down ml-2 chevron-icon" [class.rotate]="showProfileDropdown"></i>
                         </button>
-                        <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
+
+                        <!-- Custom Profile Dropdown -->
+                        <div class="profile-dropdown" *ngIf="showProfileDropdown" (click)="$event.stopPropagation()">
+                            <!-- Decorative Background -->
+                            <div class="profile-dropdown-bg"></div>
+
+                            <div class="profile-dropdown-header">
+                                <div class="profile-dropdown-avatar-container">
+                                    <div class="profile-dropdown-avatar">
+                                        <i class="pi pi-user"></i>
+                                    </div>
+                                    <div class="avatar-ring"></div>
+                                </div>
+                                <div class="profile-dropdown-info">
+                                    <span class="profile-dropdown-greeting">Welcome back,</span>
+                                    <span class="profile-dropdown-name">{{ currentUser?.FirstName }} {{ currentUser?.LastName }}</span>
+                                    <span class="profile-dropdown-role">
+                                        <i class="pi pi-verified"></i>
+                                        {{ currentUser?.role || 'User' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="profile-dropdown-body">
+                                <div class="profile-dropdown-menu">
+                                    <button class="profile-dropdown-item" (click)="navigateToProfile(); closeProfileDropdown()">
+                                        <div class="item-icon-wrapper">
+                                            <i class="pi pi-user"></i>
+                                        </div>
+                                        <div class="item-content">
+                                            <span class="item-title">My Profile</span>
+                                            <span class="item-desc">View and edit your profile</span>
+                                        </div>
+                                        <i class="pi pi-chevron-right item-arrow"></i>
+                                    </button>
+                                    <button class="profile-dropdown-item" (click)="navigateToAccount(); closeProfileDropdown()">
+                                        <div class="item-icon-wrapper">
+                                            <i class="pi pi-cog"></i>
+                                        </div>
+                                        <div class="item-content">
+                                            <span class="item-title">Account Settings</span>
+                                            <span class="item-desc">Manage your preferences</span>
+                                        </div>
+                                        <i class="pi pi-chevron-right item-arrow"></i>
+                                    </button>
+                                </div>
+
+                                <div class="profile-dropdown-footer">
+                                    <button class="logout-button" (click)="logout(); closeProfileDropdown()">
+                                        <i class="pi pi-sign-out"></i>
+                                        <span>Sign Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -105,7 +161,367 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
                     <p-button label="Try Again" (onClick)="tryAgain()" />
                 </div>
             </div>
-        </p-dialog>`
+        </p-dialog>`,
+    styles: [
+        `
+            .profile-button {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.5rem 1rem;
+                border-radius: 50px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                background: transparent;
+            }
+
+            .profile-button:hover {
+                background: var(--surface-hover);
+            }
+
+            .profile-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-400) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1rem;
+                box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+            }
+
+            .profile-name {
+                font-weight: 600;
+                font-size: 0.9rem;
+                letter-spacing: 0.01em;
+            }
+
+            .chevron-icon {
+                font-size: 0.7rem;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                opacity: 0.7;
+            }
+
+            .chevron-icon.rotate {
+                transform: rotate(180deg);
+            }
+
+            .layout-topbar-menu-content {
+                position: relative;
+            }
+
+            .profile-dropdown {
+                position: absolute;
+                top: calc(100% + 12px);
+                right: 0;
+                width: 320px;
+                background: var(--surface-card);
+                border-radius: 20px;
+                box-shadow:
+                    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                    0 0 0 1px rgba(255, 255, 255, 0.05);
+                overflow: hidden;
+                animation: dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1000;
+                backdrop-filter: blur(20px);
+            }
+
+            .profile-dropdown-bg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 140px;
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-400) 50%, var(--primary-300) 100%);
+                opacity: 1;
+            }
+
+            @keyframes dropdownSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-16px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            .profile-dropdown-header {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 1.75rem 1.5rem 1.25rem;
+                text-align: center;
+            }
+
+            .profile-dropdown-avatar-container {
+                position: relative;
+                margin-bottom: 0.75rem;
+            }
+
+            .profile-dropdown-avatar {
+                width: 64px;
+                height: 64px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.95);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #000000 !important;
+                font-size: 1.5rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                position: relative;
+                z-index: 1;
+            }
+
+            .profile-dropdown-avatar i,
+            .profile-dropdown-avatar i.pi,
+            ::ng-deep .profile-dropdown-avatar i.pi {
+                color: #000000 !important;
+            }
+
+            .avatar-ring {
+                position: absolute;
+                inset: -4px;
+                border-radius: 50%;
+                border: 2px solid rgba(255, 255, 255, 0.5);
+                animation: pulseRing 2s ease-in-out infinite;
+            }
+
+            @keyframes pulseRing {
+                0%,
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1.05);
+                    opacity: 0.7;
+                }
+            }
+
+            .profile-dropdown-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.15rem;
+            }
+
+            .profile-dropdown-greeting {
+                font-size: 0.75rem;
+                color: #000000 !important;
+                font-weight: 400;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+
+            .profile-dropdown-name {
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: #000000 !important;
+                letter-spacing: 0.01em;
+            }
+
+            .profile-dropdown-role {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.35rem;
+                font-size: 0.75rem;
+                color: #000000 !important;
+                background: rgba(0, 0, 0, 0.1);
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                margin-top: 0.5rem;
+                backdrop-filter: blur(10px);
+            }
+
+            .profile-dropdown-role i {
+                font-size: 0.65rem;
+                color: #000000 !important;
+            }
+
+            .profile-dropdown-body {
+                position: relative;
+                background: var(--surface-card);
+                padding: 0.75rem;
+                margin-top: -0.5rem;
+                border-radius: 16px 16px 0 0;
+            }
+
+            .profile-dropdown-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .profile-dropdown-item {
+                display: flex;
+                align-items: center;
+                gap: 0.875rem;
+                width: 100%;
+                padding: 0.875rem 1rem;
+                border: none;
+                background: transparent;
+                color: var(--text-color);
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .profile-dropdown-item:hover {
+                background: var(--surface-hover);
+                transform: translateX(4px);
+                color: #000000;
+            }
+
+            .item-icon-wrapper {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, var(--surface-100) 0%, var(--surface-200) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                color: #000000 !important;
+            }
+
+            .profile-dropdown-item:hover .item-icon-wrapper {
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-400) 100%);
+                color: white !important;
+            }
+
+            .item-icon-wrapper i {
+                font-size: 1rem;
+                color: inherit !important;
+                transition: color 0.2s ease;
+            }
+
+            ::ng-deep .item-icon-wrapper .pi {
+                color: inherit !important;
+            }
+
+            .item-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.1rem;
+            }
+
+            .item-title {
+                font-weight: 600;
+                font-size: 0.875rem;
+            }
+
+            .item-desc {
+                font-size: 0.7rem;
+                color: var(--text-color-secondary);
+            }
+
+            .item-arrow {
+                font-size: 0.7rem;
+                color: var(--text-color-secondary);
+                opacity: 0;
+                transform: translateX(-8px);
+                transition: all 0.2s ease;
+            }
+
+            .profile-dropdown-item:hover .item-arrow {
+                opacity: 1;
+                transform: translateX(0);
+                color: #000000;
+            }
+
+            .profile-dropdown-item:hover .item-desc {
+                color: #000000;
+            }
+
+            .profile-dropdown-footer {
+                margin-top: 0.5rem;
+                padding-top: 0.75rem;
+                border-top: 1px solid var(--surface-border);
+            }
+
+            .logout-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                width: 100%;
+                padding: 0.75rem 1rem;
+                border: none;
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                color: #dc2626;
+                font-size: 0.875rem;
+                font-weight: 600;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .logout-button:hover {
+                background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+                color: white;
+                transform: scale(1.02);
+                box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+            }
+
+            .logout-button i {
+                font-size: 0.9rem;
+            }
+
+            /* Dark mode adjustments */
+            :host-context(.dark) .logout-button {
+                background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(239, 68, 68, 0.15) 100%);
+            }
+
+            :host-context(.dark) .logout-button:hover {
+                background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            }
+
+            :host-context(.dark) .item-icon-wrapper {
+                background: linear-gradient(135deg, var(--surface-700) 0%, var(--surface-600) 100%);
+                color: white !important;
+            }
+
+            :host-context(.dark) .profile-dropdown-item:hover {
+                color: white;
+            }
+
+            :host-context(.dark) .profile-dropdown-item:hover .item-desc {
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+            :host-context(.dark) .profile-dropdown-item:hover .item-arrow {
+                color: white;
+            }
+
+            /* Dark mode header text adjustments */
+            :host-context(.dark) .profile-dropdown-greeting,
+            :host-context(.dark) .profile-dropdown-name,
+            :host-context(.dark) .profile-dropdown-role,
+            :host-context(.dark) .profile-dropdown-role i {
+                color: white !important;
+            }
+
+            :host-context(.dark) .profile-dropdown-role {
+                background: rgba(255, 255, 255, 0.15);
+            }
+
+            :host-context(.dark) .profile-dropdown-avatar i,
+            :host-context(.dark) .profile-dropdown-avatar i.pi {
+                color: white !important;
+            }
+
+            :host-context(.dark) .profile-dropdown-avatar {
+                background: rgba(0, 0, 0, 0.3);
+            }
+        `
+    ]
 })
 export class AppTopbar {
     items!: MenuItem[];
@@ -127,6 +543,7 @@ export class AppTopbar {
 
     // Profile properties
     currentUser: any = null;
+    showProfileDropdown = false;
 
     constructor(
         public layoutService: LayoutService,
@@ -388,6 +805,20 @@ export class AppTopbar {
 
     showProfileMenu(event: Event) {
         this.profileMenu.toggle(event);
+    }
+
+    toggleProfileDropdown(event: Event) {
+        event.stopPropagation();
+        this.showProfileDropdown = !this.showProfileDropdown;
+    }
+
+    closeProfileDropdown() {
+        this.showProfileDropdown = false;
+    }
+
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: Event) {
+        this.showProfileDropdown = false;
     }
 
     navigateToProfile() {
