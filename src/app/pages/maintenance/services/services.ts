@@ -49,17 +49,16 @@ import { MaintenanceService, ServiceMaintenance } from '../../service/maintenanc
             (selectionChange)="onSelectionChange()"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} services"
             [showCurrentPageReport]="true"
-            [tableStyle]="{ 'min-width': '90rem' }"
         >
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:3rem">
                         <p-tableHeaderCheckbox />
                     </th>
-                    <th style="min-width:25rem">ID</th>
-                    <th pSortableColumn="serviceName" style="min-width:20rem">Service Name <p-sortIcon field="serviceName" /></th>
-                    <th style="min-width:35rem">Description</th>
-                    <th style="min-width:12rem">Actions</th>
+                    <th>ID</th>
+                    <th pSortableColumn="serviceName">Service Name <p-sortIcon field="serviceName" /></th>
+                    <th>Description</th>
+                    <th style="width:6rem">Actions</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-row>
@@ -70,7 +69,7 @@ import { MaintenanceService, ServiceMaintenance } from '../../service/maintenanc
                     <td>{{ row.serviceDescription }}</td>
                     <td>
                         <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
+                            <!-- <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" /> -->
                             <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" (onClick)="edit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
                         </div>

@@ -65,7 +65,7 @@ import { MaintenanceService, PriorityLevel } from '../../service/maintenance.ser
                     <td>{{ row.priorityLevelName }}</td>
                     <td>
                         <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" />
+                            <!-- <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(row)" /> -->
                             <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" (onClick)="edit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(row)" />
                         </div>
