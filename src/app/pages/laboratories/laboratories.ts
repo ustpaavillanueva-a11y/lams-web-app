@@ -56,17 +56,16 @@ import { ActivatedRoute } from '@angular/router';
                 [(selection)]="selectedAssets"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} assets"
                 [showCurrentPageReport]="true"
-                [tableStyle]="{ 'min-width': '70rem' }"
             >
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                        <th pSortableColumn="assetName" style="min-width:18rem">Asset <p-sortIcon field="assetName" /></th>
-                        <th style="min-width:14rem">Property #</th>
-                        <th style="min-width:12rem">Category</th>
-                        <th style="min-width:15rem">Issued To</th>
-                        <th style="min-width:12rem">QR Code</th>
-                        <th style="min-width:12rem">Actions</th>
+                        <th pSortableColumn="assetName">Asset <p-sortIcon field="assetName" /></th>
+                        <th>Property #</th>
+                        <th>Category</th>
+                        <th>Issued To</th>
+                        <th style="width:5rem">QR Code</th>
+                        <!-- <th style="min-width:12rem">Actions</th> -->
                     </tr>
                 </ng-template>
 
@@ -93,11 +92,11 @@ import { ActivatedRoute } from '@angular/router';
                             <span *ngIf="!asset.qrCode" class="text-gray-400">N/A</span>
                         </td>
                         <td>
-                            <div class="flex gap-2">
+                            <!-- <div class="flex gap-2">
                                 <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" pTooltip="View" />
                                 <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" pTooltip="Edit" />
                                 <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" pTooltip="Delete" />
-                            </div>
+                            </div> -->
                         </td>
                     </tr>
                 </ng-template>
@@ -143,15 +142,14 @@ import { ActivatedRoute } from '@angular/router';
                 (selectionChange)="onSelectionChange($event)"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} laboratories"
                 [showCurrentPageReport]="true"
-                [tableStyle]="{ 'min-width': '70rem' }"
             >
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width:3rem"><p-tableHeaderCheckbox /></th>
-                        <th style="min-width:25rem">ID</th>
-                        <th pSortableColumn="laboratoryName" style="min-width:20rem">Laboratory Name <p-sortIcon field="laboratoryName" /></th>
-                        <th style="min-width:15rem">Campus</th>
-                        <th style="min-width:12rem">Actions</th>
+                        <th>ID</th>
+                        <th pSortableColumn="laboratoryName">Laboratory Name <p-sortIcon field="laboratoryName" /></th>
+                        <th>Campus</th>
+                        <th style="width:6rem">Actions</th>
                     </tr>
                 </ng-template>
 
@@ -163,7 +161,7 @@ import { ActivatedRoute } from '@angular/router';
                         <td>{{ lab.campus?.campusName }}</td>
                         <td>
                             <div class="flex gap-2">
-                                <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(lab)" />
+                                <!-- <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(lab)" /> -->
                                 <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" (onClick)="edit(lab)" />
                                 <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(lab)" />
                             </div>
@@ -297,8 +295,7 @@ export class LaboratoriesComponent implements OnInit {
         });
     }
 
-    onSelectionChange(event: any) {
-    }
+    onSelectionChange(event: any) {}
 
     openNew() {
         this.newLab = this.getEmptyLab();
