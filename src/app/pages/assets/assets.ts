@@ -813,11 +813,11 @@ export class AssetsComponent implements OnInit {
                 this.loading = false;
             },
             error: (error) => {
-                console.error('❌ Error loading assets:', error);
-                console.error('Error status:', error?.status);
-                console.error('Error message:', error?.message);
-                console.error('Error details:', error?.error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load assets: ' + error?.message });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'failed to load assets. Please try again later.'
+                });
                 this.loading = false;
             }
         });
@@ -1167,7 +1167,11 @@ export class AssetsComponent implements OnInit {
                 // Step 2: Upload QR code to the new asset
                 this.assetService.uploadQrCode(assetId, this.newAsset.qrCodeImage).subscribe({
                     next: (qrResponse: any) => {
-                        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Asset created and QR code uploaded successfully' });
+                        Swal.fire({
+                            title: 'Good job!',
+                            text: 'Asset created and QR code uploaded successfully!',
+                            icon: 'success'
+                        });
 
                         // Close dialog and refresh
                         this.assetDialog = false;
