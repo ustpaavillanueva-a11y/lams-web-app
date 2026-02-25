@@ -1112,11 +1112,21 @@ export class AssetsComponent implements OnInit {
 
         this.maintenanceService.createMaintenanceRequest(payload).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Request Created', detail: 'Maintenance request submitted' });
+                // this.messageService.add({ severity: 'success', summary: 'Request Created', detail: 'Maintenance request submitted' });
+                Swal.fire({
+                    title: 'Good job!',
+                    text: 'Maintenance request submitted successfully!',
+                    icon: 'success'
+                });
                 this.closeRequestDialog();
             },
             error: (error) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to submit maintenance request: ' + (error?.error?.message || error?.message) });
+                // this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to submit maintenance request: ' + (error?.error?.message || error?.message) });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to submit maintenance request: ' + (error?.error?.message || error?.message)
+                });
             }
         });
     }
@@ -1197,7 +1207,11 @@ export class AssetsComponent implements OnInit {
             },
             error: (error: any) => {
                 console.error('❌ Step 1 Failed: Error creating asset:', error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create asset: ' + (error?.error?.message || error?.message) });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed !'
+                });
             }
         });
     }
@@ -1462,7 +1476,7 @@ export class AssetsComponent implements OnInit {
             title: '',
             html,
             width: '800px',
-            confirmButtonText: '💾 Save Changes',
+            confirmButtonText: 'Save Changes',
             cancelButtonText: 'Cancel',
             showCancelButton: true,
             confirmButtonColor: '#667eea',
@@ -1505,7 +1519,7 @@ export class AssetsComponent implements OnInit {
             if (result.isConfirmed && result.value) {
                 this.assetService.patchAsset(assetId as any, result.value).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'Updated', detail: 'Asset updated successfully' });
+                        Swal.fire('Asset updated successfully');
                         this.loadAssets();
                     },
                     error: (err) => {
@@ -1541,10 +1555,10 @@ export class AssetsComponent implements OnInit {
 
                 this.assetService.deleteAsset(assetId as any).subscribe({
                     next: (response: any) => {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Deleted',
-                            detail: `Asset ${assetName} deleted successfully`
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: `Asset ${assetName} has been deleted.`,
+                            icon: 'success'
                         });
                         this.loadAssets();
                     },
