@@ -981,7 +981,7 @@ export class AssetsComponent implements OnInit {
             this.newAsset.inventoryCustodianSlip.length = null;
             this.newAsset.inventoryCustodianSlip.material = '';
             // Set default color for Software category
-            this.newAsset.inventoryCustodianSlip.color = 'CLR001';
+            this.newAsset.inventoryCustodianSlip.color = 'COLOR001';
         } else {
             // Clear color when switching back to Hardware
             this.newAsset.inventoryCustodianSlip.color = '';
