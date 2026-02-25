@@ -150,7 +150,6 @@ import { ActivatedRoute } from '@angular/router';
                         <th style="width:3rem"><p-tableHeaderCheckbox /></th>
                         <th style="min-width:25rem">ID</th>
                         <th pSortableColumn="laboratoryName" style="min-width:20rem">Laboratory Name <p-sortIcon field="laboratoryName" /></th>
-                        <th style="min-width:15rem">Capacity</th>
                         <th style="min-width:15rem">Campus</th>
                         <th style="min-width:12rem">Actions</th>
                     </tr>
@@ -161,7 +160,6 @@ import { ActivatedRoute } from '@angular/router';
                         <td style="width: 3rem"><p-tableCheckbox [value]="lab" /></td>
                         <td>{{ lab.laboratoryId }}</td>
                         <td>{{ lab.laboratoryName }}</td>
-                        <td>{{ lab.capacity }}</td>
                         <td>{{ lab.campus?.campusName }}</td>
                         <td>
                             <div class="flex gap-2">
@@ -175,7 +173,7 @@ import { ActivatedRoute } from '@angular/router';
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="6" class="text-center py-5">No laboratories found</td>
+                        <td colspan="5" class="text-center py-5">No laboratories found</td>
                     </tr>
                 </ng-template>
             </p-table>
@@ -245,7 +243,6 @@ export class LaboratoriesComponent implements OnInit {
         return {
             laboratoryId: '',
             laboratoryName: '',
-            capacity: 30,
             laboratoryLocation: '',
             campus: null
         };
@@ -325,7 +322,6 @@ export class LaboratoriesComponent implements OnInit {
 
         const payload = {
             laboratoryName: this.newLab.laboratoryName,
-            capacity: this.newLab.capacity,
             laboratoryLocation: this.newLab.laboratoryLocation
         };
 
@@ -381,9 +377,9 @@ export class LaboratoriesComponent implements OnInit {
     }
 
     exportCSV() {
-        let csv = 'Laboratory ID,Laboratory Name,Capacity,Campus\n';
+        let csv = 'Laboratory ID,Laboratory Name,Campus\n';
         this.laboratories.forEach((lab) => {
-            csv += `${lab.laboratoryId},${lab.laboratoryName},${lab.capacity},${lab.campus?.campusName}\n`;
+            csv += `${lab.laboratoryId},${lab.laboratoryName},${lab.campus?.campusName}\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });

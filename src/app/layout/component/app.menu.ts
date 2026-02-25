@@ -286,10 +286,10 @@ export class AppMenu implements OnInit {
                         items: [
                             { label: 'Brand', icon: 'pi pi-fw pi-tag', routerLink: ['/app/pages/assetcategory/brand'] },
                             { label: 'Color', icon: 'pi pi-fw pi-palette', routerLink: ['/app/pages/assetcategory/color'] },
-                            { label: 'Program', icon: 'pi pi-fw pi-sitemap', routerLink: ['/app/pages/assetcategory/program'] },
-                            { label: 'Supplier', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/pages/assetcategory/supplier'] },
-                            { label: 'Location', icon: 'pi pi-fw pi-map', routerLink: ['/app/pages/assetcategory/location'] },
-                            { label: 'Status', icon: 'pi pi-fw pi-check-circle', routerLink: ['/app/pages/assetcategory/status'] }
+                            { label: 'Program', icon: 'pi pi-fw pi-sitemap', routerLink: ['/app/pages/assetcategory/program'] }
+                            // { label: 'Supplier', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/pages/assetcategory/supplier'] },
+                            // { label: 'Location', icon: 'pi pi-fw pi-map', routerLink: ['/app/pages/assetcategory/location'] },
+                            // { label: 'Status', icon: 'pi pi-fw pi-check-circle', routerLink: ['/app/pages/assetcategory/status'] }
                         ]
                     },
                     {

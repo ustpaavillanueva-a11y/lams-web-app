@@ -75,7 +75,9 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
                             leaveActiveClass="animate-fadeout"
                             [hideOnOutsideClick]="true"
                         >
-                            <p-avatar *ngIf="!currentUser?.profilePicture" icon="pi pi-user" shape="circle" styleClass="topbar-avatar"></p-avatar>
+                            <div *ngIf="!currentUser?.profilePicture" class="topbar-avatar-custom">
+                                <i class="pi pi-user"></i>
+                            </div>
                             <img *ngIf="currentUser?.profilePicture" [src]="currentUser.profilePicture" alt="Profile" class="topbar-profile-img" />
                             <div class="profile-info-topbar">
                                 <span class="profile-name-topbar">{{ currentUser?.firstName || currentUser?.FirstName }} {{ currentUser?.lastName || currentUser?.LastName }}</span>
@@ -151,9 +153,22 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
                 background: var(--surface-hover);
             }
 
-            ::ng-deep .topbar-avatar {
-                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-400) 100%) !important;
-                color: white !important;
+            .topbar-avatar-custom {
+                width: 2.5rem;
+                height: 2.5rem;
+                min-width: 2.5rem;
+                min-height: 2.5rem;
+                border-radius: 50%;
+                background-color: var(--primary-color);
+                color: var(--primary-contrast-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .topbar-avatar-custom i {
+                font-size: 1.25rem;
+                color: var(--primary-contrast-color);
             }
 
             .topbar-profile-img {
