@@ -1085,10 +1085,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         }).then((result) => {
             if (result.isConfirmed && result.value) {
                 const reason = result.value;
-                console.log('🔴 Declining with reason:', reason);
                 this.maintenanceService.declineMaintenanceRequest(item.requestId, reason).subscribe({
                     next: (response) => {
-                        console.log('✅ Decline successful:', response);
                         this.messageService.add({ severity: 'success', summary: 'Declined', detail: 'Maintenance request declined successfully' });
                         this.loadItems();
                     },
@@ -1388,9 +1386,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     confirm(row: any) {
-        console.log('🔵 Confirm clicked - Row data:', row);
-        console.log('🔵 Maintenance Approval ID:', row.maintenanceApprovalId);
-        console.log('🔵 Request ID:', row.maintenanceRequest?.requestId || row.requestId);
+    
 
         this.selectedItem = row;
         this.loading = true;
@@ -1434,9 +1430,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             actualReading: this.confirmFormData.actualReading.trim()
         };
 
-        console.log('🟢 Selected Item:', this.selectedItem);
-        console.log('🟢 Maintenance Approval ID:', this.selectedItem.maintenanceApprovalId);
-        console.log('🟢 Completion Payload:', completionPayload);
+      
 
         this.maintenanceService.completeMaintenanceApproval(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
             next: (response: any) => {

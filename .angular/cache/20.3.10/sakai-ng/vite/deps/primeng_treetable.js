@@ -2174,7 +2174,6 @@ var TreeTable = class _TreeTable extends BaseComponent {
   }
   set virtualRowHeight(val) {
     this._virtualRowHeight = val;
-    console.log("The virtualRowHeight property is deprecated, use virtualScrollItemSize property instead.");
   }
   /**
    * A map of keys to control the selection state.
@@ -4685,7 +4684,6 @@ var TTScrollableView = class _TTScrollableView extends BaseComponent {
   set scrollHeight(val) {
     this._scrollHeight = val;
     if (val != null && (val.includes("%") || val.includes("calc"))) {
-      console.log('Percentage scroll height calculation is removed in favor of the more performant CSS based flex mode, use scrollHeight="flex" instead.');
     }
   }
   constructor(tt, zone) {

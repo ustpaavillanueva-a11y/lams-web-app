@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/dashboard/dashboard-superadmin.ts", "dashboard-superadmin.ts"],
-  "sourcesContent": ["\n            :host {\n                display: block;\n            }\n        ", ":host {\n  display: block;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L1VzZXJzL2plcmljL0RvY3VtZW50cy8yMDI2JTIwZmlsZXMvTEFNUy1DT1BZL0xBTVMtQ09QWS9zcmMvYXBwL3BhZ2VzL2Rhc2hib2FyZC9kYXNoYm9hcmQtc3VwZXJhZG1pbi50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDWTtFQUNJIiwic291cmNlc0NvbnRlbnQiOlsiXG4gICAgICAgICAgICA6aG9zdCB7XG4gICAgICAgICAgICAgICAgZGlzcGxheTogYmxvY2s7XG4gICAgICAgICAgICB9XG4gICAgICAgICJdfQ== */"],
-  "mappings": ";AACY;AACI,WAAA;ACAhB;",
-  "names": []
-}

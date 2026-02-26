@@ -60,7 +60,6 @@ export class AuthService {
         return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
             map((response) => {
                 if (response.user && response.access_token) {
-                    console.log('user', response.user);
 
                     this.currentUser = response.user as User;
                     localStorage.setItem('currentUser', JSON.stringify(response.user));
@@ -74,7 +73,6 @@ export class AuthService {
                 return { success: false, message: 'Login failed' };
             }),
             catchError((error) => {
-                console.error('Login error:', error);
                 const message = error.error?.message || 'Unable to connect to server';
                 return of({ success: false, message });
             })

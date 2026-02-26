@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/reports/asset-report/asset-report.ts", "asset-report.ts"],
-  "sourcesContent": ["\n            :host ::ng-deep {\n                .p-card {\n                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);\n                }\n            }\n        ", ":host ::ng-deep .p-card {\n  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L1VzZXJzL2plcmljL0RvY3VtZW50cy8yMDI2JTIwZmlsZXMvTEFNUy1DT1BZL0xBTVMtQ09QWS9zcmMvYXBwL3BhZ2VzL3JlcG9ydHMvYXNzZXQtcmVwb3J0L2Fzc2V0LXJlcG9ydC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFFZ0I7RUFDSSIsInNvdXJjZXNDb250ZW50IjpbIlxuICAgICAgICAgICAgOmhvc3QgOjpuZy1kZWVwIHtcbiAgICAgICAgICAgICAgICAucC1jYXJkIHtcbiAgICAgICAgICAgICAgICAgICAgYm94LXNoYWRvdzogMCAxcHggM3B4IHJnYmEoMCwgMCwgMCwgMC4xKTtcbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICB9XG4gICAgICAgICJdfQ== */"],
-  "mappings": ";AAEgB,MAAA,UAAA,CAAA;AACI,cAAA,EAAA,IAAA,IAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;ACDpB;",
-  "names": []
-}

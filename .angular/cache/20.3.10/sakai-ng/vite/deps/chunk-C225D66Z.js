@@ -317,7 +317,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl(2, Validators.min(3));
    *
-   * console.log(control.errors); // {min: {min: 3, actual: 2}}
    * ```
    *
    * @returns A validator function that returns an error map with the
@@ -340,7 +339,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl(16, Validators.max(15));
    *
-   * console.log(control.errors); // {max: {max: 15, actual: 16}}
    * ```
    *
    * @returns A validator function that returns an error map with the
@@ -363,7 +361,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('', Validators.required);
    *
-   * console.log(control.errors); // {required: true}
    * ```
    *
    * @returns An error map with the `required` property
@@ -387,7 +384,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('some value', Validators.requiredTrue);
    *
-   * console.log(control.errors); // {required: true}
    * ```
    *
    * @returns An error map that contains the `required` property
@@ -426,7 +422,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('bad@', Validators.email);
    *
-   * console.log(control.errors); // {email: true}
    * ```
    *
    * @returns An error map with the `email` property
@@ -456,7 +451,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('ng', Validators.minLength(3));
    *
-   * console.log(control.errors); // {minlength: {requiredLength: 3, actualLength: 2}}
    * ```
    *
    * ```html
@@ -487,7 +481,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('Angular', Validators.maxLength(5));
    *
-   * console.log(control.errors); // {maxlength: {requiredLength: 5, actualLength: 7}}
    * ```
    *
    * ```html
@@ -515,7 +508,6 @@ var Validators = class {
    * ```ts
    * const control = new FormControl('1', Validators.pattern('[a-zA-Z ]*'));
    *
-   * console.log(control.errors); // {pattern: {requiredPattern: '^[a-zA-Z ]*$', actualValue: '1'}}
    * ```
    *
    * ```html
@@ -2471,10 +2463,8 @@ var FormGroup = class extends AbstractControl {
    *   last: new FormControl()
    * });
    *
-   * console.log(form.value);   // {first: null, last: null}
    *
    * form.setValue({first: 'Nancy', last: 'Drew'});
-   * console.log(form.value);   // {first: 'Nancy', last: 'Drew'}
    * ```
    *
    * @throws When strict checks fail, such as setting the value of a control
@@ -2519,10 +2509,8 @@ var FormGroup = class extends AbstractControl {
    *    first: new FormControl(),
    *    last: new FormControl()
    * });
-   * console.log(form.value);   // {first: null, last: null}
    *
    * form.patchValue({first: 'Nancy'});
-   * console.log(form.value);   // {first: 'Nancy', last: null}
    * ```
    *
    * @param value The object that matches the structure of the group.
@@ -2585,11 +2573,9 @@ var FormGroup = class extends AbstractControl {
    *   last: new FormControl('last name')
    * });
    *
-   * console.log(form.value);  // {first: 'first name', last: 'last name'}
    *
    * form.reset({ first: 'name', last: 'last name' });
    *
-   * console.log(form.value);  // {first: 'name', last: 'last name'}
    * ```
    *
    * ### Reset the form group values and disabled status
@@ -2605,8 +2591,6 @@ var FormGroup = class extends AbstractControl {
    *   last: 'last'
    * });
    *
-   * console.log(form.value);  // {last: 'last'}
-   * console.log(form.get('first').status);  // 'DISABLED'
    * ```
    */
   reset(value = {}, options = {}) {
@@ -6339,10 +6323,8 @@ var FormArray = class extends AbstractControl {
    *   new FormControl(),
    *   new FormControl()
    * ]);
-   * console.log(arr.value);   // [null, null]
    *
    * arr.setValue(['Nancy', 'Drew']);
-   * console.log(arr.value);   // ['Nancy', 'Drew']
    * ```
    *
    * @param value Array of values for the controls
@@ -6384,10 +6366,8 @@ var FormArray = class extends AbstractControl {
    *    new FormControl(),
    *    new FormControl()
    * ]);
-   * console.log(arr.value);   // [null, null]
    *
    * arr.patchValue(['Nancy']);
-   * console.log(arr.value);   // ['Nancy', null]
    * ```
    *
    * @param value Array of latest values for the controls
@@ -6431,7 +6411,6 @@ var FormArray = class extends AbstractControl {
    * ]);
    * arr.reset(['name', 'last name']);
    *
-   * console.log(arr.value);  // ['name', 'last name']
    * ```
    *
    * ### Reset the values in a form array and the disabled status for the first control
@@ -6442,8 +6421,6 @@ var FormArray = class extends AbstractControl {
    *   'last'
    * ]);
    *
-   * console.log(arr.value);  // ['last']
-   * console.log(arr.at(0).status);  // 'DISABLED'
    * ```
    *
    * @param value Array of values for the controls
@@ -6498,10 +6475,8 @@ var FormArray = class extends AbstractControl {
    *    new FormControl(),
    *    new FormControl()
    * ]);
-   * console.log(arr.length);  // 2
    *
    * arr.clear();
-   * console.log(arr.length);  // 0
    * ```
    *
    * It's a simpler and more efficient alternative to removing all elements one by one:
@@ -6598,7 +6573,6 @@ var FormBuilder = class _FormBuilder {
    * let nnfb = new FormBuilder().nonNullable;
    * let name = nnfb.control('Alex'); // FormControl<string>
    * name.reset();
-   * console.log(name); // 'Alex'
    * ```
    *
    * **Constructing non-nullable groups or arrays**
@@ -6610,7 +6584,6 @@ var FormBuilder = class _FormBuilder {
    * let nnfb = new FormBuilder().nonNullable;
    * let name = nnfb.group({who: 'Alex'}); // FormGroup<{who: FormControl<string>}>
    * name.reset();
-   * console.log(name); // {who: 'Alex'}
    * ```
    * **Constructing *nullable* fields on groups or arrays**
    *
@@ -6621,7 +6594,6 @@ var FormBuilder = class _FormBuilder {
    * let nnfb = new FormBuilder().nonNullable;
    * // FormGroup<{who: FormControl<string|null>}>
    * let name = nnfb.group({who: new FormControl('Alex')});
-   * name.reset(); console.log(name); // {who: null}
    * ```
    *
    * Because the inner control is constructed explicitly by the caller, the builder has

@@ -141,7 +141,6 @@ export class UsersComponent implements OnInit {
     loadDepartments() {
         this.userService.getDepartments().subscribe({
             next: (response: any) => {
-                console.table(response);
                 this.departments = Array.isArray(response) ? response : response.data || [];
             },
             error: (error) => {

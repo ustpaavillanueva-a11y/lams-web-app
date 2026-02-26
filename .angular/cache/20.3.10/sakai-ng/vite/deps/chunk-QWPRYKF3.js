@@ -14718,7 +14718,6 @@ function setClassMetadata(type, decorators, ctorParameters, propDecorators) {
 }
 var Console = class _Console {
   log(message) {
-    console.log(message);
   }
   // Note: for reporting errors use `DOM.logError()` as it is platform specific
   warn(message) {
@@ -16076,7 +16075,6 @@ var ApplicationRef = class _ApplicationRef {
       this._loadComponent(compRef);
       if (typeof ngDevMode === "undefined" || ngDevMode) {
         const _console = this._injector.get(Console);
-        _console.log(`Angular is running in development mode.`);
       }
       profiler(11, compRef);
       return compRef;

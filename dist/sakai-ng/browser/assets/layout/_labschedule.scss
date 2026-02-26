@@ -150,6 +150,34 @@
                                 &.color-indigo {
                                     background-color: #4f46e5;
                                 }
+
+                                // Delete button styling - inside schedule-block
+                                .delete-schedule-btn {
+                                    position: absolute;
+                                    top: 4px;
+                                    right: 4px;
+                                    width: 22px;
+                                    height: 22px;
+                                    border-radius: 50%;
+                                    background: rgba(239, 68, 68, 0.8);
+                                    border: none;
+                                    color: white;
+                                    cursor: pointer;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 0.7rem;
+                                    opacity: 1;
+                                    transition:
+                                        background 0.2s ease,
+                                        transform 0.2s ease;
+                                    z-index: 10;
+
+                                    &:hover {
+                                        background: rgba(220, 38, 38, 1);
+                                        transform: scale(1.1);
+                                    }
+                                }
                             }
                         }
                     }

@@ -681,7 +681,6 @@ export class AssetsComponent implements OnInit {
                 }
                 this.programs = data || [];
             },
-            error: (error) => {}
         });
 
         this.assetService.getSuppliers().subscribe({
@@ -690,10 +689,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.suppliers = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading suppliers:', error);
-                console.error('Status:', error?.status, 'Message:', error?.message);
-            }
+            
         });
 
         this.assetService.getLocations().subscribe({
@@ -702,10 +698,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.locations = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading locations:', error);
-                console.error('Status:', error?.status, 'Message:', error?.message);
-            }
+         
         });
 
         this.assetService.getStatuses().subscribe({
@@ -714,10 +707,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.statuses = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading statuses:', error);
-                console.error('Status:', error?.status, 'Message:', error?.message);
-            }
+           
         });
 
         this.assetService.getColors().subscribe({
@@ -726,10 +716,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.colors = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading colors:', error);
-                console.error('Status:', error?.status, 'Message:', error?.message);
-            }
+            
         });
 
         this.assetService.getBrands().subscribe({
@@ -738,10 +725,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.brands = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading brands:', error);
-                console.error('Status:', error?.status, 'Message:', error?.message);
-            }
+          
         });
 
         this.assetService.getLaboratories().subscribe({
@@ -750,10 +734,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.laboratories = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading laboratories:', error);
-                console.error('Status:', error?.status, 'Message:', error?.message);
-            }
+           
         });
 
         this.userService.getCampuses().subscribe({
@@ -762,9 +743,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.campuses = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading campuses:', error);
-            }
+          
         });
 
         this.assetService.getUsers().subscribe({
@@ -773,9 +752,7 @@ export class AssetsComponent implements OnInit {
                 }
                 this.users = data || [];
             },
-            error: (error) => {
-                console.error('❌ Error loading users:', error);
-            }
+           
         });
     }
 
@@ -804,9 +781,7 @@ export class AssetsComponent implements OnInit {
         this.loading = true;
         this.assetService.getAssets().subscribe({
             next: (data) => {
-                console.log('Full API Response:', data);
                 if (data && data.length > 0) {
-                    // Log QR code info for all assets
                     data.forEach((asset, index) => {});
                 }
                 this.assets = data || [];
@@ -890,9 +865,7 @@ export class AssetsComponent implements OnInit {
                     // Update the asset object with ICS data
                     asset.inventoryCustodianSlip = icsData;
                 },
-                error: (error) => {
-                    console.error(`❌ Error fetching ICS for ${asset.assetName}:`, error);
-                }
+              
             });
         }
     }
@@ -917,9 +890,7 @@ export class AssetsComponent implements OnInit {
                     next: (icsData) => {
                         asset.inventoryCustodianSlip = icsData;
                     },
-                    error: (error) => {
-                        console.error(`❌ Error fetching ICS for ${asset.assetName}:`, error);
-                    }
+                   
                 });
             }
         }
@@ -1024,7 +995,6 @@ export class AssetsComponent implements OnInit {
                                 detail: `QR Code: ${decodedQR.data}`
                             });
                         } else {
-                            console.warn('❌ No QR code found in image');
                             this.messageService.add({
                                 severity: 'warn',
                                 summary: 'No QR Code',
@@ -1032,7 +1002,6 @@ export class AssetsComponent implements OnInit {
                             });
                         }
                     } catch (error) {
-                        console.error('❌ Error decoding QR code:', error);
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',
@@ -1041,7 +1010,6 @@ export class AssetsComponent implements OnInit {
                     }
                 };
                 img.onerror = () => {
-                    console.error('❌ Failed to load image');
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
@@ -1051,7 +1019,6 @@ export class AssetsComponent implements OnInit {
                 img.src = e.target.result;
             };
             reader.onerror = () => {
-                console.error('❌ Failed to read file');
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -1113,7 +1080,7 @@ export class AssetsComponent implements OnInit {
 
         this.maintenanceService.createMaintenanceRequest(payload).subscribe({
             next: () => {
-                // this.messageService.add({ severity: 'success', summary: 'Request Created', detail: 'Maintenance request submitted' });
+              
                 Swal.fire({
                     title: 'Good job!',
                     text: 'Maintenance request submitted successfully!',
@@ -1122,7 +1089,7 @@ export class AssetsComponent implements OnInit {
                 this.closeRequestDialog();
             },
             error: (error) => {
-                // this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to submit maintenance request: ' + (error?.error?.message || error?.message) });
+             
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -1170,7 +1137,6 @@ export class AssetsComponent implements OnInit {
                 // Extract assetId from response
                 const assetId = String(response.assetId || response.id);
                 if (!assetId || assetId === 'undefined') {
-                    console.error('❌ No assetId returned from asset creation');
                     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to get asset ID from response' });
                     return;
                 }
@@ -1191,7 +1157,6 @@ export class AssetsComponent implements OnInit {
                         this.loadAssets();
                     },
                     error: (qrError: any) => {
-                        console.error('❌ Step 2 Failed: Error uploading QR code:', qrError);
                         this.messageService.add({
                             severity: 'warn',
                             summary: 'Partial Success',
@@ -1314,7 +1279,6 @@ export class AssetsComponent implements OnInit {
         }
 
         // Console log all asset data
-        console.log('📝 Edit Asset - Full Data:', item);
         console.table(item);
 
         const assetId = item.assetId;
@@ -1524,7 +1488,6 @@ export class AssetsComponent implements OnInit {
                         this.loadAssets();
                     },
                     error: (err) => {
-                        console.error('Error updating asset:', err);
                         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update asset' });
                     }
                 });
@@ -1564,7 +1527,6 @@ export class AssetsComponent implements OnInit {
                         this.loadAssets();
                     },
                     error: (error: any) => {
-                        console.error('❌ Error deleting asset:', error);
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',

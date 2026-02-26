@@ -78,8 +78,7 @@ export class Login {
         this.authService.login(this.email, this.password).subscribe({
             next: (response) => {
                 this.isLoading = false;
-                console.log('Login response:', response);
-                console.log('User object:', response.user);
+               
                 if (response.success) {
                     const userName = response.user?.firstName || response.user?.firstName || 'User';
                     Swal.fire({

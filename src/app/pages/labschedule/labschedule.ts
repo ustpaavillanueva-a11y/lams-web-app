@@ -371,16 +371,6 @@ export class LabScheduleComponent implements OnInit {
             next: (data: any[]) => {
                 this.laboratories = data || [];
                 this.filteredLaboratories = [...this.laboratories];
-
-                // Don't auto-select - users should manually choose a laboratory
-            },
-            error: (error: any) => {
-                console.error('❌ Error loading laboratories:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to load laboratories: ' + (error?.error?.message || error?.message)
-                });
             }
         });
     }
@@ -390,9 +380,6 @@ export class LabScheduleComponent implements OnInit {
         this.http.get<any[]>(campusesUrl).subscribe({
             next: (data: any[]) => {
                 this.campuses = data || [];
-            },
-            error: (error: any) => {
-                console.error('❌ Error loading campuses:', error);
             }
         });
     }
@@ -411,10 +398,6 @@ export class LabScheduleComponent implements OnInit {
             this.http.get<any[]>(campusSchedulesUrl).subscribe({
                 next: (data: any[]) => {
                     this.schedules = data || [];
-                },
-                error: (error: any) => {
-                    console.error('❌ Error loading campus schedules:', error);
-                    this.schedules = [];
                 }
             });
         } else {
@@ -432,21 +415,9 @@ export class LabScheduleComponent implements OnInit {
         this.http.get<any[]>(usersUrl).subscribe({
             next: (data: any[]) => {
                 if (data && data.length > 0) {
-                    console.table(data);
                 }
 
                 this.users = data || [];
-            },
-            error: (error: any) => {
-                console.error('❌ Error loading users:', error);
-                console.error('Error status:', error?.status);
-                console.error('Error message:', error?.message);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to load users: ' + (error?.error?.message || error?.message)
-                });
             }
         });
     }
@@ -461,28 +432,12 @@ export class LabScheduleComponent implements OnInit {
                 }
 
                 this.subjects = data || [];
-            },
-            error: (error: any) => {
-                console.error('❌ Error loading subjects:', error);
-                console.error('Error status:', error?.status);
-                console.error('Error message:', error?.message);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to load subjects: ' + (error?.error?.message || error?.message)
-                });
             }
         });
     }
 
     onLaboratoryFilterChange() {
         if (this.selectedLaboratory) {
-            // this.messageService.add({
-            //     severity: 'info',
-            //     summary: 'Filter Applied',
-            //     detail: `Showing schedules for: ${this.selectedLaboratory.laboratoryName}`
-            // });
             Swal.fire({
                 title: 'Filter Applied',
                 text: `Showing schedules for: ${this.selectedLaboratory.laboratoryName}`,
@@ -496,10 +451,6 @@ export class LabScheduleComponent implements OnInit {
             this.http.get<any[]>(campusSchedulesUrl).subscribe({
                 next: (data: any[]) => {
                     this.schedules = data || [];
-                },
-                error: (error: any) => {
-                    console.error('❌ Error loading campus schedules:', error);
-                    this.schedules = [];
                 }
             });
         } else {
@@ -527,20 +478,6 @@ export class LabScheduleComponent implements OnInit {
                 }
 
                 this.schedules = data || [];
-            },
-            error: (error: any) => {
-                console.error('❌ Error loading schedules:', error);
-                console.error('Error status:', error?.status);
-                console.error('Error message:', error?.message);
-                console.error('Error details:', error?.error);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to load schedules: ' + (error?.error?.message || error?.message)
-                });
-
-                this.schedules = [];
             }
         });
     }
@@ -586,11 +523,6 @@ export class LabScheduleComponent implements OnInit {
 
         this.http.post<any>(subjectsUrl, payload).subscribe({
             next: (response: any) => {
-                // this.messageService.add({
-                //     severity: 'success',
-                //     summary: 'Success',
-                //     detail: `Subject "${this.newSubject.subjectName}" created successfully`
-                // });
                 Swal.fire({
                     position: 'top-end',
                     icon: 'success',

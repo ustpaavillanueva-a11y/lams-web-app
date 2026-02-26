@@ -42,7 +42,7 @@ export class MaintenanceService {
 
     getServiceMaintenances(): Observable<ServiceMaintenance[]> {
         const url = `${this.baseApiUrl}/service-maintenance`;
-        return this.http.get<ServiceMaintenance[]>(url).pipe(tap((data) => console.log('✅ Service Maintenances:', data)));
+        return this.http.get<ServiceMaintenance[]>(url).pipe(tap());
     }
 
     createServiceMaintenance(body: Partial<ServiceMaintenance>): Observable<ServiceMaintenance> {
@@ -59,7 +59,7 @@ export class MaintenanceService {
 
     getRequestStatuses(): Observable<RequestStatus[]> {
         const url = `${this.baseApiUrl}/request-status`;
-        return this.http.get<RequestStatus[]>(url).pipe(tap((data) => console.log('✅ Request Statuses:', data)));
+        return this.http.get<RequestStatus[]>(url).pipe(tap());
     }
 
     createRequestStatus(body: Partial<RequestStatus>): Observable<RequestStatus> {
@@ -76,7 +76,7 @@ export class MaintenanceService {
 
     getPriorityLevels(): Observable<PriorityLevel[]> {
         const url = `${this.baseApiUrl}/priority-levels`;
-        return this.http.get<PriorityLevel[]>(url).pipe(tap((data) => console.log('✅ Priority Levels:', data)));
+        return this.http.get<PriorityLevel[]>(url).pipe(tap());
     }
 
     createPriorityLevel(body: Partial<PriorityLevel>): Observable<PriorityLevel> {
@@ -93,7 +93,7 @@ export class MaintenanceService {
 
     getMaintenanceTypes(): Observable<MaintenanceType[]> {
         const url = `${this.baseApiUrl}/maintenance-types`;
-        return this.http.get<MaintenanceType[]>(url).pipe(tap((data) => console.log('✅ Maintenance Types:', data)));
+        return this.http.get<MaintenanceType[]>(url).pipe(tap());
     }
 
     createMaintenanceType(body: Partial<MaintenanceType>): Observable<MaintenanceType> {

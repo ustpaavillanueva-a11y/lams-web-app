@@ -124,7 +124,7 @@ export class AssetService {
     constructor(private http: HttpClient) {}
 
     getAssets(): Observable<Asset[]> {
-        return this.http.get<Asset[]>(this.apiUrl).pipe(tap((data) => console.log('getAssets API Response:', data)));
+        return this.http.get<Asset[]>(this.apiUrl).pipe(tap());
     }
 
     getAsset(id: number): Observable<Asset> {
@@ -157,7 +157,7 @@ export class AssetService {
 
     // Reference data methods
     getLocations(): Observable<Location[]> {
-        return this.http.get<Location[]>(`${this.baseApiUrl}/locations`).pipe(tap((data) => console.log('✅ getLocations API Response:', data)));
+        return this.http.get<Location[]>(`${this.baseApiUrl}/locations`).pipe(tap());
     }
     createLocation(body: Partial<Location>): Observable<Location> {
         return this.http.post<Location>(`${this.baseApiUrl}/locations`, body);
@@ -170,7 +170,7 @@ export class AssetService {
     }
 
     getSuppliers(): Observable<Supplier[]> {
-        return this.http.get<Supplier[]>(`${this.baseApiUrl}/suppliers`).pipe(tap((data) => console.log('✅ getSuppliers API Response:', data)));
+        return this.http.get<Supplier[]>(`${this.baseApiUrl}/suppliers`).pipe(tap());
     }
     createSupplier(body: Partial<Supplier>): Observable<Supplier> {
         return this.http.post<Supplier>(`${this.baseApiUrl}/suppliers`, body);
@@ -183,7 +183,7 @@ export class AssetService {
     }
 
     getPrograms(): Observable<Program[]> {
-        return this.http.get<Program[]>(`${this.baseApiUrl}/programs`).pipe(tap((data) => console.log('✅ getPrograms API Response:', data)));
+        return this.http.get<Program[]>(`${this.baseApiUrl}/programs`).pipe(tap());
     }
     createProgram(body: Partial<Program>): Observable<Program> {
         return this.http.post<Program>(`${this.baseApiUrl}/programs`, body);
@@ -196,7 +196,7 @@ export class AssetService {
     }
 
     getStatuses(): Observable<Status[]> {
-        return this.http.get<Status[]>(`${this.baseApiUrl}/status`).pipe(tap((data) => console.log('getStatuses API Response:', data)));
+        return this.http.get<Status[]>(`${this.baseApiUrl}/status`).pipe(tap());
     }
     createStatus(body: Partial<Status>): Observable<Status> {
         return this.http.post<Status>(`${this.baseApiUrl}/status`, body);

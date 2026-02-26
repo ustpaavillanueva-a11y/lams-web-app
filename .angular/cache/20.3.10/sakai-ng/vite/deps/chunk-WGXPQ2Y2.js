@@ -736,8 +736,6 @@ var AngularProfiler = class {
       console.profileEnd(profileName);
     }
     const msPerTick = (end - start) / numTicks;
-    console.log(`ran ${numTicks} change detection cycles`);
-    console.log(`${msPerTick.toFixed(2)} ms per check`);
     return new ChangeDetectionPerfRecord(msPerTick, numTicks);
   }
 };

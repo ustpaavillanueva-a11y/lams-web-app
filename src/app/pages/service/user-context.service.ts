@@ -22,7 +22,6 @@ export class UserContextService {
                     const user = JSON.parse(currentUser);
                     storedUserId = user.user_id || null;
                 } catch (error) {
-                    console.error('Error parsing currentUser:', error);
                 }
             }
         }
@@ -59,7 +58,6 @@ export class UserContextService {
                         this.setUserId(userId); // Cache it for next time
                     }
                 } catch (error) {
-                    console.error('Error parsing currentUser:', error);
                 }
             }
         }
