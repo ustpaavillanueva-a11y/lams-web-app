@@ -215,7 +215,7 @@ import Swal from 'sweetalert2';
                     <td>{{ item.campus?.campusName || 'N/A' }}</td>
                     <td>{{ item.laboratories?.laboratoryName || 'N/A' }}</td>
                     <td>{{ item.issuedTo || 'N/A' }}</td>
-                    <td>{{ item.Status_id || 'N/A' }}</td>
+                    <td>{{ item.status?.statusName || 'N/A' }}</td>
                     <td class="text-gray-400">NULL</td>
                     <td>
                         <div *ngIf="item.qrCode" class="inline-block">
@@ -804,6 +804,7 @@ export class AssetsComponent implements OnInit {
         this.loading = true;
         this.assetService.getAssets().subscribe({
             next: (data) => {
+                console.log('Full API Response:', data);
                 if (data && data.length > 0) {
                     // Log QR code info for all assets
                     data.forEach((asset, index) => {});
