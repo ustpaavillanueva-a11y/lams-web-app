@@ -9845,6 +9845,7 @@ function createDecoder(information) {
         return new AI013x0x1xDecoder_default(information, "320", "17");
     }
   } catch (e) {
+    console.log(e);
     throw new IllegalStateException_default("unknown decoder: " + information);
   }
 }
@@ -10047,6 +10048,7 @@ var RSSExpandedReader = (
       try {
         ps = this.checkRows(new Array(), 0);
       } catch (e) {
+        console.log(e);
       }
       if (reverse) {
         this.rows = this.rows.reverse();
@@ -10084,6 +10086,7 @@ var RSSExpandedReader = (
         try {
           return this.checkRows(rs, i + 1);
         } catch (e) {
+          console.log(e);
         }
       }
       throw new NotFoundException_default();
@@ -10322,6 +10325,7 @@ var RSSExpandedReader = (
         rightChar = this.decodeDataCharacter(row, pattern, isOddPattern, false);
       } catch (e) {
         rightChar = null;
+        console.log(e);
       }
       return new ExpandedPair_default(leftChar, rightChar, pattern, true);
     };

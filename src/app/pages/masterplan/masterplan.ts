@@ -1,3 +1,4 @@
+import { saveAs } from 'file-saver';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -8,7 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-
+import * as XLSX from 'xlsx';
 @Component({
     selector: 'app-masterplan',
     standalone: true,
@@ -70,7 +71,7 @@ import { environment } from '../../../environments/environment';
 
                         <p-button label="Print" icon="pi pi-print" severity="secondary" [outlined]="true" />
 
-                        <p-button label="Export" icon="pi pi-upload" severity="success" [outlined]="true" />
+                        <p-button label="Export" icon="pi pi-upload" severity="success" [outlined]="true" (onClick)="exportToExcel()" />
                     </div>
                 </div>
             </ng-template>
@@ -358,5 +359,69 @@ export class MasterPlanComponent implements OnInit {
                 .map((m: any) => months[m.month - 1])
                 .join(', ') || '-'
         );
+    }
+
+    saveExcelFile(buffer: any): void {
+
+    const data: Blob = new Blob(
+        [buffer],
+        { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' }
+    );
+
+    const fileName =
+        `MasterPlan_${this.selectedLaboratory}_${this.selectedYear}.xlsx`;
+
+    saveAs(data, fileName);
+}
+
+    exportToExcel() {
+        if (!this.equipmentList.length) {
+            console.warn('No data to export');
+            return;
+        }
+
+        const data: any[] = [];
+
+        this.equipmentList.forEach((item: any) => {
+            const equipment = item.equipment || {};
+
+            data.push({
+                'ID Number': equipment.assetId || 'N/A',
+                'Asset Name': equipment.equipmentName || equipment.assetName || 'N/A',
+                Quantity: item.quantity || 1,
+                'Date Acquired': this.formatDate(equipment.dateAcquired),
+                Location: equipment.location || 'N/A',
+                Price: this.formatPrice(equipment.price),
+                Functional: item.isFunctional !== false ? 'Yes' : 'No',
+                'Under Repair': item.isUnderRepair ? 'Yes' : 'No',
+
+                // ===== MAINTENANCE SCHEDULE =====
+                'Inventory Schedule': this.getScheduleText(item, 'inventory'),
+                'Preventive Maintenance': this.getScheduleText(item, 'preventive'),
+                'Corrective Maintenance': this.getScheduleText(item, 'corrective'),
+                'Calibration Schedule': this.getScheduleText(item, 'calibration')
+            });
+        });
+
+        // Create worksheet
+        const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+
+        // Auto column width
+        const wscols = [{ wch: 22 }, { wch: 30 }, { wch: 10 }, { wch: 18 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }];
+        worksheet['!cols'] = wscols;
+
+        // Create workbook
+        const workbook: XLSX.WorkBook = {
+            Sheets: { 'Master Plan': worksheet },
+            SheetNames: ['Master Plan']
+        };
+
+        // Generate Excel file
+        const excelBuffer: any = XLSX.write(workbook, {
+            bookType: 'xlsx',
+            type: 'array'
+        });
+
+        this.saveExcelFile(excelBuffer);
     }
 }

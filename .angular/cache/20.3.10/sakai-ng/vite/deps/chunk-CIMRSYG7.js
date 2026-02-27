@@ -1,6 +1,6 @@
 import {
   Title
-} from "./chunk-WGXPQ2Y2.js";
+} from "./chunk-QAUQ7NUX.js";
 import {
   HashLocationStrategy,
   LOCATION_INITIALIZED,
@@ -5795,6 +5795,8 @@ function withDebugTracing() {
         const router = inject(Router);
         return () => router.events.subscribe((e) => {
           console.group?.(`Router Event: ${e.constructor.name}`);
+          console.log(stringifyEvent(e));
+          console.log(e);
           console.groupEnd?.();
         });
       }
@@ -6132,4 +6134,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-JQU33M2K.js.map
+//# sourceMappingURL=chunk-CIMRSYG7.js.map

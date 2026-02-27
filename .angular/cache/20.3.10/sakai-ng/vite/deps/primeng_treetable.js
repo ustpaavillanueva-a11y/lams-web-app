@@ -1,14 +1,14 @@
 import {
   Checkbox
-} from "./chunk-5M5UAT5E.js";
+} from "./chunk-MMIQZ64O.js";
 import {
   Paginator,
   PaginatorModule
-} from "./chunk-QNXXFWNQ.js";
-import "./chunk-CHSIZHJA.js";
-import "./chunk-4JTJAMVI.js";
-import "./chunk-NPLCPJQR.js";
+} from "./chunk-DQBVXCVD.js";
+import "./chunk-E4K76NOW.js";
 import "./chunk-5LYA7AKX.js";
+import "./chunk-4JTJAMVI.js";
+import "./chunk-CXEJ2LS2.js";
 import "./chunk-KZDBN5KI.js";
 import "./chunk-F626YUXA.js";
 import {
@@ -23,10 +23,10 @@ import "./chunk-ND4G73L4.js";
 import {
   DomHandler
 } from "./chunk-P6SMTJBG.js";
-import "./chunk-CMVOE67Z.js";
 import {
   Ripple
 } from "./chunk-RFZJG26N.js";
+import "./chunk-CMVOE67Z.js";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -60,11 +60,6 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
-import {
-  FormsModule,
-  NgControlStatus,
-  NgModel
-} from "./chunk-C225D66Z.js";
 import "./chunk-OTTARZB5.js";
 import {
   B,
@@ -88,6 +83,11 @@ import {
   s,
   z2 as z
 } from "./chunk-U4LT4ZJN.js";
+import {
+  FormsModule,
+  NgControlStatus,
+  NgModel
+} from "./chunk-C225D66Z.js";
 import "./chunk-Y3VPSMBK.js";
 import "./chunk-GGMOGVES.js";
 import {
@@ -2174,6 +2174,7 @@ var TreeTable = class _TreeTable extends BaseComponent {
   }
   set virtualRowHeight(val) {
     this._virtualRowHeight = val;
+    console.log("The virtualRowHeight property is deprecated, use virtualScrollItemSize property instead.");
   }
   /**
    * A map of keys to control the selection state.
@@ -4684,6 +4685,7 @@ var TTScrollableView = class _TTScrollableView extends BaseComponent {
   set scrollHeight(val) {
     this._scrollHeight = val;
     if (val != null && (val.includes("%") || val.includes("calc"))) {
+      console.log('Percentage scroll height calculation is removed in favor of the more performant CSS based flex mode, use scrollHeight="flex" instead.');
     }
   }
   constructor(tt, zone) {

@@ -50,7 +50,7 @@ var __async = (__this, __arguments, generator) => {
       }
     };
     var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)));
+    step((generator = generator.apply(__this, __arguments)).next());
   });
 };
 

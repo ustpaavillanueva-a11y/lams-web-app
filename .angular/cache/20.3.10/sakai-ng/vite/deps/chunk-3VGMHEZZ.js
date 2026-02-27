@@ -151,6 +151,7 @@ var BadgeDirective = class _BadgeDirective extends BaseComponent {
    */
   set size(value) {
     this._size = value;
+    console.log("size property is deprecated and will removed in v18, use badgeSize instead.");
   }
   get size() {
     return this._size;

@@ -5617,6 +5617,7 @@ var DateAdapterBase = class _DateAdapterBase {
   * @example
   * Chart._adapters._date.override<{myAdapterOption: string}>({
   *   init() {
+  *     console.log(this.options.myAdapterOption);
   *   }
   * })
   */

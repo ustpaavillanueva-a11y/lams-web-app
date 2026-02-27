@@ -44,12 +44,12 @@ import "./chunk-Y3VPSMBK.js";
 import "./chunk-GGMOGVES.js";
 import {
   DomSanitizer
-} from "./chunk-WGXPQ2Y2.js";
+} from "./chunk-QAUQ7NUX.js";
+import "./chunk-RS4JDN4Z.js";
 import {
   HttpClient,
   HttpEventType
 } from "./chunk-XI5EKNQ2.js";
-import "./chunk-RS4JDN4Z.js";
 import {
   CommonModule,
   NgClass,

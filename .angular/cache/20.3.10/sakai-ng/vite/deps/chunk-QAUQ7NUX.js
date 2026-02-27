@@ -1,7 +1,4 @@
 import {
-  withHttpTransferCache
-} from "./chunk-XI5EKNQ2.js";
-import {
   DomEventsPlugin,
   DomRendererFactory2,
   EVENT_MANAGER_PLUGINS,
@@ -9,6 +6,9 @@ import {
   EventManagerPlugin,
   SharedStylesHost
 } from "./chunk-RS4JDN4Z.js";
+import {
+  withHttpTransferCache
+} from "./chunk-XI5EKNQ2.js";
 import {
   CommonModule,
   DomAdapter,
@@ -736,6 +736,8 @@ var AngularProfiler = class {
       console.profileEnd(profileName);
     }
     const msPerTick = (end - start) / numTicks;
+    console.log(`ran ${numTicks} change detection cycles`);
+    console.log(`${msPerTick.toFixed(2)} ms per check`);
     return new ChangeDetectionPerfRecord(msPerTick, numTicks);
   }
 };
@@ -1286,4 +1288,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-WGXPQ2Y2.js.map
+//# sourceMappingURL=chunk-QAUQ7NUX.js.map
