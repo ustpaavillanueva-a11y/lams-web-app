@@ -731,8 +731,11 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 this.loading = false;
             },
             error: (error: any) => {
-                console.error('Error loading maintenance requests:', error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load maintenance requests' });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to load maintenance requests'
+                });
                 this.loading = false;
             }
         });
@@ -1021,24 +1024,25 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 }));
             },
             error: (error: any) => {
-                console.error('Error loading technicians:', error);
                 this.technicians = [];
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load technicians' });
+                Swal.fire('Failed to load technicians');
             }
         });
     }
 
     confirmApprove() {
         if (!this.approveFormData.technicianId) {
-            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Technician is required' });
+            Swal.fire('Technician is required');
             return;
         }
         if (!this.approveFormData.scheduledAt) {
-            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Scheduled Date is required' });
+            Swal.fire('Scheduled Date is required');
+
             return;
         }
         if (!this.approveFormData.reason.trim()) {
-            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Reason is required' });
+            Swal.fire('Reason is required');
+
             return;
         }
 
@@ -1052,13 +1056,21 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         this.maintenanceService.assignTechnician(this.selectedItem.requestId, assignmentPayload).subscribe({
             next: (response) => {
                 const technicianName = this.technicians.find((t) => t.userId === this.approveFormData.technicianId)?.firstName;
-                this.messageService.add({ severity: 'success', summary: 'Assigned', detail: `Maintenance assigned to ${technicianName}` });
+
+                Swal.fire({
+                    title: 'Good job!',
+                    text: `Maintenance assigned to ${technicianName} successfully!`,
+                    icon: 'success'
+                });
                 this.approveModalVisible = false;
                 this.loadItems();
             },
             error: (error) => {
-                console.error('Error assigning technician:', error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to assign technician: ' + (error.error?.message || error.message) });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to assign technician: ' + (error.error?.message || error.message)
+                });
             }
         });
     }
@@ -1087,12 +1099,19 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 const reason = result.value;
                 this.maintenanceService.declineMaintenanceRequest(item.requestId, reason).subscribe({
                     next: (response) => {
-                        this.messageService.add({ severity: 'success', summary: 'Declined', detail: 'Maintenance request declined successfully' });
+                        Swal.fire({
+                            title: 'Good job!',
+                            text: 'Maintenance request declined successfully',
+                            icon: 'success'
+                        });
                         this.loadItems();
                     },
                     error: (error) => {
-                        console.error('❌ Error declining request:', error);
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to decline maintenance request: ' + (error.error?.message || error.message) });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Failed to decline maintenance request: ' + (error.error?.message || error.message)
+                        });
                     }
                 });
             }
@@ -1120,9 +1139,19 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                     next: (created) => {
                         this.items.push(created);
                         this.categorizeItems();
-                        this.messageService.add({ severity: 'success', summary: 'Created', detail: 'Maintenance request created' });
+                        Swal.fire({
+                            title: 'Good job!',
+                            text: 'Maintenance request created successfully!',
+                            icon: 'success'
+                        });
                     },
-                    error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Create failed' })
+                    error: (error) => {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to create maintenance request: ' + (error.error?.message || error.message),
+                            icon: 'error'
+                        });
+                    }
                 });
             }
         });
@@ -1262,7 +1291,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                     preConfirm: () => {
                         const maintenanceName = (document.getElementById('maintenanceName') as HTMLInputElement)?.value.trim();
                         if (!maintenanceName) {
-                            Swal.showValidationMessage('Maintenance name is required');
+                            Swal.fire('Maintenance name is required');
                             return false;
                         }
                         return { maintenanceName };
@@ -1271,20 +1300,30 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                     if (result.isConfirmed && result.value) {
                         this.maintenanceService.updateMaintenanceRequest(requestId, result.value).subscribe({
                             next: () => {
-                                this.messageService.add({ severity: 'success', summary: 'Updated', detail: 'Maintenance request updated successfully' });
+                                Swal.fire({
+                                    title: 'Good job!',
+                                    text: 'Maintenance request updated successfully',
+                                    icon: 'success'
+                                });
                                 this.loadItems();
                             },
                             error: (err) => {
-                                console.error('Error updating maintenance request:', err);
-                                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update maintenance request' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Failed to update maintenance request'
+                                });
                             }
                         });
                     }
                 });
             },
             error: (err) => {
-                console.error('Error fetching maintenance request:', err);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load maintenance request' });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to load maintenance request'
+                });
             }
         });
     }
@@ -1313,7 +1352,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                         this.loadItems();
                     },
                     error: (err) => {
-                        console.error('Error deleting maintenance request:', err);
                         Swal.fire({
                             title: 'Error!',
                             text: 'Failed to delete maintenance request.',
@@ -1354,7 +1392,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                         this.loadItems();
                     })
                     .catch((err) => {
-                        console.error('Error deleting selected maintenance requests:', err);
                         Swal.fire({
                             title: 'Error!',
                             text: 'Failed to delete some maintenance requests.',
@@ -1386,8 +1423,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     confirm(row: any) {
-    
-
         this.selectedItem = row;
         this.loading = true;
 
@@ -1405,8 +1440,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 this.loading = false;
             },
             error: (error: any) => {
-                console.error('Error loading maintenance approval details:', error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load approval details' });
+                Swal.fire({
+                    icon: 'error',
+                    text: 'Failed to load approval details'
+                });
                 this.loading = false;
             }
         });
@@ -1414,7 +1451,11 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
     confirmCompletion() {
         if (!this.confirmFormData.reason.trim()) {
-            this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Reason is required' });
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Reason is required'
+            });
             return;
         }
 
@@ -1430,11 +1471,13 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             actualReading: this.confirmFormData.actualReading.trim()
         };
 
-      
-
         this.maintenanceService.completeMaintenanceApproval(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
             next: (response: any) => {
-                this.messageService.add({ severity: 'success', summary: 'Completed', detail: 'Maintenance request marked as completed' });
+                Swal.fire({
+                    title: 'Good job!',
+                    text: 'Maintenance request marked as completed successfully.',
+                    icon: 'success'
+                });
                 this.confirmModalVisible = false;
 
                 // Remove from approved items
