@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { Documentation } from './documentation/documentation';
 import { AssetsComponent } from './assets/assets';
-import { Empty } from './empty/empty';
 import { RequestmaintenanceComponent } from './requestmaintenance/requestmaintenance/requestmaintenance.component';
 import { UsersComponent } from './users/users';
 import { CampusesComponent } from './campuses/campuses';
