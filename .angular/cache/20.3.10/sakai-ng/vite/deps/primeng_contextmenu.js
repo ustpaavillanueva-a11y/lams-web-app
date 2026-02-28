@@ -1,4 +1,8 @@
 import {
+  Badge,
+  BadgeModule
+} from "./chunk-3VGMHEZZ.js";
+import {
   Tooltip,
   TooltipModule
 } from "./chunk-KZDBN5KI.js";
@@ -16,10 +20,6 @@ import {
 } from "./chunk-RUJSBIO3.js";
 import "./chunk-NKBIU3HO.js";
 import {
-  Badge,
-  BadgeModule
-} from "./chunk-3VGMHEZZ.js";
-import {
   Bind,
   BindModule
 } from "./chunk-246XFSKK.js";
@@ -35,6 +35,10 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-JCDWLVR7.js";
+import {
+  RouterLink,
+  RouterModule
+} from "./chunk-JQU33M2K.js";
 import "./chunk-OTTARZB5.js";
 import {
   $t,
@@ -61,13 +65,9 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
-import {
-  RouterLink,
-  RouterModule
-} from "./chunk-CIMRSYG7.js";
-import "./chunk-QAUQ7NUX.js";
-import "./chunk-RS4JDN4Z.js";
+import "./chunk-WGXPQ2Y2.js";
 import "./chunk-XI5EKNQ2.js";
+import "./chunk-RS4JDN4Z.js";
 import {
   CommonModule,
   NgForOf,
@@ -142,8 +142,8 @@ import {
   ɵɵtextInterpolate1,
   ɵɵviewQuery
 } from "./chunk-QWPRYKF3.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import {
   __spreadProps,

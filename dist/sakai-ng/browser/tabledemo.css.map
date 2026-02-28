@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/pages/uikit/tabledemo.ts", "tabledemo.ts"],
+  "sourcesContent": ["\n        .p-datatable-frozen-tbody {\n            font-weight: bold;\n        }\n\n        .p-datatable-scrollable .p-frozen-column {\n            font-weight: bold;\n        }\n    ", ".p-datatable-frozen-tbody {\n  font-weight: bold;\n}\n\n.p-datatable-scrollable .p-frozen-column {\n  font-weight: bold;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L1VzZXJzL2plcmljL0RvY3VtZW50cy8yMDI2JTIwZmlsZXMvTEFNUy1GSU5BTC9zcmMvYXBwL3BhZ2VzL3Vpa2l0L3RhYmxlZGVtby50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDUTtFQUNJOzs7QUFHSjtFQUNJIiwic291cmNlc0NvbnRlbnQiOlsiXG4gICAgICAgIC5wLWRhdGF0YWJsZS1mcm96ZW4tdGJvZHkge1xuICAgICAgICAgICAgZm9udC13ZWlnaHQ6IGJvbGQ7XG4gICAgICAgIH1cblxuICAgICAgICAucC1kYXRhdGFibGUtc2Nyb2xsYWJsZSAucC1mcm96ZW4tY29sdW1uIHtcbiAgICAgICAgICAgIGZvbnQtd2VpZ2h0OiBib2xkO1xuICAgICAgICB9XG4gICAgIl19 */"],
+  "mappings": ";AACQ,CAAA;AACI,eAAA;ACAZ;ADGQ,CAAA,uBAAA,CAAA;AACI,eAAA;ACAZ;",
+  "names": []
+}

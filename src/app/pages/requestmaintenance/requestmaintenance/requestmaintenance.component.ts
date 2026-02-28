@@ -841,6 +841,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
         // Include both completed requests and completed approvals
         items = [...this.completedItems, ...this.completedApprovedItems];
+        console.log('items', items);
 
         if (!searchLower) return items;
 
@@ -1158,6 +1159,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     view(item: any) {
+        console.log('Viewing item:', item);
+
         // Check if it's an approval item (has maintenanceApprovalId) or a request item
         if (item.maintenanceApprovalId) {
             // It's a completed approval - show approval details
@@ -1178,6 +1181,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                                 <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Reason</td>
                                 <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.reason || 'N/A'}</td>
                             </tr>
+                           
                             <tr>
                                 <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Action Taken</td>
                                 <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.actionTaken || 'N/A'}</td>
@@ -1261,6 +1265,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Reason</td>
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.reason || 'N/A'}</td>
                                     </tr>
+                                      <tr style="background: #f8fafc;">
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Request Date</td>
+                                <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.requestDate ? new Date(item.requestDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</td>
+                            </tr>
                                 </tbody>
                             </table>
                         </div>

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/pages/reports/reports.component.ts", "reports.component.ts"],
+  "sourcesContent": ["\n            :host {\n                display: block;\n                padding: 1rem;\n            }\n        ", ":host {\n  display: block;\n  padding: 1rem;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L1VzZXJzL2plcmljL0RvY3VtZW50cy8yMDI2JTIwZmlsZXMvTEFNUy1GSU5BTC9zcmMvYXBwL3BhZ2VzL3JlcG9ydHMvcmVwb3J0cy5jb21wb25lbnQudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQ1k7RUFDSTtFQUNBIiwic291cmNlc0NvbnRlbnQiOlsiXG4gICAgICAgICAgICA6aG9zdCB7XG4gICAgICAgICAgICAgICAgZGlzcGxheTogYmxvY2s7XG4gICAgICAgICAgICAgICAgcGFkZGluZzogMXJlbTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgIl19 */"],
+  "mappings": ";AACY;AACI,WAAA;AACA,WAAA;ACAhB;",
+  "names": []
+}

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -157,13 +157,18 @@ export class ReportService {
     }
 
     // Calibration Reports
-    getDailyCalibrationReport(date: string): Observable<any> {
-        const url = `${this.baseApiUrl}/reports/calibration-maintenance/daily?date=${date}`;
+    getDailyCalibrationReport(date: string, laboratoryId: string): Observable<any> {
+        const url = `${this.baseApiUrl}/reports/calibration/daily?date=${date}&laboratoryId=${laboratoryId}`;
         return this.http.get<any>(url);
     }
 
-    getMonthlyCalibrationReport(month: number, year: number): Observable<any> {
-        const url = `${this.baseApiUrl}/reports/calibration-maintenance/monthly?month=${month}&year=${year}`;
+    getMonthlyCalibrationReport(month: number, year: number, laboratoryId: string): Observable<any> {
+        const url = `${this.baseApiUrl}/reports/calibration/monthly?month=${month}&year=${year}&laboratoryId=${laboratoryId}`;
+        return this.http.get<any>(url);
+    }
+
+    getYearlyCalibrationReport(year: number, laboratoryId: string): Observable<any> {
+        const url = `${this.baseApiUrl}/reports/calibration/yearly?year=${year}&laboratoryId=${laboratoryId}`;
         return this.http.get<any>(url);
     }
 }
