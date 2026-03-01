@@ -45,7 +45,7 @@ interface Laboratory {
             <div class="flex justify-between items-center mb-4">
                 <div>
                     <h2 class="text-2xl font-bold mb-1">Preventive Maintenance Report</h2>
-                    <p class="text-muted-color">Generate daily or monthly preventive maintenance reports by laboratory.</p>
+                    <p class="text-muted-color">Generate daily, monthly, or yearly preventive maintenance reports by laboratory.</p>
                 </div>
             </div>
 
@@ -66,7 +66,7 @@ interface Laboratory {
                     <p-select [(ngModel)]="selectedMonth" [options]="months" optionLabel="label" optionValue="value" placeholder="Select month" />
                 </div>
 
-                <div class="flex flex-col gap-2" *ngIf="reportType === 'monthly'">
+                <div class="flex flex-col gap-2" *ngIf="reportType === 'monthly' || reportType === 'yearly'">
                     <label for="selectedYear" class="font-semibold">Year</label>
                     <p-select [(ngModel)]="selectedYear" [options]="years" placeholder="Select year" />
                 </div>
@@ -105,7 +105,7 @@ interface Laboratory {
                         <span class="font-semibold">Daily Report Details</span>
                     </ng-template>
                     <ng-template #end>
-                        <p-button label="Export CSV" icon="pi pi-upload" (onClick)="exportCSV()" size="small" />
+                        <p-button label="Export Word" icon="pi pi-download" (onClick)="exportWord()" size="small" />
                     </ng-template>
                 </p-toolbar>
 
@@ -132,21 +132,22 @@ interface Laboratory {
                 </p-table>
             </div>
 
-            <!-- Report Results - Monthly -->
-            <div *ngIf="reportData && reportType === 'monthly' && !isLoading" class="mt-4">
+            <!-- Report Results - Monthly/Yearly -->
+            <div *ngIf="reportData && (reportType === 'monthly' || reportType === 'yearly') && !isLoading" class="mt-4">
                 <div class="mb-4 p-4 bg-surface-100 dark:bg-surface-700 rounded">
                     <h3 class="text-xl font-bold mb-2">{{ reportData.laboratoryName }}</h3>
-                    <p><strong>Period:</strong> {{ getMonthName(reportData.month) }} {{ reportData.year }}</p>
+                    <p *ngIf="reportType === 'monthly'"><strong>Period:</strong> {{ getMonthName(reportData.month) }} {{ reportData.year }}</p>
+                    <p *ngIf="reportType === 'yearly'"><strong>Year:</strong> {{ reportData.year || selectedYear }}</p>
                     <p><strong>Campus:</strong> {{ reportData.campusName || 'N/A' }}</p>
                     <p><strong>Total Records:</strong> {{ reportData.totalRecords || 0 }}</p>
                 </div>
 
                 <p-toolbar styleClass="mb-2">
                     <ng-template #start>
-                        <span class="font-semibold">Monthly Report Details</span>
+                        <span class="font-semibold">{{ reportType === 'monthly' ? 'Monthly' : 'Yearly' }} Report Details</span>
                     </ng-template>
                     <ng-template #end>
-                        <p-button label="Export CSV" icon="pi pi-upload" (onClick)="exportCSV()" size="small" />
+                        <p-button label="Export Word" icon="pi pi-download" (onClick)="exportWord()" size="small" />
                     </ng-template>
                 </p-toolbar>
 
@@ -188,7 +189,7 @@ interface Laboratory {
     `
 })
 export class PreventiveReportComponent implements OnInit {
-    reportType: 'daily' | 'monthly' = 'daily';
+    reportType: 'daily' | 'monthly' | 'yearly' = 'daily';
     selectedDate: Date = new Date();
     selectedMonth: number = new Date().getMonth() + 1;
     selectedYear: number = new Date().getFullYear();
@@ -202,7 +203,8 @@ export class PreventiveReportComponent implements OnInit {
 
     reportTypes = [
         { label: 'Daily Report', value: 'daily' },
-        { label: 'Monthly Report', value: 'monthly' }
+        { label: 'Monthly Report', value: 'monthly' },
+        { label: 'Yearly Report', value: 'yearly' }
     ];
 
     months = [
@@ -276,7 +278,7 @@ export class PreventiveReportComponent implements OnInit {
                     console.error('❌ Error loading daily report:', error);
                 }
             });
-        } else {
+        } else if (this.reportType === 'monthly') {
             this.reportService.getMonthlyPreventiveReport(this.selectedMonth, this.selectedYear, this.laboratoryId).subscribe({
                 next: (data) => {
                     this.reportData = data;
@@ -286,6 +288,18 @@ export class PreventiveReportComponent implements OnInit {
                     this.errorMessage = error.error?.message || 'Failed to generate monthly report';
                     this.isLoading = false;
                     console.error('❌ Error loading monthly report:', error);
+                }
+            });
+        } else {
+            this.reportService.getYearlyPreventiveReport(this.selectedYear, this.laboratoryId).subscribe({
+                next: (data) => {
+                    this.reportData = data;
+                    this.isLoading = false;
+                },
+                error: (error) => {
+                    this.errorMessage = error.error?.message || 'Failed to generate yearly report';
+                    this.isLoading = false;
+                    console.error('❌ Error loading yearly report:', error);
                 }
             });
         }
@@ -312,36 +326,96 @@ export class PreventiveReportComponent implements OnInit {
         return monthObj ? monthObj.label : 'Unknown';
     }
 
-    exportCSV(): void {
+    exportWord(): void {
         if (!this.reportData || !this.reportData.records) {
             console.warn('No data to export');
             return;
         }
 
-        let csv = '';
-        let filename = '';
+        const timestamp = this.getTimestamp();
+        const reportLabel = this.reportType === 'daily' ? 'Daily' : this.reportType === 'monthly' ? 'Monthly' : 'Yearly';
 
-        if (this.reportType === 'daily') {
-            csv = 'Machine/Equipment,Action Taken,Observation\n';
-            csv += this.reportData.records.map((r: DailyReportRecord) => `"${r.machineEquipmentInstrument}","${r.actionTaken}","${r.observation}"`).join('\n');
-            filename = `preventive-daily-${this.formatDateToString(this.selectedDate)}.csv`;
-        } else {
-            csv = 'Date,Equipment,Serial Number,Observations,Action Taken,Remarks\n';
-            csv += this.reportData.records
-                .map((r: MonthlyReportRecord) => {
-                    const date = new Date(r.date).toISOString().split('T')[0];
-                    return `"${date}","${r.machineEquipmentInstrument}","${r.serialNumber}","${r.observations}","${r.actionTaken}","${r.remarks}"`;
-                })
-                .join('\n');
-            filename = `preventive-monthly-${this.selectedYear}-${this.selectedMonth}.csv`;
-        }
+        const summaryRows =
+            this.reportType === 'daily'
+                ? `
+                    <tr><td><strong>Laboratory</strong></td><td>${this.escapeHtml(this.reportData.laboratoryName || 'N/A')}</td></tr>
+                    <tr><td><strong>Date</strong></td><td>${this.escapeHtml(this.formatDate(this.reportData.date || this.selectedDate))}</td></tr>
+                    <tr><td><strong>Performed By</strong></td><td>${this.escapeHtml(this.reportData.performedBy || 'N/A')}</td></tr>
+                    <tr><td><strong>Assisted By</strong></td><td>${this.escapeHtml(this.reportData.assistedBy || 'N/A')}</td></tr>
+                    <tr><td><strong>Recommendations</strong></td><td>${this.escapeHtml(this.reportData.recommendations || 'No recommendations provided')}</td></tr>
+                `
+                : `
+                    <tr><td><strong>Laboratory</strong></td><td>${this.escapeHtml(this.reportData.laboratoryName || 'N/A')}</td></tr>
+                    <tr><td><strong>${this.reportType === 'monthly' ? 'Period' : 'Year'}</strong></td><td>${this.escapeHtml(this.reportType === 'monthly' ? `${this.getMonthName(this.reportData.month || this.selectedMonth)} ${this.reportData.year || this.selectedYear}` : String(this.reportData.year || this.selectedYear))}</td></tr>
+                    <tr><td><strong>Campus</strong></td><td>${this.escapeHtml(this.reportData.campusName || 'N/A')}</td></tr>
+                    <tr><td><strong>Total Records</strong></td><td>${this.escapeHtml(String(this.reportData.totalRecords || this.reportData.records?.length || 0))}</td></tr>
+                `;
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const tableHeader =
+            this.reportType === 'daily'
+                ? '<tr><th>Machine/Equipment/Instrument</th><th>Action Taken</th><th>Observation</th></tr>'
+                : '<tr><th>Date</th><th>Equipment</th><th>Serial Number</th><th>Observations</th><th>Action Taken</th><th>Remarks</th></tr>';
+
+        const tableRows =
+            this.reportType === 'daily'
+                ? this.reportData.records
+                      .map((row: DailyReportRecord) => `<tr><td>${this.escapeHtml(row.machineEquipmentInstrument || 'N/A')}</td><td>${this.escapeHtml(row.actionTaken || 'N/A')}</td><td>${this.escapeHtml(row.observation || 'N/A')}</td></tr>`)
+                      .join('')
+                : this.reportData.records
+                      .map((row: MonthlyReportRecord) => {
+                          const date = row.date ? new Date(row.date).toLocaleDateString('en-US') : 'N/A';
+                          return `<tr><td>${this.escapeHtml(date)}</td><td>${this.escapeHtml(row.machineEquipmentInstrument || 'N/A')}</td><td>${this.escapeHtml(row.serialNumber || 'N/A')}</td><td>${this.escapeHtml(row.observations || 'N/A')}</td><td>${this.escapeHtml(row.actionTaken || 'N/A')}</td><td>${this.escapeHtml(row.remarks || 'N/A')}</td></tr>`;
+                      })
+                      .join('');
+
+        const documentContent = `
+            <html>
+                <head>
+                    <meta charset="UTF-8" />
+                    <title>Preventive Maintenance ${reportLabel} Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 24px; }
+                        h2 { margin-bottom: 12px; }
+                        h3 { margin: 16px 0 8px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+                        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+                        th { background: #f4f4f4; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Preventive Maintenance ${reportLabel} Report</h2>
+                    <table>${summaryRows}</table>
+                    <h3>Report Details</h3>
+                    <table>
+                        <thead>${tableHeader}</thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </body>
+            </html>
+        `;
+
+        const filename = `preventive-${this.reportType}-${timestamp}.doc`;
+        const blob = new Blob(['\ufeff', documentContent], { type: 'application/msword' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
         link.setAttribute('download', filename);
         link.click();
         URL.revokeObjectURL(url);
+    }
+
+    private getTimestamp(): string {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+    }
+
+    private escapeHtml(value: string): string {
+        return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 }

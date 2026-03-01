@@ -140,8 +140,13 @@ export class ReportService {
         return this.http.get<any>(url);
     }
 
+    getYearlyPreventiveReport(year: number, laboratoryId: string): Observable<any> {
+        const url = `${this.baseApiUrl}/reports/preventive-maintenance/yearly?year=${year}&laboratoryId=${laboratoryId}`;
+        return this.http.get<any>(url);
+    }
+
     // Corrective Maintenance Reports
-      getDailyCorrectiveReport(date: string, laboratoryId: string): Observable<any> {
+    getDailyCorrectiveReport(date: string, laboratoryId: string): Observable<any> {
         const url = `${this.baseApiUrl}/reports/corrective-maintenance/daily?date=${date}&laboratoryId=${laboratoryId}`;
         console.log('🔹 Daily Corrective URL:', url);
         console.log('🔹 Daily Corrective Filter:', { date, laboratoryId });
