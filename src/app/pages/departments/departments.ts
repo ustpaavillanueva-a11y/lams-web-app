@@ -27,7 +27,7 @@ import Swal from 'sweetalert2';
         <p-toolbar styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
-                    <p-button label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNewDepartmentDialog()" />
+                    <p-button *ngIf="!isSuperAdmin" label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNewDepartmentDialog()" />
                     <p-button label="Delete Selected" icon="pi pi-trash" severity="secondary" outlined (onClick)="deleteSelectedDepartments()" [disabled]="!selectedDepartments.length" />
                 </div>
             </ng-template>
@@ -96,6 +96,7 @@ export class DepartmentsComponent implements OnInit {
     campuses: any[] = [];
     searchValue: string = '';
     loading: boolean = false;
+    isSuperAdmin: boolean = false;
 
     constructor(
         private userService: UserService,
@@ -104,8 +105,22 @@ export class DepartmentsComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.checkUserRole();
         this.loadDepartments();
         this.loadCampuses();
+    }
+
+    checkUserRole() {
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            try {
+                const user = JSON.parse(currentUser);
+                this.isSuperAdmin = user.role === 'SuperAdmin';
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                this.isSuperAdmin = false;
+            }
+        }
     }
 
     loadDepartments() {
