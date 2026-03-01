@@ -7,12 +7,15 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ReportService } from '../service/report.service';
+import { UserService, UserData } from '../service/user.service';
 
 interface Laboratory {
     laboratoryId: string;
@@ -31,7 +34,7 @@ interface CorrectiveReportRecord {
 @Component({
     selector: 'app-corrective-report',
     standalone: true,
-    imports: [CommonModule, FormsModule, ToolbarModule, ButtonModule, DatePickerModule, TableModule, TagModule, SelectModule, ProgressSpinnerModule, MessageModule, CardModule],
+    imports: [CommonModule, FormsModule, ToolbarModule, ButtonModule, DatePickerModule, TableModule, TagModule, SelectModule, InputTextModule, ProgressSpinnerModule, MessageModule, CardModule, DialogModule],
     template: `
         <div class="card">
             <div class="flex justify-between items-center mb-4">
@@ -100,7 +103,7 @@ interface CorrectiveReportRecord {
                         <span class="font-semibold">Corrective Report Details</span>
                     </ng-template>
                     <ng-template #end>
-                        <p-button label="Export CSV" icon="pi pi-upload" (onClick)="exportCSV()" size="small" />
+                        <p-button label="Export Word" icon="pi pi-file-word" (onClick)="openPreview()" size="small" />
                     </ng-template>
                 </p-toolbar>
 
@@ -136,6 +139,112 @@ interface CorrectiveReportRecord {
                 <i class="pi pi-info-circle text-4xl mb-3"></i>
                 <p>Select filters and click "Generate Report" to view data.</p>
             </div>
+
+            <!-- Preview Dialog -->
+            <p-dialog [(visible)]="showPreview" [header]="'Preview Corrective Maintenance Form'" [modal]="true" [style]="{ width: '90vw', height: '90vh' }" [maximizable]="true">
+                <div class="preview-container" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Form Preview -->
+                    <div style="background: white; padding: 30px; font-family: Arial, sans-serif; line-height: 1.5;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                            <div>
+                                @if (headerImageBase64) {
+                                    <img [src]="headerImageBase64" style="max-width: 200px; height: auto; max-height: 60px;" />
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <div style="text-align: center; font-size: 16px; font-weight: bold; margin: 20px 0;">CORRECTIVE MAINTENANCE FORM</div>
+
+                        <!-- Lab Name and Date (Editable) -->
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
+                            <div style="flex: 1;">
+                                <strong>Laboratory Name:</strong>
+                                <input [(ngModel)]="previewData.laboratoryName" style="width: 100%; border: none; border-bottom: 1px solid #333; padding: 5px 0;" />
+                            </div>
+                            <div style="flex: 1; text-align: right;">
+                                <strong>Date:</strong>
+                                <input [(ngModel)]="previewData.reportDate" style="width: 150px; border: none; border-bottom: 1px solid #333; padding: 5px 0; text-align: right;" />
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 25%;">Equipment / Instrument</th>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 25%;">Actual Reading</th>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 25%;">Expected Reading</th>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 25%;">Observation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of previewData.tableRows; let i = index">
+                                    <td style="border: 1px solid black; padding: 8px; height: 30px;">
+                                        <input [(ngModel)]="row.equipment" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 8px;">
+                                        <input [(ngModel)]="row.actualReading" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 8px;">
+                                        <input [(ngModel)]="row.expectedReading" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 8px;">
+                                        <input [(ngModel)]="row.observation" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Recommendation (Editable) -->
+                        <div style="margin-bottom: 20px;">
+                            <strong style="color: #8B4513; font-size: 12px;">Recommendation:</strong>
+                            <textarea [(ngModel)]="previewData.recommendation" style="width: 100%; min-height: 60px; border: 1px solid #999; padding: 8px; font-size: 10px; font-family: Arial; margin-top: 5px;"></textarea>
+                        </div>
+
+                        <!-- Signatures (Editable) -->
+                        <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 10px; gap: 10px;">
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-weight: bold; color: #8B4513; margin-bottom: 5px;">Performed by:</div>
+                                <p-select [(ngModel)]="previewData.performedBy" [options]="usersWithOthers" placeholder="Select user" [filter]="true" styleClass="w-full" style="width: 100%;" (onChange)="onPerformedByChange($event)">
+                                    <ng-template let-user pTemplate="item"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                    <ng-template let-user pTemplate="selectedItem"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                </p-select>
+                                @if (isPerformedByOther) {
+                                    <input type="text" [(ngModel)]="performedByManual" placeholder="Enter name" pInputText class="w-full" style="margin-top: 5px; font-size: 10px;" />
+                                }
+                            </div>
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-weight: bold; color: #8B4513; margin-bottom: 5px;">Assisted by:</div>
+                                <p-select [(ngModel)]="previewData.assistedBy" [options]="usersWithOthers" placeholder="Select user" [filter]="true" styleClass="w-full" style="width: 100%;" (onChange)="onAssistedByChange($event)">
+                                    <ng-template let-user pTemplate="item"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                    <ng-template let-user pTemplate="selectedItem"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                </p-select>
+                                @if (isAssistedByOther) {
+                                    <input type="text" [(ngModel)]="assistedByManual" placeholder="Enter name" pInputText class="w-full" style="margin-top: 5px; font-size: 10px;" />
+                                }
+                            </div>
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-weight: bold; color: #8B4513; margin-bottom: 5px;">Noted by:</div>
+                                <p-select [(ngModel)]="previewData.notedBy" [options]="usersWithOthers" placeholder="Select user" [filter]="true" styleClass="w-full" style="width: 100%;" (onChange)="onNotedByChange($event)">
+                                    <ng-template let-user pTemplate="item"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                    <ng-template let-user pTemplate="selectedItem"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                </p-select>
+                                @if (isNotedByOther) {
+                                    <input type="text" [(ngModel)]="notedByManual" placeholder="Enter name" pInputText class="w-full" style="margin-top: 5px; font-size: 10px;" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dialog Footer -->
+                <ng-template pTemplate="footer">
+                    <p-button label="Cancel" icon="pi pi-times" (onClick)="showPreview = false" class="p-button-secondary" />
+                    <p-button label="Download" icon="pi pi-download" (onClick)="downloadFromPreview()" class="p-button-success" />
+                </ng-template>
+            </p-dialog>
         </div>
     `
 })
@@ -151,6 +260,30 @@ export class CorrectiveReportComponent implements OnInit {
     errorMessage = '';
 
     laboratories: Laboratory[] = [];
+    users: UserData[] = [];
+    usersWithOthers: any[] = [];
+
+    showPreview: boolean = false;
+    isPerformedByOther: boolean = false;
+    isAssistedByOther: boolean = false;
+    isNotedByOther: boolean = false;
+    performedByManual: string = '';
+    assistedByManual: string = '';
+    notedByManual: string = '';
+
+    previewData: any = {
+        laboratoryName: '',
+        reportDate: '',
+        tableRows: [],
+        recommendation: '',
+        performedBy: '',
+        assistedBy: '',
+        notedBy: ''
+    };
+
+    headerImageBase64: string = '';
+    exportRetryCount: number = 0;
+    maxExportRetries: number = 3;
 
     reportTypes = [
         { label: 'Daily Report', value: 'daily' },
@@ -177,6 +310,7 @@ export class CorrectiveReportComponent implements OnInit {
 
     constructor(
         private reportService: ReportService,
+        private userService: UserService,
         private http: HttpClient
     ) {
         const currentYear = new Date().getFullYear();
@@ -185,6 +319,8 @@ export class CorrectiveReportComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadLaboratories();
+        this.loadHeaderImage();
+        this.loadUsers();
     }
 
     loadLaboratories(): void {
@@ -300,5 +436,337 @@ export class CorrectiveReportComponent implements OnInit {
         link.setAttribute('download', filename);
         link.click();
         URL.revokeObjectURL(url);
+    }
+
+    loadHeaderImage(): void {
+        const imagePath = 'assets/header.png.png';
+        this.http.get(imagePath, { responseType: 'blob' }).subscribe({
+            next: (blob) => {
+                this.convertBlobToBase64(blob);
+            },
+            error: (err) => console.error('Error loading header image:', err)
+        });
+    }
+
+    convertBlobToBase64(blob: Blob): void {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            this.headerImageBase64 = reader.result as string;
+        };
+        reader.readAsDataURL(blob);
+    }
+
+    loadUsers(): void {
+        this.userService.getAllUsers().subscribe({
+            next: (data) => {
+                this.users = data;
+                this.usersWithOthers = [...data, { userId: 'others', firstName: 'Others', lastName: '(Manual Input)', isOthers: true }];
+            },
+            error: (error) => {
+                console.error('❌ Error loading users:', error);
+            }
+        });
+    }
+
+    isImageLoaded(): boolean {
+        return !!this.headerImageBase64;
+    }
+
+    getMonthName(month: number): string {
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        return monthNames[month - 1] || '';
+    }
+
+    private getTimestamp(): string {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+    }
+
+    private escapeHtml(value: string): string {
+        return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    private getUserFullName(user: any): string {
+        if (!user) return '';
+        if (typeof user === 'string') return user;
+        return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+
+    onPerformedByChange(event: any): void {
+        this.isPerformedByOther = event.value?.isOthers === true;
+        if (!this.isPerformedByOther) {
+            this.performedByManual = '';
+        }
+    }
+
+    onAssistedByChange(event: any): void {
+        this.isAssistedByOther = event.value?.isOthers === true;
+        if (!this.isAssistedByOther) {
+            this.assistedByManual = '';
+        }
+    }
+
+    onNotedByChange(event: any): void {
+        this.isNotedByOther = event.value?.isOthers === true;
+        if (!this.isNotedByOther) {
+            this.notedByManual = '';
+        }
+    }
+
+    openPreview(): void {
+        if (!this.reportData || !this.reportData.records) {
+            console.warn('No data to preview');
+            return;
+        }
+
+        const reportDate =
+            this.reportType === 'daily'
+                ? this.formatDate(this.reportData.date || this.selectedDate)
+                : this.reportType === 'monthly'
+                  ? `${this.getMonthName(this.reportData.month || this.selectedMonth)} ${this.reportData.year || this.selectedYear}`
+                  : String(this.reportData.year || this.selectedYear);
+
+        this.previewData = {
+            laboratoryName: this.reportData.laboratoryName || '',
+            reportDate: reportDate,
+            tableRows: this.reportData.records.map((row: any) => ({
+                equipment: row.machineEquipmentInstrument || '',
+                actualReading: row.actualReading || '',
+                expectedReading: row.expectedReading || '',
+                observation: row.observation || '',
+                action: row.actionTaken || ''
+            })),
+            recommendation: this.reportData.recommendations || '',
+            performedBy: this.reportData.performedBy || '',
+            assistedBy: this.reportData.assistedBy || '',
+            notedBy: this.reportData.notedBy || 'Head, Maintenance Unit'
+        };
+
+        while (this.previewData.tableRows.length < 8) {
+            this.previewData.tableRows.push({ equipment: '', actualReading: '', expectedReading: '', observation: '', action: '' });
+        }
+
+        this.showPreview = true;
+    }
+
+    downloadFromPreview(): void {
+        if (!this.previewData) {
+            console.warn('No preview data');
+            return;
+        }
+
+        if (!this.isImageLoaded()) {
+            if (this.exportRetryCount < this.maxExportRetries) {
+                this.exportRetryCount++;
+                setTimeout(() => this.downloadFromPreview(), 300);
+            } else {
+                console.warn('Image failed to load, proceeding with export');
+                this.exportRetryCount = 0;
+                this.proceedWithPreviewDownload();
+            }
+            return;
+        }
+        this.exportRetryCount = 0;
+        this.proceedWithPreviewDownload();
+    }
+
+    private proceedWithPreviewDownload(): void {
+        if (!this.previewData) {
+            return;
+        }
+
+        const timestamp = this.getTimestamp();
+
+        const tableRows = this.previewData.tableRows
+            .map((row: any) => {
+                const equipment = this.escapeHtml(row.equipment);
+                const actualReading = this.escapeHtml(row.actualReading);
+                const expectedReading = this.escapeHtml(row.expectedReading);
+                const observation = this.escapeHtml(row.observation);
+                return `<tr><td style="border: 1px solid black; padding: 12px; height: 30px;">${equipment}</td><td style="border: 1px solid black; padding: 12px;">${actualReading}</td><td style="border: 1px solid black; padding: 12px;">${expectedReading}</td><td style="border: 1px solid black; padding: 12px;">${observation}</td></tr>`;
+            })
+            .join('');
+
+        const recommendations = this.escapeHtml(this.previewData.recommendation);
+        const performedBy = this.escapeHtml(this.isPerformedByOther ? this.performedByManual : this.getUserFullName(this.previewData.performedBy));
+        const assistedBy = this.escapeHtml(this.isAssistedByOther ? this.assistedByManual : this.getUserFullName(this.previewData.assistedBy));
+        const notedBy = this.escapeHtml(this.isNotedByOther ? this.notedByManual : this.getUserFullName(this.previewData.notedBy));
+
+        const documentContent = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="UTF-8" />
+                    <title>Corrective Maintenance Form</title>
+                    <style>
+                        @page {
+                            size: A4 portrait;
+                            margin-top: 0.5cm;
+                            margin-bottom: 1.27cm;
+                            margin-left: 1.27cm;
+                            margin-right: 1.27cm;
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 10px;
+                        }
+                        .title {
+                            text-align: center;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin: 15px 0 20px 0;
+                        }
+                        .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 15px;
+                            font-size: 12px;
+                        }
+                        .info-field {
+                            flex: 1;
+                        }
+                        .form-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 2px;
+                            margin-top: 2px;
+                        }
+                        .form-table th {
+                            border: 1px solid black;
+                            padding: 1px;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 11px;
+                            background: #f9f9f9;
+                        }
+                        .form-table td {
+                            border: 1px solid black;
+                            padding: 1px;
+                            vertical-align: top;
+                            font-size: 10px;
+                            line-height: 1.2;
+                        }
+                        .recommendation-section {
+                            margin-top: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .recommendation-label {
+                            font-weight: bold;
+                            color: #8B4513;
+                            font-size: 12px;
+                            margin-bottom: 8px;
+                        }
+                        .recommendation-text {
+                            font-size: 10px;
+                            line-height: 1.6;
+                            min-height: 50px;
+                            border-bottom: 1px solid #999;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                        .signature-section {
+                            margin-top: 15px;
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 8px;
+                            gap: 5px;
+                        }
+                        .signature-block {
+                            flex: 1;
+                            text-align: center;
+                        }
+                        .signature-line {
+                            margin-top: 15px;
+                            border-bottom: 1px solid black;
+                            height: 12px;
+                            margin-bottom: 2px;
+                        }
+                        .signature-label {
+                            font-weight: bold;
+                            color: #8B4513;
+                            font-size: 8px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <!-- Header with Logo -->
+                    <div style="text-align: center; margin-bottom: 5px;">
+                        <img src="${this.headerImageBase64}" style="width: 1.5in; height: auto;" />
+                    </div>
+
+                    <!-- Title -->
+                    <div class="title">CORRECTIVE MAINTENANCE FORM</div>
+
+                    <!-- Laboratory Name and Date -->
+                    <div class="info-row">
+                        <div class="info-field">
+                            <strong>Laboratory Name:</strong> <u style="margin-left: 5px;">${this.escapeHtml(this.previewData.laboratoryName)}</u>
+                        </div>
+                        <div class="info-field" style="text-align: right;">
+                            <strong>Date:</strong> <u style="margin-left: 5px; display: inline-block; width: 150px;">${this.escapeHtml(this.previewData.reportDate)}</u>
+                        </div>
+                    </div>
+
+                    <!-- Main Table -->
+                    <table class="form-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Equipment / Instrument</th>
+                                <th style="width: 25%;">Actual Reading</th>
+                                <th style="width: 25%;">Expected Reading</th>
+                                <th style="width: 25%;">Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+
+                    <!-- Recommendation Section -->
+                    <div class="recommendation-section">
+                        <div class="recommendation-label">Recommendation:</div>
+                        <div class="recommendation-text">${recommendations}</div>
+                    </div>
+
+                    <!-- Signature Section -->
+                    <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 33%; text-align: center; padding: 5px; vertical-align: top;">
+                                <div style="font-weight: bold; color: #8B4513; font-size: 11px; margin-bottom: 15px;">Performed by:</div>
+                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 2px;"></div>
+                                <div style="font-size: 10px; margin-top: 5px;">${performedBy}</div>
+                            </td>
+                            <td style="width: 33%; text-align: center; padding: 5px; vertical-align: top;">
+                                <div style="font-weight: bold; color: #8B4513; font-size: 11px; margin-bottom: 15px;">Assisted by:</div>
+                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 2px;"></div>
+                                <div style="font-size: 10px; margin-top: 5px;">${assistedBy}</div>
+                            </td>
+                            <td style="width: 33%; text-align: center; padding: 5px; vertical-align: top;">
+                                <div style="font-weight: bold; color: #8B4513; font-size: 11px; margin-bottom: 15px;">Noted by:</div>
+                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 2px;"></div>
+                                <div style="font-size: 10px; margin-top: 5px;">${notedBy}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+            </html>
+        `;
+
+        const filename = `corrective-${this.reportType}-${timestamp}.doc`;
+        const blob = new Blob(['\ufeff', documentContent], { type: 'application/msword' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.click();
+        URL.revokeObjectURL(url);
+
+        this.showPreview = false;
     }
 }
