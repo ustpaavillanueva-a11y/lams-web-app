@@ -10,6 +10,7 @@ import { FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, DateSelectArg, EventClickArg, EventApi } from '@fullcalendar/core';
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import { CalendarService } from '../service/calendar.service';
 
 const INITIAL_EVENTS = [
     {
@@ -372,7 +373,11 @@ export class DashboardCampusAdmin implements OnInit {
     });
     currentEvents = signal<EventApi[]>([]);
 
-    constructor(private http: HttpClient) {}
+    constructor(
+        private http: HttpClient,
+        private changeDetector: ChangeDetectorRef,
+        private calendarService: CalendarService
+    ) {}
 
     ngOnInit() {
         this.loadDepartmentCount();
@@ -383,6 +388,7 @@ export class DashboardCampusAdmin implements OnInit {
         this.loadMaintenanceRequestsByLaboratory();
         this.loadMaintenanceStatus();
         this.loadActivities();
+        this.loadCalendarEvents();
         this.initChartOptions();
         this.initDonutChartOptions();
     }
@@ -676,6 +682,30 @@ export class DashboardCampusAdmin implements OnInit {
             USER_DELETED: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
         };
         return classes[actionType] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+    }
+
+    //// Load Calendar Events
+    loadCalendarEvents() {
+        this.calendarService.getCalendarEvents().subscribe({
+            next: (events) => {
+                this.calendarOptions.update((options) => ({
+                    ...options,
+                    events: events.map((event) => ({
+                        id: event.id,
+                        title: event.title,
+                        start: event.start,
+                        end: event.end,
+                        extendedProps: event.extendedProps,
+                        backgroundColor: event.extendedProps.color,
+                        borderColor: event.extendedProps.color
+                    }))
+                }));
+                this.changeDetector.detectChanges();
+            },
+            error: (error) => {
+                console.error('Error loading calendar events:', error);
+            }
+        });
     }
 
     // Calendar event handlers

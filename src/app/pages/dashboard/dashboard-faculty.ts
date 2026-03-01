@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { UIChart } from 'primeng/chart';
@@ -8,6 +8,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
+import { CalendarService } from '../service/calendar.service';
 
 let eventGuid = 0;
 const TODAY_STR = new Date().toISOString().replace(/T.*$/, '');
@@ -192,12 +193,17 @@ export class DashboardFaculty implements OnInit {
     });
     currentEvents = signal<EventApi[]>([]);
 
-    constructor(private http: HttpClient) {}
+    constructor(
+        private http: HttpClient,
+        private changeDetector: ChangeDetectorRef,
+        private calendarService: CalendarService
+    ) {}
 
     ngOnInit() {
         this.loadTotalSubmitted();
         this.loadPending();
         this.loadByStatus();
+        this.loadCalendarEvents();
         this.initDonutOptions();
         this.initMockScheduleData();
     }
@@ -346,6 +352,30 @@ export class DashboardFaculty implements OnInit {
                 laboratory: 'Chem Lab 2'
             }
         ];
+    }
+
+    //// Load Calendar Events
+    loadCalendarEvents() {
+        this.calendarService.getCalendarEvents().subscribe({
+            next: (events) => {
+                this.calendarOptions.update((options) => ({
+                    ...options,
+                    events: events.map((event) => ({
+                        id: event.id,
+                        title: event.title,
+                        start: event.start,
+                        end: event.end,
+                        extendedProps: event.extendedProps,
+                        backgroundColor: event.extendedProps.color,
+                        borderColor: event.extendedProps.color
+                    }))
+                }));
+                this.changeDetector.detectChanges();
+            },
+            error: (error) => {
+                console.error('Error loading calendar events:', error);
+            }
+        });
     }
 
     // Calendar event handlers

@@ -839,8 +839,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         const searchLower = this.searchValue.toLowerCase().trim();
         let items: any[] = [];
 
-        // Include both completed requests and completed approvals
-        items = [...this.completedItems, ...this.completedApprovedItems];
+        // Only show completed approvals (not the original requests to avoid duplicates)
+        items = [...this.completedApprovedItems];
         console.log('items', items);
 
         if (!searchLower) return items;
