@@ -11,6 +11,7 @@ import { CalendarOptions, DateSelectArg, EventClickArg, EventApi } from '@fullca
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { CalendarService } from '../service/calendar.service';
+import Swal from 'sweetalert2';
 
 const INITIAL_EVENTS = [
     {
@@ -710,23 +711,148 @@ export class DashboardCampusAdmin implements OnInit {
 
     // Calendar event handlers
     handleDateSelect(selectInfo: DateSelectArg) {
-        const title = prompt('Please enter a new title for your event');
         const calendarApi = selectInfo.view.calendar;
         calendarApi.unselect();
-        if (title) {
-            calendarApi.addEvent({
-                id: createEventId(),
-                title,
-                start: selectInfo.startStr,
-                end: selectInfo.endStr,
-                allDay: selectInfo.allDay
-            });
-        }
+
+        Swal.fire({
+            title: 'Add New Event',
+            html: `
+                <input id="event-title" class="swal2-input" placeholder="Event Title" style="width: 85%;">
+                <textarea id="event-description" class="swal2-textarea" placeholder="Description (optional)" style="width: 85%; height: 80px;"></textarea>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Add Event',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                const title = (document.getElementById('event-title') as HTMLInputElement).value;
+                const description = (document.getElementById('event-description') as HTMLTextAreaElement).value;
+
+                if (!title) {
+                    Swal.showValidationMessage('Please enter an event title');
+                    return false;
+                }
+                return { title, description };
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                calendarApi.addEvent({
+                    id: createEventId(),
+                    title: result.value.title,
+                    start: selectInfo.startStr,
+                    end: selectInfo.endStr,
+                    allDay: selectInfo.allDay,
+                    extendedProps: {
+                        type: 'custom',
+                        description: result.value.description,
+                        color: '#9333ea'
+                    },
+                    backgroundColor: '#9333ea',
+                    borderColor: '#9333ea'
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Event Added!',
+                    text: 'Your custom event has been added to the calendar.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        });
     }
 
     handleEventClick(clickInfo: EventClickArg) {
-        if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-            clickInfo.event.remove();
+        const event = clickInfo.event;
+        const props = event.extendedProps;
+
+        if (props['type'] === 'custom') {
+            // Custom manually added event
+            Swal.fire({
+                title: '<strong>Custom Event</strong>',
+                icon: 'info',
+                html: `
+                    <div style="text-align: left; padding: 10px;">
+                        <p><strong>Title:</strong> ${event.title}</p>
+                        <p><strong>Description:</strong> ${props['description'] || 'No description'}</p>
+                        <p><strong>Date:</strong> ${new Date(event.start!).toLocaleString()}</p>
+                        ${event.end ? `<p><strong>End:</strong> ${new Date(event.end).toLocaleString()}</p>` : ''}
+                    </div>
+                `,
+                showDenyButton: true,
+                confirmButtonText: 'Close',
+                denyButtonText: 'Delete Event',
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            }).then((result) => {
+                if (result.isDenied) {
+                    Swal.fire({
+                        title: 'Delete Event?',
+                        text: 'Are you sure you want to delete this event?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it',
+                        cancelButtonText: 'Cancel'
+                    }).then((deleteConfirm) => {
+                        if (deleteConfirm.isConfirmed) {
+                            clickInfo.event.remove();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Event has been deleted.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
+                }
+            });
+        } else if (props['type'] === 'schedule') {
+            // Schedule event details
+            Swal.fire({
+                title: '<strong>Lab Schedule</strong>',
+                icon: 'info',
+                html: `
+                    <div style="text-align: left; padding: 10px;">
+                        <p><strong>Subject:</strong> ${props['subject'] || 'N/A'}</p>
+                        <p><strong>Laboratory:</strong> ${props['lab'] || 'N/A'}</p>
+                        <p><strong>Building:</strong> ${props['location'] || 'N/A'}</p>
+                        <p><strong>Campus:</strong> ${props['campus'] || 'N/A'}</p>
+                        <p><strong>Instructor:</strong> ${props['instructor'] || 'N/A'}</p>
+                        <p><strong>Students:</strong> ${props['totalStudents'] || 0}</p>
+                        <p><strong>Time:</strong> ${new Date(event.start!).toLocaleTimeString()} - ${event.end ? new Date(event.end).toLocaleTimeString() : 'N/A'}</p>
+                    </div>
+                `,
+                confirmButtonText: 'Close',
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            });
+        } else if (props['type'] === 'maintenance') {
+            // Maintenance event details
+            const priorityColor = props['priority'] === 'High' ? 'red' : props['priority'] === 'Medium' ? 'orange' : 'green';
+            Swal.fire({
+                title: '<strong>Maintenance Request</strong>',
+                icon: 'warning',
+                html: `
+                    <div style="text-align: left; padding: 10px;">
+                        <p><strong>Equipment:</strong> ${props['equipment'] || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${props['maintenanceType'] || 'N/A'}</p>
+                        <p><strong>Priority:</strong> <span style="color: ${priorityColor}; font-weight: bold;">${props['priority'] || 'N/A'}</span></p>
+                        <p><strong>Status:</strong> ${props['status'] || 'N/A'}</p>
+                        <p><strong>Building:</strong> ${props['location'] || 'N/A'}</p>
+                        <p><strong>Requested By:</strong> ${props['requestedBy'] || 'N/A'}</p>
+                        <p><strong>Assigned To:</strong> ${props['assignedTo'] || 'Not Assigned'}</p>
+                        <p><strong>Description:</strong> ${props['description'] || 'No description'}</p>
+                        <p><strong>Date:</strong> ${new Date(event.start!).toLocaleString()}</p>
+                    </div>
+                `,
+                confirmButtonText: 'Close',
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            });
         }
     }
 

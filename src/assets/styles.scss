@@ -3,3 +3,24 @@
 @use './layout/layout.scss';
 @use 'primeicons/primeicons.css';
 @use './demo/demo.scss';
+
+/* SweetAlert2 Custom Styles for Calendar Event Details */
+.swal-wide {
+    width: 600px !important;
+    max-width: 90% !important;
+}
+
+.swal-wide .swal2-html-container {
+    text-align: left !important;
+    font-size: 14px;
+}
+
+.swal-wide p {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.swal-wide strong {
+    color: #333;
+    font-weight: 600;
+}
