@@ -12,6 +12,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
 import { ReportService } from '../service/report.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -39,7 +40,7 @@ interface Laboratory {
 @Component({
     selector: 'app-preventive-report',
     standalone: true,
-    imports: [CommonModule, FormsModule, ToolbarModule, ButtonModule, DatePickerModule, TableModule, TabsModule, TagModule, SelectModule, InputTextModule, ProgressSpinnerModule, MessageModule, CardModule],
+    imports: [CommonModule, FormsModule, ToolbarModule, ButtonModule, DatePickerModule, TableModule, TabsModule, TagModule, SelectModule, InputTextModule, ProgressSpinnerModule, MessageModule, CardModule, DialogModule],
     template: `
         <div class="card">
             <div class="flex justify-between items-center mb-4">
@@ -105,7 +106,7 @@ interface Laboratory {
                         <span class="font-semibold">Daily Report Details</span>
                     </ng-template>
                     <ng-template #end>
-                        <p-button label="Export Word" icon="pi pi-download" (onClick)="exportWord()" size="small" />
+                        <p-button label="Preview & Export" icon="pi pi-download" (onClick)="openPreview()" size="small" />
                     </ng-template>
                 </p-toolbar>
 
@@ -147,7 +148,7 @@ interface Laboratory {
                         <span class="font-semibold">{{ reportType === 'monthly' ? 'Monthly' : 'Yearly' }} Report Details</span>
                     </ng-template>
                     <ng-template #end>
-                        <p-button label="Export Word" icon="pi pi-download" (onClick)="exportWord()" size="small" />
+                        <p-button label="Preview & Export" icon="pi pi-download" (onClick)="openPreview()" size="small" />
                     </ng-template>
                 </p-toolbar>
 
@@ -185,6 +186,91 @@ interface Laboratory {
                 <i class="pi pi-info-circle text-4xl mb-3"></i>
                 <p>Select filters and click "Generate Report" to view data.</p>
             </div>
+
+            <!-- Preview Dialog -->
+            <p-dialog [(visible)]="showPreview" [header]="'Preview Preventive Maintenance Form'" [modal]="true" [style]="{ width: '90vw', height: '90vh' }" [maximizable]="true">
+                <div class="preview-container" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Form Preview -->
+                    <div style="background: white; padding: 30px; font-family: Arial, sans-serif; line-height: 1.5;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                            <div>
+                                <img [src]="headerImageBase64 || 'public/header.png'" style="max-width: 200px; height: auto; max-height: 60px;" />
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <div style="text-align: center; font-size: 16px; font-weight: bold; margin: 20px 0;">PREVENTIVE MAINTENANCE FORM</div>
+
+                        <!-- Lab Name and Date (Editable) -->
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
+                            <div style="flex: 1;">
+                                <strong>Laboratory Name:</strong>
+                                <input [(ngModel)]="previewData.laboratoryName" style="width: 100%; border: none; border-bottom: 1px solid #333; padding: 5px 0;" />
+                            </div>
+                            <div style="flex: 1; text-align: right;">
+                                <strong>Date:</strong>
+                                <input [(ngModel)]="previewData.reportDate" style="width: 150px; border: none; border-bottom: 1px solid #333; padding: 5px 0; text-align: right;" />
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 35%;">Machine / Equipment / Instrument</th>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 30%;">Action Taken</th>
+                                    <th style="border: 1px solid black; padding: 10px; text-align: center; font-weight: bold; width: 35%;">Observation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of previewData.tableRows; let i = index">
+                                    <td style="border: 1px solid black; padding: 8px; height: 30px;">
+                                        <input [(ngModel)]="row.equipment" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 8px;">
+                                        <input [(ngModel)]="row.action" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 8px;">
+                                        <input [(ngModel)]="row.observation" style="width: 100%; border: none; padding: 2px;" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Recommendation (Editable) -->
+                        <div style="margin-bottom: 20px;">
+                            <strong style="color: #8B4513; font-size: 12px;">Recommendation:</strong>
+                            <textarea [(ngModel)]="previewData.recommendation" style="width: 100%; min-height: 60px; border: 1px solid #999; padding: 8px; font-size: 10px; font-family: Arial; margin-top: 5px;"></textarea>
+                        </div>
+
+                        <!-- Signatures (Editable) -->
+                        <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 10px;">
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-weight: bold; color: #8B4513;">Performed by:</div>
+                                <div style="height: 50px; border-bottom: 1px solid black; margin: 10px 0;"></div>
+                                <input [(ngModel)]="previewData.performedBy" style="border: none; text-align: center; width: 100%; font-size: 9px;" placeholder="Name" />
+                            </div>
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-weight: bold; color: #8B4513;">Assisted by:</div>
+                                <div style="height: 50px; border-bottom: 1px solid black; margin: 10px 0;"></div>
+                                <input [(ngModel)]="previewData.assistedBy" style="border: none; text-align: center; width: 100%; font-size: 9px;" placeholder="Name" />
+                            </div>
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-weight: bold; color: #8B4513;">Noted by:</div>
+                                <div style="height: 50px; border-bottom: 1px solid black; margin: 10px 0;"></div>
+                                <div style="font-size: 9px; color: #0066cc; font-weight: bold;">Head, Maintenance Unit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dialog Footer -->
+                <ng-template pTemplate="footer">
+                    <p-button label="Cancel" icon="pi pi-times" (onClick)="showPreview = false" class="p-button-secondary" />
+                    <p-button label="Download" icon="pi pi-download" (onClick)="downloadFromPreview()" class="p-button-success" />
+                </ng-template>
+            </p-dialog>
         </div>
     `
 })
@@ -200,6 +286,16 @@ export class PreventiveReportComponent implements OnInit {
     errorMessage: string = '';
 
     laboratories: Laboratory[] = [];
+
+    showPreview: boolean = false;
+    previewData: any = {
+        laboratoryName: '',
+        reportDate: '',
+        tableRows: [],
+        recommendation: '',
+        performedBy: '',
+        assistedBy: ''
+    };
 
     reportTypes = [
         { label: 'Daily Report', value: 'daily' },
@@ -223,6 +319,9 @@ export class PreventiveReportComponent implements OnInit {
     ];
 
     years: number[] = [];
+    headerImageBase64: string = '';
+    private exportRetryCount: number = 0;
+    private maxExportRetries: number = 10;
 
     constructor(
         private reportService: ReportService,
@@ -236,7 +335,49 @@ export class PreventiveReportComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.loadHeaderImage();
         this.loadLaboratories();
+    }
+
+    loadHeaderImage(): void {
+        // Try to load from assets folder
+        this.http.get('assets/header.png.png', { responseType: 'blob' }).subscribe({
+            next: (blob) => {
+                this.convertBlobToBase64(blob);
+            },
+            error: (error) => {
+                console.warn('⚠️ Could not load header image from assets/', error);
+                // Silently fail - proceed without image
+                this.headerImageBase64 = '';
+            }
+        });
+    }
+
+    private convertBlobToBase64(blob: Blob): void {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                let dataUrl = event.target?.result as string;
+                // Ensure it's a proper data URL with MIME type
+                if (dataUrl && dataUrl.startsWith('data:')) {
+                    this.headerImageBase64 = dataUrl;
+                } else if (dataUrl) {
+                    // Fallback: add MIME type if not present
+                    this.headerImageBase64 = 'data:image/png;base64,' + dataUrl.split(',')[1];
+                } else {
+                    console.warn('⚠️ Could not convert image');
+                    this.headerImageBase64 = '';
+                }
+            } catch (error) {
+                console.warn('⚠️ Error processing image:', error);
+                this.headerImageBase64 = '';
+            }
+        };
+        reader.onerror = () => {
+            console.warn('⚠️ FileReader error while loading image');
+            this.headerImageBase64 = '';
+        };
+        reader.readAsDataURL(blob);
     }
 
     loadLaboratories(): void {
@@ -326,70 +467,218 @@ export class PreventiveReportComponent implements OnInit {
         return monthObj ? monthObj.label : 'Unknown';
     }
 
+    isImageLoaded(): boolean {
+        return this.headerImageBase64.length > 0;
+    }
+
     exportWord(): void {
         if (!this.reportData || !this.reportData.records) {
             console.warn('No data to export');
             return;
         }
 
+        // Wait for image if not yet loaded, then proceed
+        if (!this.isImageLoaded()) {
+            if (this.exportRetryCount < this.maxExportRetries) {
+                this.exportRetryCount++;
+                setTimeout(() => this.exportWord(), 300); // Retry after 300ms
+            } else {
+                console.warn('Image failed to load, proceeding with export');
+                this.exportRetryCount = 0;
+                this.proceedWithWordExport();
+            }
+            return;
+        }
+        this.exportRetryCount = 0;
+        this.proceedWithWordExport();
+    }
+
+    private proceedWithWordExport(): void {
+        if (!this.reportData || !this.reportData.records) {
+            return;
+        }
+
         const timestamp = this.getTimestamp();
-        const reportLabel = this.reportType === 'daily' ? 'Daily' : this.reportType === 'monthly' ? 'Monthly' : 'Yearly';
-
-        const summaryRows =
+        const reportDate =
             this.reportType === 'daily'
-                ? `
-                    <tr><td><strong>Laboratory</strong></td><td>${this.escapeHtml(this.reportData.laboratoryName || 'N/A')}</td></tr>
-                    <tr><td><strong>Date</strong></td><td>${this.escapeHtml(this.formatDate(this.reportData.date || this.selectedDate))}</td></tr>
-                    <tr><td><strong>Performed By</strong></td><td>${this.escapeHtml(this.reportData.performedBy || 'N/A')}</td></tr>
-                    <tr><td><strong>Assisted By</strong></td><td>${this.escapeHtml(this.reportData.assistedBy || 'N/A')}</td></tr>
-                    <tr><td><strong>Recommendations</strong></td><td>${this.escapeHtml(this.reportData.recommendations || 'No recommendations provided')}</td></tr>
-                `
-                : `
-                    <tr><td><strong>Laboratory</strong></td><td>${this.escapeHtml(this.reportData.laboratoryName || 'N/A')}</td></tr>
-                    <tr><td><strong>${this.reportType === 'monthly' ? 'Period' : 'Year'}</strong></td><td>${this.escapeHtml(this.reportType === 'monthly' ? `${this.getMonthName(this.reportData.month || this.selectedMonth)} ${this.reportData.year || this.selectedYear}` : String(this.reportData.year || this.selectedYear))}</td></tr>
-                    <tr><td><strong>Campus</strong></td><td>${this.escapeHtml(this.reportData.campusName || 'N/A')}</td></tr>
-                    <tr><td><strong>Total Records</strong></td><td>${this.escapeHtml(String(this.reportData.totalRecords || this.reportData.records?.length || 0))}</td></tr>
-                `;
+                ? this.formatDate(this.reportData.date || this.selectedDate)
+                : this.reportType === 'monthly'
+                  ? `${this.getMonthName(this.reportData.month || this.selectedMonth)} ${this.reportData.year || this.selectedYear}`
+                  : String(this.reportData.year || this.selectedYear);
 
-        const tableHeader =
-            this.reportType === 'daily'
-                ? '<tr><th>Machine/Equipment/Instrument</th><th>Action Taken</th><th>Observation</th></tr>'
-                : '<tr><th>Date</th><th>Equipment</th><th>Serial Number</th><th>Observations</th><th>Action Taken</th><th>Remarks</th></tr>';
+        // Generate table rows for the form
+        const tableRows = this.reportData.records
+            .map((row: DailyReportRecord | MonthlyReportRecord) => {
+                const equipment = this.escapeHtml((row as any).machineEquipmentInstrument || 'N/A');
+                const action = this.escapeHtml((row as any).actionTaken || 'N/A');
+                const observation = this.escapeHtml((row as any).observation || (row as any).observations || 'N/A');
+                return `<tr><td style="border: 1px solid black; padding: 12px; height: 30px;">${equipment}</td><td style="border: 1px solid black; padding: 12px;">${action}</td><td style="border: 1px solid black; padding: 12px;">${observation}</td></tr>`;
+            })
+            .join('');
 
-        const tableRows =
-            this.reportType === 'daily'
-                ? this.reportData.records
-                      .map((row: DailyReportRecord) => `<tr><td>${this.escapeHtml(row.machineEquipmentInstrument || 'N/A')}</td><td>${this.escapeHtml(row.actionTaken || 'N/A')}</td><td>${this.escapeHtml(row.observation || 'N/A')}</td></tr>`)
-                      .join('')
-                : this.reportData.records
-                      .map((row: MonthlyReportRecord) => {
-                          const date = row.date ? new Date(row.date).toLocaleDateString('en-US') : 'N/A';
-                          return `<tr><td>${this.escapeHtml(date)}</td><td>${this.escapeHtml(row.machineEquipmentInstrument || 'N/A')}</td><td>${this.escapeHtml(row.serialNumber || 'N/A')}</td><td>${this.escapeHtml(row.observations || 'N/A')}</td><td>${this.escapeHtml(row.actionTaken || 'N/A')}</td><td>${this.escapeHtml(row.remarks || 'N/A')}</td></tr>`;
-                      })
-                      .join('');
+        // Add empty rows if less than 10 rows
+        const emptyRows = Math.max(0, 10 - this.reportData.records.length);
+        let additionalRows = '';
+        for (let i = 0; i < emptyRows; i++) {
+            additionalRows += `<tr><td style="border: 1px solid black; padding: 12px; height: 30px;">&nbsp;</td><td style="border: 1px solid black; padding: 12px;">&nbsp;</td><td style="border: 1px solid black; padding: 12px;">&nbsp;</td></tr>`;
+        }
+
+        const recommendations = this.escapeHtml(this.reportData.recommendations || 'No recommendations provided');
+        const performedBy = this.escapeHtml(this.reportData.performedBy || '');
+        const assistedBy = this.escapeHtml(this.reportData.assistedBy || '');
+        const notedBy = this.escapeHtml(this.reportData.notedBy || 'Head, Maintenance Unit');
 
         const documentContent = `
+            <!DOCTYPE html>
             <html>
                 <head>
                     <meta charset="UTF-8" />
-                    <title>Preventive Maintenance ${reportLabel} Report</title>
+                    <title>Preventive Maintenance Form</title>
                     <style>
-                        body { font-family: Arial, sans-serif; margin: 24px; }
-                        h2 { margin-bottom: 12px; }
-                        h3 { margin: 16px 0 8px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-                        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
-                        th { background: #f4f4f4; }
+                        @page {
+                            size: A4 portrait;
+                            margin: 2cm;
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 20px;
+                            margin-top: 10px;
+                            width: 100%;
+                        }
+                        .title {
+                            text-align: center;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin: 15px 0 20px 0;
+                        }
+                        .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 6px;
+                            font-size: 12px;
+                        }
+                        .info-field {
+                            flex: 1;
+                        }
+                        .form-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 15px;
+                            margin-top: 5px;
+                        }
+                        .form-table th {
+                            border: 1px solid black;
+                            padding: 6px;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 11px;
+                            background: #f9f9f9;
+                        }
+                        .form-table td {
+                            border: 1px solid black;
+                            padding: 6px;
+                            vertical-align: top;
+                            font-size: 10px;
+                        }
+                        .recommendation-section {
+                            margin-top: 10px;
+                            margin-bottom: 10px;
+                        }
+                        .recommendation-label {
+                            font-weight: bold;
+                            color: #8B4513;
+                            font-size: 12px;
+                            margin-bottom: 8px;
+                        }
+                        .recommendation-text {
+                            font-size: 10px;
+                            line-height: 1.6;
+                            min-height: 50px;
+                            border-bottom: 1px solid #999;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                        .signature-section {
+                            margin-top: 30px;
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 10px;
+                        }
+                        .signature-block {
+                            flex: 1;
+                            text-align: center;
+                        }
+                        .signature-line {
+                            margin-top: 40px;
+                            border-bottom: 1px solid black;
+                            height: 20px;
+                            margin-bottom: 5px;
+                        }
+                        .signature-label {
+                            font-weight: bold;
+                            color: #8B4513;
+                            font-size: 10px;
+                        }
                     </style>
                 </head>
                 <body>
-                    <h2>Preventive Maintenance ${reportLabel} Report</h2>
-                    <table>${summaryRows}</table>
-                    <h3>Report Details</h3>
-                    <table>
-                        <thead>${tableHeader}</thead>
-                        <tbody>${tableRows}</tbody>
+                    <!-- Header with Logo -->
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <img src="${this.headerImageBase64}" style="width: auto; height: auto;" />
+                    </div>
+
+                    <!-- Title -->
+                    <div class="title">PREVENTIVE MAINTENANCE FORM</div>
+
+                    <!-- Laboratory Name and Date -->
+                    <div class="info-row">
+                        <div class="info-field">
+                            <strong>Laboratory Name:</strong> <u style="margin-left: 5px;">${this.escapeHtml(this.reportData.laboratoryName || '')}</u>
+                        </div>
+                        <div class="info-field" style="text-align: right;">
+                            <strong>Date:</strong> <u style="margin-left: 5px; display: inline-block; width: 150px;">${reportDate}</u>
+                        </div>
+                    </div>
+
+                    <!-- Main Table -->
+                    <table class="form-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">Machine / Equipment / Instrument</th>
+                                <th style="width: 30%;">Action Taken</th>
+                                <th style="width: 35%;">Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                            ${additionalRows}
+                        </tbody>
                     </table>
+
+                    <!-- Recommendation Section -->
+                    <div class="recommendation-section">
+                        <div class="recommendation-label">Recommendation:</div>
+                        <div class="recommendation-text">${recommendations}</div>
+                    </div>
+
+                    <!-- Signature Section -->
+                    <div class="signature-section">
+                        <div class="signature-block">
+                            <div class="signature-label">Performed by:</div>
+                            <div class="signature-line"></div>
+                            <div style="font-size: 9px;">${performedBy}</div>
+                        </div>
+                        <div class="signature-block">
+                            <div class="signature-label">Assisted by:</div>
+                            <div class="signature-line"></div>
+                            <div style="font-size: 9px;">${assistedBy}</div>
+                        </div>
+                        <div class="signature-block">
+                            <div class="signature-label">Noted by:</div>
+                            <div class="signature-line"></div>
+                            <div style="font-size: 9px; color: #0066cc; font-weight: bold;">Head, Maintenance Unit</div>
+                        </div>
+                    </div>
                 </body>
             </html>
         `;
@@ -417,5 +706,245 @@ export class PreventiveReportComponent implements OnInit {
 
     private escapeHtml(value: string): string {
         return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    openPreview(): void {
+        if (!this.reportData || !this.reportData.records) {
+            console.warn('No data to preview');
+            return;
+        }
+
+        // Initialize preview data from report data
+        const reportDate =
+            this.reportType === 'daily'
+                ? this.formatDate(this.reportData.date || this.selectedDate)
+                : this.reportType === 'monthly'
+                  ? `${this.getMonthName(this.reportData.month || this.selectedMonth)} ${this.reportData.year || this.selectedYear}`
+                  : String(this.reportData.year || this.selectedYear);
+
+        this.previewData = {
+            laboratoryName: this.reportData.laboratoryName || '',
+            reportDate: reportDate,
+            tableRows: this.reportData.records.map((row: any) => ({
+                equipment: row.machineEquipmentInstrument || '',
+                action: row.actionTaken || '',
+                observation: row.observation || row.observations || ''
+            })),
+            recommendation: this.reportData.recommendations || '',
+            performedBy: this.reportData.performedBy || '',
+            assistedBy: this.reportData.assistedBy || ''
+        };
+
+        // Pad table rows to minimum 10
+        while (this.previewData.tableRows.length < 10) {
+            this.previewData.tableRows.push({ equipment: '', action: '', observation: '' });
+        }
+
+        this.showPreview = true;
+    }
+
+    downloadFromPreview(): void {
+        if (!this.previewData) {
+            console.warn('No preview data');
+            return;
+        }
+
+        // Wait for image if not yet loaded, then proceed
+        if (!this.isImageLoaded()) {
+            if (this.exportRetryCount < this.maxExportRetries) {
+                this.exportRetryCount++;
+                setTimeout(() => this.downloadFromPreview(), 300); // Retry after 300ms
+            } else {
+                console.warn('Image failed to load, proceeding with export');
+                this.exportRetryCount = 0;
+                this.proceedWithPreviewDownload();
+            }
+            return;
+        }
+        this.exportRetryCount = 0;
+        this.proceedWithPreviewDownload();
+    }
+
+    private proceedWithPreviewDownload(): void {
+        if (!this.previewData) {
+            return;
+        }
+
+        const timestamp = this.getTimestamp();
+
+        // Build table rows HTML from preview data
+        const tableRows = this.previewData.tableRows
+            .map((row: any) => {
+                const equipment = this.escapeHtml(row.equipment);
+                const action = this.escapeHtml(row.action);
+                const observation = this.escapeHtml(row.observation);
+                return `<tr><td style="border: 1px solid black; padding: 12px; height: 30px;">${equipment}</td><td style="border: 1px solid black; padding: 12px;">${action}</td><td style="border: 1px solid black; padding: 12px;">${observation}</td></tr>`;
+            })
+            .join('');
+
+        const recommendations = this.escapeHtml(this.previewData.recommendation);
+        const performedBy = this.escapeHtml(this.previewData.performedBy);
+        const assistedBy = this.escapeHtml(this.previewData.assistedBy);
+
+        const documentContent = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="UTF-8" />
+                    <title>Preventive Maintenance Form</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 20px;
+                            margin-top: 10px;
+                        }
+                        .title {
+                            text-align: center;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin: 15px 0 20px 0;
+                        }
+                        .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 15px;
+                            font-size: 12px;
+                        }
+                        .info-field {
+                            flex: 1;
+                        }
+                        .form-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 15px;
+                            margin-top: 10px;
+                        }
+                        .form-table th {
+                            border: 1px solid black;
+                            padding: 10px;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 11px;
+                            background: #f9f9f9;
+                        }
+                        .form-table td {
+                            border: 1px solid black;
+                            padding: 12px;
+                            vertical-align: top;
+                            font-size: 10px;
+                        }
+                        .recommendation-section {
+                            margin-top: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .recommendation-label {
+                            font-weight: bold;
+                            color: #8B4513;
+                            font-size: 12px;
+                            margin-bottom: 8px;
+                        }
+                        .recommendation-text {
+                            font-size: 10px;
+                            line-height: 1.6;
+                            min-height: 50px;
+                            border-bottom: 1px solid #999;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                        .signature-section {
+                            margin-top: 30px;
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 10px;
+                        }
+                        .signature-block {
+                            flex: 1;
+                            text-align: center;
+                        }
+                        .signature-line {
+                            margin-top: 40px;
+                            border-bottom: 1px solid black;
+                            height: 20px;
+                            margin-bottom: 5px;
+                        }
+                        .signature-label {
+                            font-weight: bold;
+                            color: #8B4513;
+                            font-size: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <!-- Header with Logo -->
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="${this.headerImageBase64}" style="width: 1.5in; height: auto;" />
+                    </div>
+
+                    <!-- Title -->
+                    <div class="title">PREVENTIVE MAINTENANCE FORM</div>
+
+                    <!-- Laboratory Name and Date -->
+                    <div class="info-row">
+                        <div class="info-field">
+                            <strong>Laboratory Name:</strong> <u style="margin-left: 5px;">${this.escapeHtml(this.previewData.laboratoryName)}</u>
+                        </div>
+                        <div class="info-field" style="text-align: right;">
+                            <strong>Date:</strong> <u style="margin-left: 5px; display: inline-block; width: 150px;">${this.escapeHtml(this.previewData.reportDate)}</u>
+                        </div>
+                    </div>
+
+                    <!-- Main Table -->
+                    <table class="form-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">Machine / Equipment / Instrument</th>
+                                <th style="width: 30%;">Action Taken</th>
+                                <th style="width: 35%;">Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+
+                    <!-- Recommendation Section -->
+                    <div class="recommendation-section">
+                        <div class="recommendation-label">Recommendation:</div>
+                        <div class="recommendation-text">${recommendations}</div>
+                    </div>
+
+                    <!-- Signature Section -->
+                    <div class="signature-section">
+                        <div class="signature-block">
+                            <div class="signature-label">Performed by:</div>
+                            <div class="signature-line"></div>
+                            <div style="font-size: 9px;">${performedBy}</div>
+                        </div>
+                        <div class="signature-block">
+                            <div class="signature-label">Assisted by:</div>
+                            <div class="signature-line"></div>
+                            <div style="font-size: 9px;">${assistedBy}</div>
+                        </div>
+                        <div class="signature-block">
+                            <div class="signature-label">Noted by:</div>
+                            <div class="signature-line"></div>
+                            <div style="font-size: 9px; color: #0066cc; font-weight: bold;">Head, Maintenance Unit</div>
+                        </div>
+                    </div>
+                </body>
+            </html>
+        `;
+
+        const filename = `preventive-${this.reportType}-${timestamp}.doc`;
+        const blob = new Blob(['\ufeff', documentContent], { type: 'application/msword' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.click();
+        URL.revokeObjectURL(url);
+
+        // Close preview dialog
+        this.showPreview = false;
     }
 }
