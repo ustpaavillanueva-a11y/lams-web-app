@@ -541,8 +541,8 @@ export class PreventiveReportComponent implements OnInit {
                         }
                         body {
                             font-family: Arial, sans-serif;
-                            margin: 20px;
-                            margin-top: 10px;
+                            margin: 5px;
+                            margin-top: 5px;
                             width: 100%;
                         }
                         .title {
@@ -554,7 +554,6 @@ export class PreventiveReportComponent implements OnInit {
                         .info-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 6px;
                             font-size: 12px;
                         }
                         .info-field {
@@ -563,12 +562,12 @@ export class PreventiveReportComponent implements OnInit {
                         .form-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin-bottom: 15px;
-                            margin-top: 5px;
+                            margin-bottom: 2px;
+                            margin-top: 2px;
                         }
                         .form-table th {
                             border: 1px solid black;
-                            padding: 6px;
+                            padding: 1px;
                             text-align: center;
                             font-weight: bold;
                             font-size: 11px;
@@ -576,9 +575,10 @@ export class PreventiveReportComponent implements OnInit {
                         }
                         .form-table td {
                             border: 1px solid black;
-                            padding: 6px;
+                            padding: 1px;
                             vertical-align: top;
                             font-size: 10px;
+                            line-height: 1.2;
                         }
                         .recommendation-section {
                             margin-top: 10px;
@@ -735,8 +735,8 @@ export class PreventiveReportComponent implements OnInit {
             assistedBy: this.reportData.assistedBy || ''
         };
 
-        // Pad table rows to minimum 10
-        while (this.previewData.tableRows.length < 10) {
+        // Pad table rows to minimum 8
+        while (this.previewData.tableRows.length < 8) {
             this.previewData.tableRows.push({ equipment: '', action: '', observation: '' });
         }
 
@@ -816,12 +816,12 @@ export class PreventiveReportComponent implements OnInit {
                         .form-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin-bottom: 15px;
-                            margin-top: 10px;
+                            margin-bottom: 2px;
+                            margin-top: 2px;
                         }
                         .form-table th {
                             border: 1px solid black;
-                            padding: 10px;
+                            padding: 1px;
                             text-align: center;
                             font-weight: bold;
                             font-size: 11px;
@@ -829,9 +829,10 @@ export class PreventiveReportComponent implements OnInit {
                         }
                         .form-table td {
                             border: 1px solid black;
-                            padding: 12px;
+                            padding: 1px;
                             vertical-align: top;
                             font-size: 10px;
+                            line-height: 1.2;
                         }
                         .recommendation-section {
                             margin-top: 20px;
@@ -897,9 +898,9 @@ export class PreventiveReportComponent implements OnInit {
                     <table class="form-table">
                         <thead>
                             <tr>
-                                <th style="width: 35%;">Machine / Equipment / Instrument</th>
-                                <th style="width: 30%;">Action Taken</th>
-                                <th style="width: 35%;">Observation</th>
+                                <th style="width: 30%;">Machine / Equipment / Instrument</th>
+                                <th style="width: 25%;">Action Taken</th>
+                                <th style="width: 30%;">Observation</th>
                             </tr>
                         </thead>
                         <tbody>
