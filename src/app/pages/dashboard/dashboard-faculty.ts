@@ -406,28 +406,46 @@ export class DashboardFaculty implements OnInit {
             }
         }).then((result) => {
             if (result.isConfirmed && result.value) {
-                calendarApi.addEvent({
-                    id: createEventId(),
-                    title: result.value.title,
-                    start: selectInfo.startStr,
-                    end: selectInfo.endStr,
-                    allDay: selectInfo.allDay,
-                    extendedProps: {
-                        type: 'custom',
-                        description: result.value.description,
-                        color: '#9333ea'
-                    },
-                    backgroundColor: '#9333ea',
-                    borderColor: '#9333ea'
+                // Show loading
+                Swal.fire({
+                    title: 'Saving...',
+                    text: 'Please wait while we save your event.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
                 });
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Event Added!',
-                    text: 'Your custom event has been added to the calendar.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                // Call API to save event
+                const apiUrl = 'http://localhost:3000/api/calendar/events';
+                this.http
+                    .post<any>(apiUrl, {
+                        title: result.value.title,
+                        description: result.value.description || ''
+                    })
+                    .subscribe({
+                        next: (response: any) => {
+                            // Reload calendar events from backend
+                            this.loadCalendarEvents();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Event Added!',
+                                text: 'Your event has been saved to the calendar.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        },
+                        error: (error) => {
+                            console.error('Error saving event:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to save event. Please try again.',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
             }
         });
     }
