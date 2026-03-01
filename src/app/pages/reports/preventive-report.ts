@@ -14,6 +14,7 @@ import { MessageModule } from 'primeng/message';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
 import { ReportService } from '../service/report.service';
+import { UserService, UserData } from '../service/user.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -245,21 +246,27 @@ interface Laboratory {
                         </div>
 
                         <!-- Signatures (Editable) -->
-                        <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 10px; gap: 10px;">
                             <div style="text-align: center; flex: 1;">
-                                <div style="font-weight: bold; color: #8B4513;">Performed by:</div>
-                                <div style="height: 50px; border-bottom: 1px solid black; margin: 10px 0;"></div>
-                                <input [(ngModel)]="previewData.performedBy" style="border: none; text-align: center; width: 100%; font-size: 9px;" placeholder="Name" />
+                                <div style="font-weight: bold; color: #8B4513; margin-bottom: 5px;">Performed by:</div>
+                                <p-select [(ngModel)]="previewData.performedBy" [options]="users" placeholder="Select user" [filter]="true" styleClass="w-full" style="width: 100%;">
+                                    <ng-template let-user pTemplate="item"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                    <ng-template let-user pTemplate="selectedItem"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                </p-select>
                             </div>
                             <div style="text-align: center; flex: 1;">
-                                <div style="font-weight: bold; color: #8B4513;">Assisted by:</div>
-                                <div style="height: 50px; border-bottom: 1px solid black; margin: 10px 0;"></div>
-                                <input [(ngModel)]="previewData.assistedBy" style="border: none; text-align: center; width: 100%; font-size: 9px;" placeholder="Name" />
+                                <div style="font-weight: bold; color: #8B4513; margin-bottom: 5px;">Assisted by:</div>
+                                <p-select [(ngModel)]="previewData.assistedBy" [options]="users" placeholder="Select user" [filter]="true" styleClass="w-full" style="width: 100%;">
+                                    <ng-template let-user pTemplate="item"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                    <ng-template let-user pTemplate="selectedItem"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                </p-select>
                             </div>
                             <div style="text-align: center; flex: 1;">
-                                <div style="font-weight: bold; color: #8B4513;">Noted by:</div>
-                                <div style="height: 50px; border-bottom: 1px solid black; margin: 10px 0;"></div>
-                                <input [(ngModel)]="previewData.notedBy" style="border: none; text-align: center; width: 100%; font-size: 9px;" placeholder="Name" />
+                                <div style="font-weight: bold; color: #8B4513; margin-bottom: 5px;">Noted by:</div>
+                                <p-select [(ngModel)]="previewData.notedBy" [options]="users" placeholder="Select user" [filter]="true" styleClass="w-full" style="width: 100%;">
+                                    <ng-template let-user pTemplate="item"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                    <ng-template let-user pTemplate="selectedItem"> {{ user.firstName }} {{ user.lastName }} </ng-template>
+                                </p-select>
                             </div>
                         </div>
                     </div>
@@ -286,6 +293,7 @@ export class PreventiveReportComponent implements OnInit {
     errorMessage: string = '';
 
     laboratories: Laboratory[] = [];
+    users: UserData[] = [];
 
     showPreview: boolean = false;
     previewData: any = {
@@ -326,6 +334,7 @@ export class PreventiveReportComponent implements OnInit {
 
     constructor(
         private reportService: ReportService,
+        private userService: UserService,
         private http: HttpClient
     ) {
         // Generate years from 2020 to current year + 5
@@ -338,6 +347,7 @@ export class PreventiveReportComponent implements OnInit {
     ngOnInit(): void {
         this.loadHeaderImage();
         this.loadLaboratories();
+        this.loadUsers();
     }
 
     loadHeaderImage(): void {
@@ -389,6 +399,17 @@ export class PreventiveReportComponent implements OnInit {
             },
             error: (error) => {
                 console.error('❌ Error loading laboratories:', error);
+            }
+        });
+    }
+
+    loadUsers(): void {
+        this.userService.getAllUsers().subscribe({
+            next: (data) => {
+                this.users = data;
+            },
+            error: (error) => {
+                console.error('❌ Error loading users:', error);
             }
         });
     }
@@ -714,6 +735,12 @@ export class PreventiveReportComponent implements OnInit {
         return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    private getUserFullName(user: any): string {
+        if (!user) return '';
+        if (typeof user === 'string') return user;
+        return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+
     openPreview(): void {
         if (!this.reportData || !this.reportData.records) {
             console.warn('No data to preview');
@@ -790,9 +817,9 @@ export class PreventiveReportComponent implements OnInit {
             .join('');
 
         const recommendations = this.escapeHtml(this.previewData.recommendation);
-        const performedBy = this.escapeHtml(this.previewData.performedBy);
-        const assistedBy = this.escapeHtml(this.previewData.assistedBy);
-        const notedBy = this.escapeHtml(this.previewData.notedBy);
+        const performedBy = this.escapeHtml(this.getUserFullName(this.previewData.performedBy));
+        const assistedBy = this.escapeHtml(this.getUserFullName(this.previewData.assistedBy));
+        const notedBy = this.escapeHtml(this.getUserFullName(this.previewData.notedBy));
 
         const documentContent = `
             <!DOCTYPE html>
