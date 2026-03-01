@@ -537,12 +537,15 @@ export class PreventiveReportComponent implements OnInit {
                     <style>
                         @page {
                             size: A4 portrait;
-                            margin: 2cm;
+                            margin-top: 0.5cm;
+                            margin-bottom: 1.27cm;
+                            margin-left: 1.27cm;
+                            margin-right: 1.27cm;
                         }
                         body {
                             font-family: Arial, sans-serif;
                             margin: 5px;
-                            margin-top: 5px;
+                            margin-top: 0px;
                             width: 100%;
                         }
                         .title {
@@ -623,7 +626,7 @@ export class PreventiveReportComponent implements OnInit {
                 </head>
                 <body>
                     <!-- Header with Logo -->
-                    <div style="text-align: center; margin-bottom: 10px;">
+                    <div style="text-align: center; margin-bottom: 5px;">
                         <img src="${this.headerImageBase64}" style="width: auto; height: auto;" />
                     </div>
 
@@ -665,18 +668,18 @@ export class PreventiveReportComponent implements OnInit {
                     <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
                         <tr>
                             <td style="width: 33%; text-align: center; padding: 5px; vertical-align: top;">
-                                <div style="font-weight: bold; color: #8B4513; font-size: 8px; margin-bottom: 15px;">Performed by:</div>
-                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 2px;"></div>
+                                <div style="font-weight: bold; color: #8B4513; font-size: 8px; margin-bottom: 25px;">Performed by:</div>
+                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 10px;"></div>
                                 <div style="font-size: 8px;">${performedBy}</div>
                             </td>
                             <td style="width: 33%; text-align: center; padding: 5px; vertical-align: top;">
-                                <div style="font-weight: bold; color: #8B4513; font-size: 8px; margin-bottom: 15px;">Assisted by:</div>
-                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 2px;"></div>
+                                <div style="font-weight: bold; color: #8B4513; font-size: 8px; margin-bottom: 25px;">Assisted by:</div>
+                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 10px;"></div>
                                 <div style="font-size: 8px;">${assistedBy}</div>
                             </td>
                             <td style="width: 33%; text-align: center; padding: 5px; vertical-align: top;">
-                                <div style="font-weight: bold; color: #8B4513; font-size: 8px; margin-bottom: 15px;">Noted by:</div>
-                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 2px;"></div>
+                                <div style="font-weight: bold; color: #8B4513; font-size: 8px; margin-bottom: 25px;">Noted by:</div>
+                                <div style="border-bottom: 1px solid black; height: 12px; margin-bottom: 10px;"></div>
                                 <div style="font-size: 8px; color: #0066cc; font-weight: bold;">Head, Maintenance Unit</div>
                             </td>
                         </tr>
@@ -795,10 +798,16 @@ export class PreventiveReportComponent implements OnInit {
                     <meta charset="UTF-8" />
                     <title>Preventive Maintenance Form</title>
                     <style>
+                        @page {
+                            size: A4 portrait;
+                            margin-top: 0.5cm;
+                            margin-bottom: 1.27cm;
+                            margin-left: 1.27cm;
+                            margin-right: 1.27cm;
+                        }
                         body {
                             font-family: Arial, sans-serif;
-                            margin: 20px;
-                            margin-top: 10px;
+                            margin: 10px;
                         }
                         .title {
                             text-align: center;
@@ -880,7 +889,7 @@ export class PreventiveReportComponent implements OnInit {
                 </head>
                 <body>
                     <!-- Header with Logo -->
-                    <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="text-align: center; margin-bottom: 5px;">
                         <img src="${this.headerImageBase64}" style="width: 1.5in; height: auto;" />
                     </div>
 
