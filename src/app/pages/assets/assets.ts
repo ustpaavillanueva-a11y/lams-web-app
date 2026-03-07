@@ -206,52 +206,33 @@ import Swal from 'sweetalert2';
                 </tr>
             </ng-template>
 
-            <ng-template #body let-item>
+            <ng-template pTemplate="body" let-asset>
                 <tr>
-                    <td style="width: 3rem"><p-tableCheckbox [value]="item" /></td>
-                    <td>{{ getShortAssetId(item.assetId) }}</td>
-                    <td>{{ item.assetName || 'N/A' }}</td>
-                    <td>{{ item.propertyNumber || 'N/A' }}</td>
-                    <td>{{ item.campus?.campusName || 'N/A' }}</td>
-                    <td>{{ item.laboratories?.laboratoryName || 'N/A' }}</td>
-                    <td>{{ item.issuedTo || 'N/A' }}</td>
-                    <td>{{ item.status?.statusName || 'N/A' }}</td>
-                    <td class="text-gray-400">NULL</td>
+                    <td><p-tableCheckbox [value]="asset" /></td>
+                    <td>{{ getShortAssetId(asset.assetId) }}</td>
+                    <td>{{ asset.assetName }}</td>
+                    <td>{{ asset.propertyNumber }}</td>
+                    <td>{{ asset.campus?.campusName || 'N/A' }}</td>
+                    <td>{{ asset.laboratories?.laboratoryName || 'N/A' }}</td>
+                    <td>{{ asset.issuedTo || 'Not assigned' }}</td>
                     <td>
-                        <div *ngIf="item.qrCode" class="inline-block">
-                            <img
-                                *ngIf="isBase64Image(item.qrCode)"
-                                [src]="item.qrCode"
-                                alt="QR Code"
-                                class="w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer hover:shadow-lg hover:scale-110 transition-all"
-                                (click)="viewQrCode(item.qrCode)"
-                                pTooltip="Click to view QR Code"
-                            />
-                            <span *ngIf="!isBase64Image(item.qrCode)" class="text-xs bg-blue-100 px-2 py-1 rounded cursor-pointer hover:bg-blue-200 transition-colors" (click)="copyToClipboard(item.qrCode)" pTooltip="Click to copy QR Code">
-                                {{ item.qrCode }}
-                            </span>
-                        </div>
-                        <span *ngIf="!item.qrCode" class="text-gray-400">N/A</span>
+                        <p-tag [value]="asset.status?.statusName || 'Unknown'" [severity]="getStatusSeverity(asset.status?.statusName)" />
                     </td>
                     <td>
-                        <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" (onClick)="view(item)" />
-                            <p-button icon="pi pi-pencil" severity="secondary" [rounded]="true" [text]="true" (onClick)="edit(item)" />
-                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="delete(item)" />
-                            <p-button icon="pi pi-wrench" label="Request" severity="help" [rounded]="true" [text]="true" (onClick)="openRequestDialog(item)" *ngIf="!isLabTech && !isSuperAdmin" />
-                        </div>
+                        <p-tag [value]="asset.warranty ? 'Active' : 'Expired'" [severity]="asset.warranty ? 'success' : 'danger'" />
                     </td>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="11" class="text-center py-5">No assets found</td>
+                    <td>
+                        <button pButton icon="pi pi-qrcode" class="p-button-rounded p-button-text" (click)="viewQrCode(asset.qrCode)" pTooltip="View QR Code"></button>
+                    </td>
+                    <td>
+                        <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-warning" (click)="edit(asset)" pTooltip="Edit"></button>
+                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="delete(asset)" pTooltip="Delete"></button>
+                        <button pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance(asset)" pTooltip="Request Maintenance"></button>
+                    </td>
                 </tr>
             </ng-template>
         </p-table>
 
-        <!-- New Asset Dialog with Stepper -->
         <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="true" [maximizable]="true">
             <ng-template #content>
                 <!-- Professional Stepper -->
@@ -773,14 +754,24 @@ export class AssetsComponent implements OnInit {
         this.loading = true;
         this.assetService.getAssets().subscribe({
             next: (data) => {
+                console.log('=== ASSETS DATA FETCHED ===');
+                console.log('Raw data from API:', data);
+                console.log('Number of assets:', data?.length || 0);
+
                 if (data && data.length > 0) {
                     data.forEach((asset, index) => {});
                 }
                 this.assets = data || [];
                 this.filteredAssets = [...this.assets];
+
+                console.log('Assets array:', this.assets);
+                console.log('Filtered assets:', this.filteredAssets);
+                console.log('=========================');
+
                 this.loading = false;
             },
             error: (error) => {
+                console.error('Error loading assets:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -830,6 +821,21 @@ export class AssetsComponent implements OnInit {
         // Result: "004-002-001"
         const parts = assetId.split('-');
         return parts.map((part) => part.replace(/[^\d]/g, '')).join('-');
+    }
+
+    getStatusSeverity(status: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+        if (!status) return 'secondary';
+        const statusLower = status.toLowerCase();
+        if (statusLower.includes('serviceable') || statusLower.includes('working') || statusLower.includes('available')) {
+            return 'success';
+        } else if (statusLower.includes('unserviceable') || statusLower.includes('broken') || statusLower.includes('defective')) {
+            return 'danger';
+        } else if (statusLower.includes('maintenance') || statusLower.includes('repair')) {
+            return 'warn';
+        } else if (statusLower.includes('deployed') || statusLower.includes('in use')) {
+            return 'info';
+        }
+        return 'secondary';
     }
 
     getFullName(user: any): string {
@@ -1832,7 +1838,7 @@ export class AssetsComponent implements OnInit {
                                 <td>${asset.assetName || ''}</td>
                                 <td>${asset.propertyNumber || ''}</td>
                                 <td>${asset.campus?.campusName || ''}</td>
-                                <td>${(asset as any).laboratory?.labName || (asset as any)['laboratory']?.labName || ''}</td>
+                                <td>${asset.laboratories?.laboratoryName || ''}</td>
                                 <td>${asset.issuedTo || ''}</td>
                                 <td>${(asset as any).status?.statusName || (asset as any)['status']?.statusName || ''}</td>
                                 <td>${(asset as any).brand?.brandName || (asset as any)['brand']?.brandName || ''}</td>

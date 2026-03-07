@@ -53,7 +53,8 @@ import Swal from 'sweetalert2';
             <ng-template #start>
                 <div class="flex items-center gap-2">
                     <p-button label="New Schedule" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" *ngIf="!isCampusAdmin && !isSuperAdmin && !isFaculty" />
-                    <p-button label="Print" icon="pi pi-print" severity="secondary" outlined />
+                    <p-button label="PDF" icon="pi pi-file-pdf" severity="secondary" outlined (onClick)="viewAsPDF()" />
+                    <p-button label="Print" icon="pi pi-print" severity="secondary" outlined (onClick)="printSchedule()" />
                 </div>
             </ng-template>
             <ng-template #end>
@@ -857,6 +858,337 @@ export class LabScheduleComponent implements OnInit {
                         detail: 'Failed to delete schedule: ' + (error?.error?.message || error?.message)
                     });
                 }
+            });
+        }
+    }
+
+    getColorFromClass(colorClass: string): string {
+        const colorMap: { [key: string]: string } = {
+            'bg-green-500': '#10b981',
+            'bg-pink-500': '#ec4899',
+            'bg-gray-700': '#374151',
+            'bg-blue-600': '#2563eb',
+            'bg-cyan-500': '#06b6d4',
+            'bg-yellow-500': '#eab308',
+            'bg-indigo-600': '#4f46e5'
+        };
+        return colorMap[colorClass] || '#2563eb';
+    }
+
+    viewAsPDF() {
+        // Build the laboratory/campus name for header
+        let headerTitle = 'Laboratory Schedule';
+        if (this.selectedLaboratory) {
+            headerTitle = `${this.selectedLaboratory.laboratoryName} - Schedule`;
+        } else if (this.selectedCampus) {
+            headerTitle = `${this.selectedCampus.campusName} - All Laboratories Schedule`;
+        } else if (this.isFaculty) {
+            headerTitle = 'My Teaching Schedule';
+        }
+
+        const pdfHTML = this.generateScheduleHTML(headerTitle);
+
+        // Open in new window without triggering print
+        const pdfWindow = window.open('', '_blank', 'width=1200,height=800');
+        if (pdfWindow) {
+            pdfWindow.document.write(pdfHTML);
+            pdfWindow.document.close();
+            pdfWindow.focus();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to open PDF preview. Please check your browser settings and allow pop-ups.'
+            });
+        }
+    }
+
+    generateScheduleHTML(headerTitle: string): string {
+        let html = `
+            <html>
+            <head>
+                <title>${headerTitle}</title>
+                <style>
+                    @media print {
+                        @page {
+                            size: A4 portrait;
+                            margin: 8mm 6mm;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .no-print {
+                            display: none;
+                        }
+                    }
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        margin: 0;
+                        padding: 10px;
+                        background: #f3f4f6;
+                    }
+                    .no-print {
+                        position: fixed;
+                        top: 10px;
+                        right: 10px;
+                        z-index: 1000;
+                        display: flex;
+                        gap: 10px;
+                    }
+                    .btn {
+                        padding: 8px 16px;
+                        background: #2563eb;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    }
+                    .btn:hover {
+                        background: #1d4ed8;
+                    }
+                    .btn-secondary {
+                        background: #6b7280;
+                    }
+                    .btn-secondary:hover {
+                        background: #4b5563;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 8px;
+                        padding: 8px;
+                        background: white;
+                        border-radius: 4px;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: #1f2937;
+                    }
+                    .header p {
+                        margin: 4px 0 0 0;
+                        font-size: 10px;
+                        color: #6b7280;
+                    }
+                    .schedule-container {
+                        background: white;
+                        border-radius: 4px;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        overflow: visible;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        display: grid;
+                        grid-template-columns: 70px repeat(7, 1fr);
+                        grid-auto-rows: 8mm;
+                        gap: 0;
+                        overflow: visible;
+                    }
+                    thead {
+                        display: contents;
+                    }
+                    thead tr {
+                        display: contents;
+                    }
+                    th {
+                        background-color: #2563eb;
+                        color: white;
+                        padding: 4px 2px;
+                        text-align: center;
+                        font-weight: 600;
+                        font-size: 7px;
+                        border: 1px solid #e5e7eb;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    tbody {
+                        display: contents;
+                    }
+                    tbody tr {
+                        display: contents;
+                    }
+                    td {
+                        padding: 0;
+                        border: 1px solid #e5e7eb;
+                        vertical-align: top;
+                        background-color: #fafafa;
+                        overflow: visible;
+                    }
+                    .time-cell {
+                        background-color: #f9fafb;
+                        font-weight: 600;
+                        font-size: 6px;
+                        color: #374151;
+                        border-right: 2px solid #d1d5db;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 8mm;
+                    }
+                    .schedule-cell {
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: flex-start;
+                        gap: 2px;
+                        position: relative;
+                        z-index: 1;
+                        overflow: visible;
+                        min-height: 8mm;
+                    }
+                    .schedule-block {
+                        width: calc(100% - 6px);
+                        padding: 3px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                        font-size: 6px;
+                        font-weight: 600;
+                        color: white;
+                        border: 2px solid rgba(0, 0, 0, 0.2);
+                        border-radius: 3px;
+                        box-sizing: border-box;
+                        margin: 0;
+                        position: absolute;
+                        top: 2px;
+                        left: 3px;
+                        z-index: 10;
+                    }
+                    .schedule-block:hover {
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+                    }
+                    .schedule-block.yellow {
+                        color: #1f2937;
+                    }
+                    .subject-code {
+                        font-weight: 700;
+                        margin-bottom: 2px;
+                        font-size: 7px;
+                    }
+                    .faculty-name {
+                        font-size: 5px;
+                        opacity: 0.95;
+                    }
+                    .time-range {
+                        font-size: 5px;
+                        margin-top: 2px;
+                        font-weight: 600;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="no-print">
+                    <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+                    <button class="btn btn-secondary" onclick="window.close()">✕ Close</button>
+                </div>
+                <div class="header">
+                    <h1>${headerTitle}</h1>
+                    <p>Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+                <div class="schedule-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Sun</th>
+                                <th>Mon</th>
+                                <th>Tue</th>
+                                <th>Wed</th>
+                                <th>Thu</th>
+                                <th>Fri</th>
+                                <th>Sat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        // Build table rows
+        this.timeSlots.forEach((timeSlot, timeIndex) => {
+            html += '<tr>';
+            html += `<td class="time-cell">${timeSlot}</td>`;
+
+            this.daysOfWeek.forEach((day) => {
+                const schedulesAtSlot = this.getSchedulesStartingAtSlot(timeIndex, day);
+
+                if (schedulesAtSlot.length > 0) {
+                    html += '<td class="schedule-cell">';
+                    schedulesAtSlot.forEach((schedule) => {
+                        const subjectCode = schedule.subject?.subjectCode || 'N/A';
+                        const facultyName = schedule.faculty ? `${schedule.faculty.firstName} ${schedule.faculty.lastName}` : 'No Instructor';
+                        const timeRange = `${schedule.startTime} - ${schedule.endTime}`;
+                        const colorClass = this.getScheduleColor(schedule);
+                        const bgColor = this.getColorFromClass(colorClass);
+                        const isYellow = colorClass === 'bg-yellow-500';
+                        const rowSpan = this.getRowSpan(schedule);
+                        const blockHeight = rowSpan * 8 - 4; // 8mm per row, minus padding
+
+                        html += `
+                            <div class="schedule-block ${isYellow ? 'yellow' : ''}" style="background-color: ${bgColor}; height: ${blockHeight}mm;">
+                                <div class="subject-code">${subjectCode}</div>
+                                <div class="faculty-name">${facultyName}</div>
+                                <div class="time-range">${timeRange}</div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                } else {
+                    html += '<td class="schedule-cell"></td>';
+                }
+            });
+            html += '</tr>';
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </body>
+            </html>
+        `;
+
+        return html;
+    }
+
+    printSchedule() {
+        // Build the laboratory/campus name for header
+        let headerTitle = 'Laboratory Schedule';
+        if (this.selectedLaboratory) {
+            headerTitle = `${this.selectedLaboratory.laboratoryName} - Schedule`;
+        } else if (this.selectedCampus) {
+            headerTitle = `${this.selectedCampus.campusName} - All Laboratories Schedule`;
+        } else if (this.isFaculty) {
+            headerTitle = 'My Teaching Schedule';
+        }
+
+        const printHTML = this.generateScheduleHTML(headerTitle);
+
+        // Open print window
+        const printWindow = window.open('', '', 'width=1200,height=800');
+        if (printWindow) {
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+            printWindow.focus();
+
+            // Wait for content to load then print
+            setTimeout(() => {
+                printWindow.print();
+            }, 250);
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Print Error',
+                text: 'Unable to open print window. Please check your browser settings.'
             });
         }
     }
