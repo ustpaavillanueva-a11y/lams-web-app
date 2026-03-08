@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../service/auth.service';
 import { UIChart } from 'primeng/chart';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, DateSelectArg, EventClickArg, EventApi } from '@fullcalendar/core';
@@ -93,6 +95,10 @@ export function createEventId() {
                             <div class="text-sm text-gray-600 dark:text-gray-400">{{ schedule.time }}</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">{{ schedule.laboratory }} • {{ schedule.students }} students</div>
                         </div>
+                        <div *ngIf="todaySchedules.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-8">
+                            <i class="pi pi-calendar text-4xl mb-2"></i>
+                            <p>No classes scheduled for today</p>
+                        </div>
                     </div>
                 </div>
 
@@ -104,6 +110,10 @@ export function createEventId() {
                             <div class="font-semibold dark:text-white">{{ schedule.subject }}</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">{{ schedule.date }} @ {{ schedule.time }}</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">{{ schedule.laboratory }}</div>
+                        </div>
+                        <div *ngIf="upcomingSchedules.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-8">
+                            <i class="pi pi-calendar text-4xl mb-2"></i>
+                            <p>No upcoming classes in the next week</p>
                         </div>
                     </div>
                 </div>
@@ -222,7 +232,8 @@ export class DashboardFaculty implements OnInit {
     constructor(
         private http: HttpClient,
         private changeDetector: ChangeDetectorRef,
-        private calendarService: CalendarService
+        private calendarService: CalendarService,
+        private authService: AuthService
     ) {}
 
     ngOnInit() {
@@ -231,7 +242,7 @@ export class DashboardFaculty implements OnInit {
         this.loadByStatus();
         this.loadCalendarEvents();
         this.initDonutOptions();
-        this.initMockScheduleData();
+        this.loadScheduleData();
     }
 
     loadTotalSubmitted() {
@@ -320,6 +331,79 @@ export class DashboardFaculty implements OnInit {
             colors.push(palette[i % palette.length]);
         }
         return colors;
+    }
+
+    loadScheduleData() {
+        console.log('=== LOADING FACULTY SCHEDULE DATA ===');
+        const scheduleUrl = `${environment.apiUrl}/faculty-schedules`;
+
+        this.http.get<any[]>(scheduleUrl).subscribe({
+            next: (data: any[]) => {
+                console.log('Faculty schedules fetched:', data);
+                console.log('Total schedules:', data?.length || 0);
+
+                if (data && data.length > 0) {
+                    const today = new Date();
+                    const todayDayName = this.getDayName(today.getDay());
+
+                    // Filter today's schedules
+                    this.todaySchedules = data
+                        .filter((schedule) => schedule.dayOfWeek === todayDayName)
+                        .map((schedule) => ({
+                            time: `${schedule.startTime} - ${schedule.endTime}`,
+                            subject: schedule.subject?.subjectCode || schedule.subject?.subjectName || 'N/A',
+                            laboratory: schedule.laboratory?.laboratoryName || 'N/A',
+                            students: schedule.subject?.numberOfStudents || 0
+                        }));
+
+                    console.log("Today's schedules:", this.todaySchedules);
+
+                    // Get upcoming schedules (next 7 days)
+                    this.upcomingSchedules = this.getUpcomingSchedules(data, today);
+                    console.log('Upcoming schedules:', this.upcomingSchedules);
+                } else {
+                    this.todaySchedules = [];
+                    this.upcomingSchedules = [];
+                }
+
+                console.log('====================================');
+            },
+            error: (error: any) => {
+                console.error('Error loading faculty schedules:', error);
+                this.todaySchedules = [];
+                this.upcomingSchedules = [];
+            }
+        });
+    }
+
+    getDayName(dayIndex: number): string {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[dayIndex];
+    }
+
+    getUpcomingSchedules(schedules: any[], fromDate: Date): any[] {
+        const upcoming: any[] = [];
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        // Look ahead for the next 7 days
+        for (let i = 1; i <= 7; i++) {
+            const futureDate = new Date(fromDate);
+            futureDate.setDate(fromDate.getDate() + i);
+            const futureDayName = this.getDayName(futureDate.getDay());
+
+            const daySchedules = schedules
+                .filter((schedule) => schedule.dayOfWeek === futureDayName)
+                .map((schedule) => ({
+                    date: futureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    time: `${schedule.startTime} - ${schedule.endTime}`,
+                    subject: schedule.subject?.subjectCode || schedule.subject?.subjectName || 'N/A',
+                    laboratory: schedule.laboratory?.laboratoryName || 'N/A'
+                }));
+
+            upcoming.push(...daySchedules);
+        }
+
+        return upcoming.slice(0, 10); // Return maximum 10 upcoming schedules
     }
 
     initMockScheduleData() {
