@@ -107,6 +107,19 @@ export function createEventId() {
                     <p-chart type="bar" [data]="scheduleByLabChartData" [options]="horizontalChartOptions"></p-chart>
                 </div>
             </div>
+
+            <!-- Assets and Maintenance by Laboratory charts row -->
+            <div class="flex flex-col md:flex-row gap-6 mt-6">
+                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
+                    <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Laboratory</h3>
+                    <p-chart type="bar" [data]="assetsByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                </div>
+
+                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
+                    <h3 class="text-xl font-semibold mb-4 dark:text-white">Maintenance Requests by Laboratory</h3>
+                    <p-chart type="bar" [data]="maintenanceByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                </div>
+            </div>
         </div>
     `,
     styles: [
@@ -175,6 +188,8 @@ export class DashboardLabTech implements OnInit {
     horizontalChartOptions: any;
     scheduleByDayChartData: any;
     scheduleByLabChartData: any;
+    assetsByLabChartData: any;
+    maintenanceByLabChartData: any;
 
     // Calendar properties
     calendarOptions = signal<CalendarOptions>({
@@ -239,6 +254,8 @@ export class DashboardLabTech implements OnInit {
         this.initBarOptions();
         this.initHorizontalBarOptions();
         this.loadScheduleCharts(); // Changed from initMockScheduleCharts
+        this.loadAssetsByLaboratory();
+        this.loadMaintenanceByLaboratory();
     }
 
     loadOverdueApprovalsCount() {
@@ -645,6 +662,147 @@ export class DashboardLabTech implements OnInit {
                     data: labCounts,
                     backgroundColor: labColors.map((c) => c.bg),
                     borderColor: labColors.map((c) => c.border),
+                    borderWidth: 1
+                }
+            ]
+        };
+    }
+
+    loadAssetsByLaboratory() {
+        console.log('=== LOADING ASSETS BY LABORATORY DATA ===');
+        const apiUrl = `${environment.apiUrl}/assets`;
+
+        this.http.get<any[]>(apiUrl).subscribe({
+            next: (assets) => {
+                console.log('Assets fetched:', assets?.length || 0);
+
+                if (!assets || assets.length === 0) {
+                    console.log('No assets found');
+                    this.initEmptyAssetsByLabChart();
+                    return;
+                }
+
+                // Count assets by laboratory
+                const labCount = new Map<string, number>();
+                assets.forEach((asset) => {
+                    const labName = asset.laboratories?.laboratoryName || asset.laboratory?.laboratoryName || asset.laboratory?.labName || 'Unknown Lab';
+                    const currentCount = labCount.get(labName) || 0;
+                    labCount.set(labName, currentCount + 1);
+                });
+
+                console.log('Asset count by laboratory:', Object.fromEntries(labCount));
+
+                // Convert to arrays and sort by count (descending)
+                const labEntries = Array.from(labCount.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10); // Top 10 laboratories
+
+                const labLabels = labEntries.map((entry) => entry[0]);
+                const labCounts = labEntries.map((entry) => entry[1]);
+                const labColors = this.generateColors(labLabels.length);
+
+                this.assetsByLabChartData = {
+                    labels: labLabels,
+                    datasets: [
+                        {
+                            label: 'Assets',
+                            data: labCounts,
+                            backgroundColor: labColors.map((c) => c.bg),
+                            borderColor: labColors.map((c) => c.border),
+                            borderWidth: 1
+                        }
+                    ]
+                };
+
+                console.log('=========================================');
+            },
+            error: (error) => {
+                console.error('Error loading assets by laboratory:', error);
+                this.initEmptyAssetsByLabChart();
+            }
+        });
+    }
+
+    loadMaintenanceByLaboratory() {
+        console.log('=== LOADING MAINTENANCE REQUESTS BY LABORATORY DATA ===');
+        const apiUrl = `${environment.apiUrl}/maintenance-requests`;
+
+        this.http.get<any[]>(apiUrl).subscribe({
+            next: (requests) => {
+                console.log('Maintenance requests fetched:', requests?.length || 0);
+
+                if (!requests || requests.length === 0) {
+                    console.log('No maintenance requests found');
+                    this.initEmptyMaintenanceByLabChart();
+                    return;
+                }
+
+                // Count maintenance requests by laboratory
+                const labCount = new Map<string, number>();
+                requests.forEach((request) => {
+                    const labName =
+                        request.asset?.laboratories?.laboratoryName || request.asset?.laboratory?.laboratoryName || request.asset?.laboratory?.labName || request.laboratories?.laboratoryName || request.laboratory?.laboratoryName || 'Unknown Lab';
+                    const currentCount = labCount.get(labName) || 0;
+                    labCount.set(labName, currentCount + 1);
+                });
+
+                console.log('Maintenance request count by laboratory:', Object.fromEntries(labCount));
+
+                // Convert to arrays and sort by count (descending)
+                const labEntries = Array.from(labCount.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10); // Top 10 laboratories
+
+                const labLabels = labEntries.map((entry) => entry[0]);
+                const labCounts = labEntries.map((entry) => entry[1]);
+                const labColors = this.generateColors(labLabels.length);
+
+                this.maintenanceByLabChartData = {
+                    labels: labLabels,
+                    datasets: [
+                        {
+                            label: 'Maintenance Requests',
+                            data: labCounts,
+                            backgroundColor: labColors.map((c) => c.bg),
+                            borderColor: labColors.map((c) => c.border),
+                            borderWidth: 1
+                        }
+                    ]
+                };
+
+                console.log('========================================================');
+            },
+            error: (error) => {
+                console.error('Error loading maintenance requests by laboratory:', error);
+                this.initEmptyMaintenanceByLabChart();
+            }
+        });
+    }
+
+    initEmptyAssetsByLabChart() {
+        this.assetsByLabChartData = {
+            labels: ['No Data'],
+            datasets: [
+                {
+                    label: 'Assets',
+                    data: [0],
+                    backgroundColor: ['rgba(209, 213, 219, 0.7)'],
+                    borderColor: ['rgb(209, 213, 219)'],
+                    borderWidth: 1
+                }
+            ]
+        };
+    }
+
+    initEmptyMaintenanceByLabChart() {
+        this.maintenanceByLabChartData = {
+            labels: ['No Data'],
+            datasets: [
+                {
+                    label: 'Maintenance Requests',
+                    data: [0],
+                    backgroundColor: ['rgba(209, 213, 219, 0.7)'],
+                    borderColor: ['rgb(209, 213, 219)'],
                     borderWidth: 1
                 }
             ]

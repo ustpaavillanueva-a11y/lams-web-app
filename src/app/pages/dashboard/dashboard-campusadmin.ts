@@ -109,29 +109,29 @@ function createEventId() {
                 </div>
             </div>
 
-            <!-- Charts Row -->
-            <div class="flex gap-6 mt-6">
+            <!-- Charts Row - 3 Charts Side by Side -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 <!-- Assets by Laboratory Chart -->
-                <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
-                    <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Laboratory</h3>
-                    <p-chart type="bar" [data]="assetsByLaboratoryChartData" [options]="chartOptions"></p-chart>
+                <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Assets by Laboratory</p>
+                    <div class="relative" style="height: 300px;">
+                        <p-chart type="bar" [data]="assetsByLaboratoryChartData" [options]="chartOptions"></p-chart>
+                    </div>
                 </div>
 
                 <!-- Maintenance Requests by Laboratory Chart -->
-                <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
-                    <h3 class="text-xl font-semibold mb-4 dark:text-white">Maintenance Requests by Laboratory</h3>
-                    <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="getHorizontalChartOptions()"></p-chart>
+                <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Maintenance Requests by Lab</p>
+                    <div class="relative" style="height: 300px;">
+                        <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="getHorizontalChartOptions()"></p-chart>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Donut Chart Row -->
-            <div class="flex gap-6 mt-6">
-                <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
-                    <h3 class="text-xl font-semibold mb-4 dark:text-white text-center">Maintenance Requests Status</h3>
-                    <div class="flex justify-center">
-                        <div class="w-80">
-                            <p-chart type="doughnut" [data]="maintenanceStatusChartData" [options]="donutChartOptions"></p-chart>
-                        </div>
+                <!-- Maintenance Requests Status Chart -->
+                <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500 text-center">Maintenance Status</p>
+                    <div class="relative flex items-center justify-center" style="height: 300px;">
+                        <p-chart type="doughnut" [data]="maintenanceStatusChartData" [options]="donutChartOptions"></p-chart>
                     </div>
                 </div>
             </div>
@@ -468,12 +468,37 @@ export class DashboardCampusAdmin implements OnInit {
     }
 
     loadAssetsByLaboratory() {
-        const apiUrl = `${environment.apiUrl}/assets/assets-by-laboratory`;
+        console.log('=== LOADING ASSETS BY LABORATORY DATA ===');
+        const apiUrl = `${environment.apiUrl}/assets`;
+
         this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.laboratoryName);
-                const counts = data.map((item) => item.assetCount);
-                const colors = this.generateColors(data.length);
+            next: (assets) => {
+                console.log('Assets fetched:', assets?.length || 0);
+
+                if (!assets || assets.length === 0) {
+                    console.log('No assets found');
+                    this.initEmptyAssetsByLabChart();
+                    return;
+                }
+
+                // Count assets by laboratory
+                const labCount = new Map<string, number>();
+                assets.forEach((asset) => {
+                    const labName = asset.laboratories?.laboratoryName || asset.laboratory?.laboratoryName || asset.laboratory?.labName || 'Unknown Lab';
+                    const currentCount = labCount.get(labName) || 0;
+                    labCount.set(labName, currentCount + 1);
+                });
+
+                console.log('Asset count by laboratory:', Object.fromEntries(labCount));
+
+                // Convert to arrays and sort by count (descending)
+                const labEntries = Array.from(labCount.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10); // Top 10 laboratories
+
+                const labels = labEntries.map((entry) => entry[0]);
+                const counts = labEntries.map((entry) => entry[1]);
+                const colors = this.generateColors(labels.length);
 
                 this.assetsByLaboratoryChartData = {
                     labels: labels,
@@ -487,11 +512,29 @@ export class DashboardCampusAdmin implements OnInit {
                         }
                     ]
                 };
+
+                console.log('=========================================');
             },
             error: (error) => {
                 console.error('Error loading assets by laboratory:', error);
+                this.initEmptyAssetsByLabChart();
             }
         });
+    }
+
+    initEmptyAssetsByLabChart() {
+        this.assetsByLaboratoryChartData = {
+            labels: ['No Data'],
+            datasets: [
+                {
+                    label: 'Assets Count',
+                    data: [0],
+                    backgroundColor: ['rgba(209, 213, 219, 0.6)'],
+                    borderColor: ['rgb(209, 213, 219)'],
+                    borderWidth: 1
+                }
+            ]
+        };
     }
 
     generateColors(count: number): Array<{ bg: string; border: string }> {
@@ -556,12 +599,54 @@ export class DashboardCampusAdmin implements OnInit {
     }
 
     loadMaintenanceRequestsByLaboratory() {
-        const apiUrl = `${environment.apiUrl}/assets/maintenance-requests-by-laboratory`;
+        console.log('=== LOADING MAINTENANCE REQUESTS BY LABORATORY DATA ===');
+        const apiUrl = `${environment.apiUrl}/maintenance-requests`;
+
         this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.laboratoryName);
-                const counts = data.map((item) => item.requestCount);
-                const colors = this.generateColors(data.length);
+            next: (requests) => {
+                console.log('=== MAINTENANCE REQUESTS BY LABORATORY DEBUG ===');
+                console.log('Maintenance requests fetched:', requests?.length || 0);
+                console.log('Sample request object (first):', requests?.[0]);
+                console.log('Sample request.asset:', requests?.[0]?.asset);
+                console.log('Sample request.asset?.laboratories:', requests?.[0]?.asset?.laboratories);
+
+                if (!requests || requests.length === 0) {
+                    console.log('No maintenance requests found');
+                    this.initEmptyMaintenanceByLabChart();
+                    return;
+                }
+
+                // Count maintenance requests by laboratory
+                const labCount = new Map<string, number>();
+                requests.forEach((request, index) => {
+                    // Try to get laboratory from asset or campus as fallback
+                    const labName = request.asset?.laboratory?.laboratoryName || request.asset?.laboratory?.labName || request.laboratory?.laboratoryName || request.asset?.campus?.campusName || 'No Laboratory Assigned';
+
+                    // Log first few items to debug
+                    if (index < 3) {
+                        console.log(`Request ${index}:`, {
+                            requestId: request.requestId,
+                            assetId: request.asset?.assetId,
+                            labName: labName,
+                            campus: request.asset?.campus?.campusName,
+                            hasLaboratory: !!request.asset?.laboratory
+                        });
+                    }
+
+                    const currentCount = labCount.get(labName) || 0;
+                    labCount.set(labName, currentCount + 1);
+                });
+
+                console.log('Maintenance request count by laboratory:', Object.fromEntries(labCount));
+
+                // Convert to arrays and sort by count (descending)
+                const labEntries = Array.from(labCount.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10); // Top 10 laboratories
+
+                const labels = labEntries.map((entry) => entry[0]);
+                const counts = labEntries.map((entry) => entry[1]);
+                const colors = this.generateColors(labels.length);
 
                 this.maintenanceRequestsChartData = {
                     labels: labels,
@@ -575,11 +660,29 @@ export class DashboardCampusAdmin implements OnInit {
                         }
                     ]
                 };
+
+                console.log('========================================================');
             },
             error: (error) => {
                 console.error('Error loading maintenance requests by laboratory:', error);
+                this.initEmptyMaintenanceByLabChart();
             }
         });
+    }
+
+    initEmptyMaintenanceByLabChart() {
+        this.maintenanceRequestsChartData = {
+            labels: ['No Data'],
+            datasets: [
+                {
+                    label: 'Maintenance Requests',
+                    data: [0],
+                    backgroundColor: ['rgba(209, 213, 219, 0.6)'],
+                    borderColor: ['rgb(209, 213, 219)'],
+                    borderWidth: 1
+                }
+            ]
+        };
     }
 
     getHorizontalChartOptions() {
@@ -624,15 +727,73 @@ export class DashboardCampusAdmin implements OnInit {
     }
 
     loadMaintenanceStatus() {
-        const apiUrl = `${environment.apiUrl}/assets/maintenance-requests-by-status`;
+        console.log('=== LOADING MAINTENANCE STATUS DATA ===');
+        const apiUrl = `${environment.apiUrl}/maintenance-requests`;
+
         this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.status);
-                const counts = data.map((item) => item.count);
-                const colors = [
-                    'rgba(239, 68, 68, 0.8)', // Red for Pending
-                    'rgba(34, 197, 94, 0.8)' // Green for Approved
-                ];
+            next: (requests) => {
+                console.log('=== MAINTENANCE REQUESTS BY STATUS DEBUG ===');
+                console.log('Maintenance requests fetched:', requests?.length || 0);
+                console.log('Sample request object (first):', requests?.[0]);
+                console.log('Sample request.maintenanceApproval:', requests?.[0]?.maintenanceApproval);
+                console.log('Sample request.status:', requests?.[0]?.status);
+
+                if (!requests || requests.length === 0) {
+                    console.log('No maintenance requests found');
+                    this.initEmptyMaintenanceStatusChart();
+                    return;
+                }
+
+                // Count maintenance requests by status
+                const statusCount = new Map<string, number>();
+                requests.forEach((request, index) => {
+                    // Use maintenanceStatus.requestStatusName as the status
+                    const status = request.maintenanceStatus?.requestStatusName || 'Pending';
+
+                    // Log first few items to debug
+                    if (index < 3) {
+                        console.log(`Request ${index}:`, {
+                            requestId: request.requestId,
+                            status: status,
+                            maintenanceStatus: request.maintenanceStatus
+                        });
+                    }
+
+                    const currentCount = statusCount.get(status) || 0;
+                    statusCount.set(status, currentCount + 1);
+                });
+
+                console.log('Maintenance request count by status:', Object.fromEntries(statusCount));
+
+                const labels = Array.from(statusCount.keys());
+                const counts = Array.from(statusCount.values());
+
+                // Generate colors based on status
+                const colors = labels.map((label) => {
+                    const lowerLabel = label.toLowerCase();
+                    if (lowerLabel.includes('pending') || lowerLabel.includes('for approval')) {
+                        return 'rgba(239, 68, 68, 0.8)'; // Red
+                    } else if (lowerLabel.includes('approved') || lowerLabel.includes('completed')) {
+                        return 'rgba(34, 197, 94, 0.8)'; // Green
+                    } else if (lowerLabel.includes('in progress') || lowerLabel.includes('ongoing')) {
+                        return 'rgba(250, 204, 21, 0.8)'; // Amber
+                    } else {
+                        return 'rgba(107, 114, 128, 0.8)'; // Gray
+                    }
+                });
+
+                const borderColors = labels.map((label) => {
+                    const lowerLabel = label.toLowerCase();
+                    if (lowerLabel.includes('pending') || lowerLabel.includes('for approval')) {
+                        return 'rgb(239, 68, 68)';
+                    } else if (lowerLabel.includes('approved') || lowerLabel.includes('completed')) {
+                        return 'rgb(34, 197, 94)';
+                    } else if (lowerLabel.includes('in progress') || lowerLabel.includes('ongoing')) {
+                        return 'rgb(250, 204, 21)';
+                    } else {
+                        return 'rgb(107, 114, 128)';
+                    }
+                });
 
                 this.maintenanceStatusChartData = {
                     labels: labels,
@@ -640,16 +801,33 @@ export class DashboardCampusAdmin implements OnInit {
                         {
                             data: counts,
                             backgroundColor: colors,
-                            borderColor: ['rgb(239, 68, 68)', 'rgb(34, 197, 94)'],
+                            borderColor: borderColors,
                             borderWidth: 1
                         }
                     ]
                 };
+
+                console.log('===========================================');
             },
             error: (error) => {
                 console.error('Error loading maintenance status:', error);
+                this.initEmptyMaintenanceStatusChart();
             }
         });
+    }
+
+    initEmptyMaintenanceStatusChart() {
+        this.maintenanceStatusChartData = {
+            labels: ['No Data'],
+            datasets: [
+                {
+                    data: [0],
+                    backgroundColor: ['rgba(209, 213, 219, 0.8)'],
+                    borderColor: ['rgb(209, 213, 219)'],
+                    borderWidth: 1
+                }
+            ]
+        };
     }
 
     initDonutChartOptions() {
@@ -683,19 +861,10 @@ export class DashboardCampusAdmin implements OnInit {
     }
 
     loadActivities() {
-        const apiUrl = `${environment.apiUrl}/activities`;
-        this.http.get<any>(apiUrl).subscribe({
-            next: (data) => {
-                // Handle both array and object with activities property
-                this.activities = Array.isArray(data) ? data : data?.activities || [];
-
-                // Sort by timestamp descending (newest first)
-                this.activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            },
-            error: (error) => {
-                console.error('Error loading activities:', error);
-            }
-        });
+        // Activities endpoint not available - using empty array for now
+        // TODO: Implement activities endpoint or use alternative data source
+        console.log('Activities endpoint not available');
+        this.activities = [];
     }
 
     getActionTypeClass(actionType: string): string {
