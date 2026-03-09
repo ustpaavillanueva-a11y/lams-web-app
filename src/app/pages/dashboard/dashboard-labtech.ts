@@ -59,13 +59,11 @@ export function createEventId() {
                         </div>
                     </div>
 
-                    <!-- Donut Chart for Requests by Service Type -->
+                    <!-- Line Chart for Requests by Service Type -->
                     <div class="md:col-span-2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
-                        <h4 class="text-lg font-semibold dark:text-white text-center mb-4">Requests by Service Type</h4>
-                        <div class="flex justify-center">
-                            <div class="w-64">
-                                <p-chart type="doughnut" [data]="serviceTypeChartData" [options]="donutChartOptions"></p-chart>
-                            </div>
+                        <h4 class="text-lg font-semibold dark:text-white text-center mb-4">Requests by Service Type (Monthly)</h4>
+                        <div style="height: 300px;">
+                            <p-chart type="line" [data]="serviceTypeChartData" [options]="lineChartOptions"></p-chart>
                         </div>
                     </div>
                 </div>
@@ -182,6 +180,7 @@ export class DashboardLabTech implements OnInit {
     requestsForApprovalCount: number = 0;
     serviceTypeChartData: any;
     donutChartOptions: any;
+    lineChartOptions: any;
     assetsBySupplierChartData: any;
     assetsByBrandChartData: any;
     barChartOptions: any;
@@ -283,27 +282,83 @@ export class DashboardLabTech implements OnInit {
     }
 
     loadServiceTypeData() {
-        const apiUrl = `${environment.apiUrl}/maintenance-requests/by-service-type`;
+        // Get maintenance approvals which include the maintenance type
+        const apiUrl = `${environment.apiUrl}/maintenance-approvals`;
         this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.serviceName || item.serviceType || 'Unknown');
-                const counts = data.map((item) => item.count || 0);
-                const colors = this.generateColors(labels.length);
+            next: (approvals) => {
+                console.log('=== MAINTENANCE APPROVALS DATA ===');
+                console.log('Total approvals:', approvals.length);
+                console.log('Sample approval:', approvals[0]);
+
+                const currentYear = new Date().getFullYear();
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+                // Group by service type and month
+                const serviceTypeMap = new Map<string, number[]>();
+
+                approvals.forEach((approval, index) => {
+                    // Extract service type from maintenanceRequest.maintenanceType.maintenanceTypeName
+                    const serviceType = approval.maintenanceRequest?.maintenanceType?.maintenanceTypeName || 'Unknown';
+
+                    // Log first 3 approvals to debug
+                    if (index < 3) {
+                        console.log(`Approval ${index}:`, {
+                            maintenanceType: approval.maintenanceRequest?.maintenanceType,
+                            resolvedType: serviceType
+                        });
+                    }
+
+                    // Use requestDate from maintenanceRequest
+                    const createdDate = new Date(approval.maintenanceRequest?.requestDate || approval.approvedAt);
+
+                    if (createdDate.getFullYear() === currentYear) {
+                        const monthIndex = createdDate.getMonth();
+
+                        if (!serviceTypeMap.has(serviceType)) {
+                            serviceTypeMap.set(serviceType, new Array(12).fill(0));
+                        }
+
+                        const monthlyCounts = serviceTypeMap.get(serviceType)!;
+                        monthlyCounts[monthIndex]++;
+                    }
+                });
+
+                console.log('Service type map:', Array.from(serviceTypeMap.entries()));
+
+                // Generate colors for each service type
+                const colorPalette = [
+                    { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgb(59, 130, 246)' }, // Blue
+                    { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgb(16, 185, 129)' }, // Green
+                    { bg: 'rgba(251, 146, 60, 0.8)', border: 'rgb(251, 146, 60)' }, // Orange
+                    { bg: 'rgba(168, 85, 247, 0.8)', border: 'rgb(168, 85, 247)' }, // Purple
+                    { bg: 'rgba(236, 72, 153, 0.8)', border: 'rgb(236, 72, 153)' }, // Pink
+                    { bg: 'rgba(245, 158, 11, 0.8)', border: 'rgb(245, 158, 11)' } // Amber
+                ];
+
+                // Create datasets for each service type
+                const datasets = Array.from(serviceTypeMap.entries()).map(([serviceType, data], index) => ({
+                    label: serviceType,
+                    data: data,
+                    borderColor: colorPalette[index % colorPalette.length].border,
+                    backgroundColor: colorPalette[index % colorPalette.length].bg,
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }));
 
                 this.serviceTypeChartData = {
-                    labels: labels,
-                    datasets: [
-                        {
-                            data: counts,
-                            backgroundColor: colors.map((c) => c.bg),
-                            borderColor: colors.map((c) => c.border),
-                            borderWidth: 1
-                        }
-                    ]
+                    labels: months,
+                    datasets: datasets
                 };
             },
             error: (error) => {
-                console.error('Error loading service type data:', error);
+                console.error('Error loading service type monthly data:', error);
+                // Initialize with empty data
+                this.serviceTypeChartData = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: []
+                };
             }
         });
     }
@@ -386,6 +441,53 @@ export class DashboardLabTech implements OnInit {
                             return `${context.label}: ${context.parsed}`;
                         }
                     }
+                }
+            }
+        };
+
+        this.lineChartOptions = {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context: any) {
+                            return `${context.dataset.label}: ${context.parsed.y} requests`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: textColor,
+                        font: { weight: 500 }
+                    },
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: textColor,
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    beginAtZero: true
                 }
             }
         };

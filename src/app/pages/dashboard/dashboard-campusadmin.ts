@@ -600,71 +600,104 @@ export class DashboardCampusAdmin implements OnInit {
 
     loadMaintenanceRequestsByLaboratory() {
         console.log('=== LOADING MAINTENANCE REQUESTS BY LABORATORY DATA ===');
-        const apiUrl = `${environment.apiUrl}/maintenance-requests`;
 
-        this.http.get<any[]>(apiUrl).subscribe({
-            next: (requests) => {
-                console.log('=== MAINTENANCE REQUESTS BY LABORATORY DEBUG ===');
-                console.log('Maintenance requests fetched:', requests?.length || 0);
-                console.log('Sample request object (first):', requests?.[0]);
-                console.log('Sample request.asset:', requests?.[0]?.asset);
-                console.log('Sample request.asset?.laboratories:', requests?.[0]?.asset?.laboratories);
+        // First, fetch all laboratories to get the mapping
+        const laboratoriesUrl = `${environment.apiUrl}/laboratories`;
 
-                if (!requests || requests.length === 0) {
-                    console.log('No maintenance requests found');
-                    this.initEmptyMaintenanceByLabChart();
-                    return;
-                }
+        this.http.get<any[]>(laboratoriesUrl).subscribe({
+            next: (laboratories) => {
+                console.log('Laboratories fetched:', laboratories?.length || 0);
+                console.log('Sample laboratory:', laboratories?.[0]);
 
-                // Count maintenance requests by laboratory
-                const labCount = new Map<string, number>();
-                requests.forEach((request, index) => {
-                    // Try to get laboratory from asset or campus as fallback
-                    const labName = request.asset?.laboratory?.laboratoryName || request.asset?.laboratory?.labName || request.laboratory?.laboratoryName || request.asset?.campus?.campusName || 'No Laboratory Assigned';
-
-                    // Log first few items to debug
-                    if (index < 3) {
-                        console.log(`Request ${index}:`, {
-                            requestId: request.requestId,
-                            assetId: request.asset?.assetId,
-                            labName: labName,
-                            campus: request.asset?.campus?.campusName,
-                            hasLaboratory: !!request.asset?.laboratory
-                        });
-                    }
-
-                    const currentCount = labCount.get(labName) || 0;
-                    labCount.set(labName, currentCount + 1);
+                // Create a map of laboratoryId -> laboratoryName
+                const labMap = new Map<string, string>();
+                laboratories.forEach((lab) => {
+                    const labId = lab.laboratoryId;
+                    const labName = lab.laboratoryName || lab.labName || 'Unknown Lab';
+                    labMap.set(labId, labName);
+                    console.log(`Mapping ${labId} -> ${labName}`);
                 });
 
-                console.log('Maintenance request count by laboratory:', Object.fromEntries(labCount));
+                console.log('Laboratory map:', Object.fromEntries(labMap));
 
-                // Convert to arrays and sort by count (descending)
-                const labEntries = Array.from(labCount.entries())
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 10); // Top 10 laboratories
+                // Now fetch maintenance requests
+                const requestsUrl = `${environment.apiUrl}/maintenance-requests`;
 
-                const labels = labEntries.map((entry) => entry[0]);
-                const counts = labEntries.map((entry) => entry[1]);
-                const colors = this.generateColors(labels.length);
+                this.http.get<any[]>(requestsUrl).subscribe({
+                    next: (requests) => {
+                        console.log('Maintenance requests fetched:', requests?.length || 0);
 
-                this.maintenanceRequestsChartData = {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Maintenance Requests',
-                            data: counts,
-                            backgroundColor: colors.map((c) => c.bg),
-                            borderColor: colors.map((c) => c.border),
-                            borderWidth: 1
+                        if (!requests || requests.length === 0) {
+                            console.log('No maintenance requests found');
+                            this.initEmptyMaintenanceByLabChart();
+                            return;
                         }
-                    ]
-                };
 
-                console.log('========================================================');
+                        // Count maintenance requests by laboratory
+                        const labCount = new Map<string, number>();
+
+                        requests.forEach((request, index) => {
+                            // Extract laboratory ID from requestId
+                            // Format: CAMPUS001-LB001-030826-MR001
+                            const requestId = request.requestId || '';
+                            const parts = requestId.split('-');
+                            let labName = 'Unknown Laboratory';
+
+                            if (parts.length >= 2) {
+                                const labCode = parts[1]; // e.g., "LB001"
+                                const foundName = labMap.get(labCode);
+                                labName = foundName || `Lab ${labCode}`;
+
+                                // Log first few items to debug
+                                if (index < 3) {
+                                    console.log(`Request ${index}:`, {
+                                        requestId: request.requestId,
+                                        extractedLabCode: labCode,
+                                        foundInMap: !!foundName,
+                                        labName: labName,
+                                        mapHasKey: labMap.has(labCode)
+                                    });
+                                }
+                            }
+
+                            const currentCount = labCount.get(labName) || 0;
+                            labCount.set(labName, currentCount + 1);
+                        });
+
+                        console.log('Maintenance request count by laboratory:', Object.fromEntries(labCount));
+
+                        // Convert to arrays and sort by count (descending)
+                        const labEntries = Array.from(labCount.entries())
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 10); // Top 10 laboratories
+
+                        const labels = labEntries.map((entry) => entry[0]);
+                        const counts = labEntries.map((entry) => entry[1]);
+                        const colors = this.generateColors(labels.length);
+
+                        this.maintenanceRequestsChartData = {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Maintenance Requests',
+                                    data: counts,
+                                    backgroundColor: colors.map((c) => c.bg),
+                                    borderColor: colors.map((c) => c.border),
+                                    borderWidth: 1
+                                }
+                            ]
+                        };
+
+                        console.log('========================================================');
+                    },
+                    error: (error) => {
+                        console.error('Error loading maintenance requests:', error);
+                        this.initEmptyMaintenanceByLabChart();
+                    }
+                });
             },
             error: (error) => {
-                console.error('Error loading maintenance requests by laboratory:', error);
+                console.error('Error loading laboratories:', error);
                 this.initEmptyMaintenanceByLabChart();
             }
         });

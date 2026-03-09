@@ -61,13 +61,11 @@ export function createEventId() {
                         </div>
                     </div>
 
-                    <!-- Donut Chart for Requests by Status -->
+                    <!-- Line Chart for Requests by Status -->
                     <div class="md:col-span-2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
-                        <h3 class="text-xl font-semibold dark:text-white text-center mb-4">Requests by Status</h3>
-                        <div class="flex justify-center">
-                            <div class="w-64">
-                                <p-chart type="doughnut" [data]="statusChartData" [options]="donutOptions"></p-chart>
-                            </div>
+                        <h3 class="text-xl font-semibold dark:text-white text-center mb-4">Requests by Status (Monthly)</h3>
+                        <div style="height: 300px;">
+                            <p-chart type="line" [data]="statusChartData" [options]="lineChartOptions"></p-chart>
                         </div>
                     </div>
                 </div>
@@ -180,6 +178,7 @@ export class DashboardFaculty implements OnInit {
     pendingCount: number = 0;
     statusChartData: any;
     donutOptions: any;
+    lineChartOptions: any;
     todaySchedules: any[] = [];
     upcomingSchedules: any[] = [];
 
@@ -262,26 +261,74 @@ export class DashboardFaculty implements OnInit {
     }
 
     loadByStatus() {
-        const apiUrl = 'http://localhost:3000/api/maintenance-requests/count-by-status';
+        // Get maintenance approvals to aggregate by status and month
+        const apiUrl = `${environment.apiUrl}/maintenance-approvals`;
         this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.status || 'Unknown');
-                const counts = data.map((item) => item.count || 0);
-                const colors = this.generateColors(labels.length);
+            next: (approvals) => {
+                console.log('=== MAINTENANCE APPROVALS FOR STATUS ===');
+                console.log('Total approvals:', approvals.length);
+
+                const currentYear = new Date().getFullYear();
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+                // Group by status and month
+                const statusMap = new Map<string, number[]>();
+
+                approvals.forEach((approval) => {
+                    // Extract status from maintenanceRequest.maintenanceStatus.requestStatusName
+                    const status = approval.maintenanceRequest?.maintenanceStatus?.requestStatusName || 'Unknown';
+
+                    // Use requestDate from maintenanceRequest
+                    const createdDate = new Date(approval.maintenanceRequest?.requestDate || approval.approvedAt);
+
+                    if (createdDate.getFullYear() === currentYear) {
+                        const monthIndex = createdDate.getMonth();
+
+                        if (!statusMap.has(status)) {
+                            statusMap.set(status, new Array(12).fill(0));
+                        }
+
+                        const monthlyCounts = statusMap.get(status)!;
+                        monthlyCounts[monthIndex]++;
+                    }
+                });
+
+                console.log('Status map:', Array.from(statusMap.entries()));
+
+                // Generate colors for each status
+                const colorPalette = [
+                    { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgb(239, 68, 68)' }, // Red - Pending
+                    { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgb(59, 130, 246)' }, // Blue - Approved
+                    { bg: 'rgba(251, 146, 60, 0.8)', border: 'rgb(251, 146, 60)' }, // Orange - In Progress
+                    { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgb(16, 185, 129)' }, // Green - Completed
+                    { bg: 'rgba(107, 114, 128, 0.8)', border: 'rgb(107, 114, 128)' } // Gray - Unknown
+                ];
+
+                // Create datasets for each status
+                const datasets = Array.from(statusMap.entries()).map(([status, data], index) => ({
+                    label: status,
+                    data: data,
+                    borderColor: colorPalette[index % colorPalette.length].border,
+                    backgroundColor: colorPalette[index % colorPalette.length].bg,
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }));
 
                 this.statusChartData = {
-                    labels,
-                    datasets: [
-                        {
-                            data: counts,
-                            backgroundColor: colors.map((c) => c.bg),
-                            borderColor: colors.map((c) => c.border),
-                            borderWidth: 1
-                        }
-                    ]
+                    labels: months,
+                    datasets: datasets
                 };
             },
-            error: (error) => console.error('Error loading status counts:', error)
+            error: (error) => {
+                console.error('Error loading status monthly data:', error);
+                // Initialize with empty data
+                this.statusChartData = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: []
+                };
+            }
         });
     }
 
@@ -307,6 +354,53 @@ export class DashboardFaculty implements OnInit {
                             return `${context.label}: ${context.parsed}`;
                         }
                     }
+                }
+            }
+        };
+
+        this.lineChartOptions = {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context: any) {
+                            return `${context.dataset.label}: ${context.parsed.y} requests`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: textColor,
+                        font: { weight: 500 }
+                    },
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: textColor,
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    beginAtZero: true
                 }
             }
         };
