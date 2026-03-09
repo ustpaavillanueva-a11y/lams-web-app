@@ -35,7 +35,7 @@ function createEventId() {
             <!-- Top Section: Cards and Calendar -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Left Side: Stats Cards -->
-                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Total Departments Card -->
                     <div class="stat-card stat-card-purple group">
                         <div class="stat-card-bg"></div>
@@ -91,6 +91,36 @@ function createEventId() {
                             <div class="stat-info">
                                 <p class="stat-label">Total Assets</p>
                                 <h3 class="stat-value">{{ assetCount }}</h3>
+                            </div>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
+
+                    <!-- Faculty Count Card -->
+                    <div class="stat-card stat-card-indigo group">
+                        <div class="stat-card-bg"></div>
+                        <div class="stat-card-content">
+                            <div class="stat-icon-wrapper stat-icon-indigo">
+                                <i class="pi pi-user text-2xl"></i>
+                            </div>
+                            <div class="stat-info">
+                                <p class="stat-label">Faculty</p>
+                                <h3 class="stat-value">{{ facultyCount }}</h3>
+                            </div>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
+
+                    <!-- LabTech Count Card -->
+                    <div class="stat-card stat-card-teal group">
+                        <div class="stat-card-bg"></div>
+                        <div class="stat-card-content">
+                            <div class="stat-icon-wrapper stat-icon-teal">
+                                <i class="pi pi-user-edit text-2xl"></i>
+                            </div>
+                            <div class="stat-info">
+                                <p class="stat-label">Lab Technicians</p>
+                                <h3 class="stat-value">{{ labTechCount }}</h3>
                             </div>
                         </div>
                         <div class="stat-decoration"></div>
@@ -236,8 +266,8 @@ function createEventId() {
                 position: relative;
                 overflow: hidden;
                 border-radius: 1rem;
-                padding: 1.5rem;
-                min-height: 140px;
+                padding: 1rem;
+                min-height: 100px;
                 transition: all 0.3s ease;
                 cursor: pointer;
             }
@@ -267,6 +297,14 @@ function createEventId() {
 
             .stat-card-orange .stat-card-bg {
                 background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+
+            .stat-card-indigo .stat-card-bg {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            }
+
+            .stat-card-teal .stat-card-bg {
+                background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
             }
 
             .stat-card-content {
@@ -346,6 +384,8 @@ export class DashboardCampusAdmin implements OnInit {
     userCount: number = 0;
     laboratoryCount: number = 0;
     assetCount: number = 0;
+    facultyCount: number = 0;
+    labTechCount: number = 0;
     assetsByLaboratoryChartData: any;
     maintenanceRequestsChartData: any;
     maintenanceStatusChartData: any;
@@ -410,6 +450,7 @@ export class DashboardCampusAdmin implements OnInit {
         this.loadUserCount();
         this.loadLaboratoryCount();
         this.loadAssetCount();
+        this.loadUserRoleCounts();
         this.loadAssetsByLaboratory();
         this.loadMaintenanceRequestsByLaboratory();
         this.loadMaintenanceStatus();
@@ -463,6 +504,19 @@ export class DashboardCampusAdmin implements OnInit {
             },
             error: (error) => {
                 console.error('Error loading asset count:', error);
+            }
+        });
+    }
+
+    loadUserRoleCounts() {
+        const apiUrl = `${environment.apiUrl}/users`;
+        this.http.get<any[]>(apiUrl).subscribe({
+            next: (users) => {
+                this.facultyCount = users.filter((u) => u.role === 'Faculty').length;
+                this.labTechCount = users.filter((u) => u.role === 'LabTech').length;
+            },
+            error: (error) => {
+                console.error('Error loading user role counts:', error);
             }
         });
     }
