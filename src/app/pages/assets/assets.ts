@@ -358,21 +358,17 @@ import Swal from 'sweetalert2';
                                 />
                             </div>
                             <div>
-                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">
-                                    Quantity *
-                                    <span style="font-size: 11px; font-weight: 400; color: #64748b; margin-left: 8px;">(Auto-set based on serial numbers)</span>
-                                </label>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;"> Quantity * </label>
                                 <p-inputNumber
                                     [(ngModel)]="newAsset.inventoryCustodianSlip.quantity"
                                     [useGrouping]="false"
-                                    placeholder="Auto-calculated from serial numbers"
+                                    placeholder="Enter quantity (must match serial numbers)"
                                     class="w-full"
-                                    [readonly]="serialNumbers.length > 0"
-                                    [disabled]="serialNumbers.length > 0"
+                                    [min]="1"
+                                    [showButtons]="true"
+                                    (onInput)="validateSerialNumbers()"
                                 />
-                                <p *ngIf="serialNumbers.length > 0" style="margin: 4px 0 0 0; font-size: 11px; color: #10b981;">
-                                    <i class="pi pi-info-circle"></i> Quantity automatically set to {{ serialNumbers.length }} (matching serial numbers count)
-                                </p>
+                                <p style="margin: 4px 0 0 0; font-size: 11px; color: #64748b;"><i class="pi pi-info-circle"></i> Must match the number of serial numbers entered below</p>
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Unit of Measure *</label>
@@ -438,56 +434,55 @@ import Swal from 'sweetalert2';
                                     [disabled]="isSoftwareCategory()"
                                 />
                             </div>
-                            <div>
+                            <div style="grid-column: 1 / -1;">
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;"> Serial Number(s) * </label>
 
                                 <!-- Info box -->
                                 <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; display: flex; gap: 10px; align-items: start;">
                                     <i class="pi pi-info-circle" style="color: #3b82f6; font-size: 16px; margin-top: 2px;"></i>
                                     <div style="flex: 1;">
-                                        <p style="margin: 0; font-size: 12px; color: #1e40af; font-weight: 600; margin-bottom: 4px;">Multiple Serial Numbers</p>
-                                        <p style="margin: 0; font-size: 11px; color: #1e3a8a; line-height: 1.4;">Add multiple serial numbers for this asset. Each serial will be displayed as a separate row in the table for easier tracking.</p>
+                                        <p style="margin: 0; font-size: 12px; color: #1e40af; font-weight: 600; margin-bottom: 4px;">Bulk Asset Creation</p>
+                                        <p style="margin: 0; font-size: 11px; color: #1e3a8a; line-height: 1.4;">
+                                            Enter serial numbers (one per line, or separated by comma/semicolon). <strong>Each serial number creates a separate asset record</strong> in the database. Count must match Quantity field.
+                                        </p>
                                     </div>
                                 </div>
 
-                                <!-- Input to add serial numbers -->
-                                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                    <input
-                                        pInputText
-                                        [(ngModel)]="tempSerialNumber"
-                                        placeholder="Enter serial number"
-                                        (keyup.enter)="addSerialNumber()"
-                                        style="flex: 1; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
-                                    />
-                                    <button
-                                        pButton
-                                        type="button"
-                                        icon="pi pi-plus"
-                                        label="Add"
-                                        (click)="addSerialNumber()"
-                                        [disabled]="!tempSerialNumber || !tempSerialNumber.trim()"
-                                        style="padding: 11px 16px; border-radius: 6px; font-size: 13px;"
-                                    ></button>
-                                </div>
+                                <!-- Serial numbers textarea -->
+                                <textarea
+                                    pInputTextarea
+                                    [(ngModel)]="serialNumbersRaw"
+                                    (ngModelChange)="validateSerialNumbers()"
+                                    placeholder="Enter serial numbers (one per line or separated by comma/semicolon)&#10;Example:&#10;SN-2026-001&#10;LTP-A01, LTP-A02&#10;DEV-X9; DEV-X10"
+                                    rows="6"
+                                    style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; font-family: 'Courier New', monospace; background: #fafafa; resize: vertical;"
+                                ></textarea>
 
-                                <!-- List of added serial numbers -->
-                                <div *ngIf="serialNumbers.length > 0" style="background: #f8fafc; border-radius: 8px; padding: 12px; border: 1px solid #e2e8f0;">
-                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #64748b;">Added Serial Numbers ({{ serialNumbers.length }})</p>
-                                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                        <div
-                                            *ngFor="let serial of serialNumbers; let i = index"
-                                            style="display: flex; align-items: center; gap: 8px; background: white; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px;"
+                                <!-- Parsed serial numbers preview -->
+                                <div *ngIf="serialNumbersParsed.length > 0" style="margin-top: 8px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 10px 12px;">
+                                    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #15803d;"><i class="pi pi-check-circle"></i> Parsed {{ serialNumbersParsed.length }} serial number(s)</p>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        <span
+                                            *ngFor="let serial of serialNumbersParsed.slice(0, 10)"
+                                            style="display: inline-block; background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #86efac; font-size: 11px; color: #15803d; font-family: 'Courier New', monospace;"
                                         >
-                                            <span style="color: #334155; font-weight: 500;">{{ serial }}</span>
-                                            <button pButton type="button" icon="pi pi-times" (click)="removeSerialNumber(i)" class="p-button-rounded p-button-text p-button-sm p-button-danger" style="width: 24px; height: 24px; padding: 0;"></button>
-                                        </div>
+                                            {{ serial }}
+                                        </span>
+                                        <span *ngIf="serialNumbersParsed.length > 10" style="color: #15803d; font-size: 11px; padding: 4px 8px;"> ... and {{ serialNumbersParsed.length - 10 }} more </span>
                                     </div>
                                 </div>
 
-                                <!-- Empty state message -->
-                                <p *ngIf="serialNumbers.length === 0" style="margin: 0; font-size: 12px; color: #ef4444; font-weight: 500; background: #fef2f2; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca;">
-                                    <i class="pi pi-exclamation-triangle"></i> At least one serial number is required. Each serial number will create a separate asset.
-                                </p>
+                                <!-- Validation errors -->
+                                <div *ngIf="serialValidationError" style="margin-top: 8px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 10px 12px;">
+                                    <p style="margin: 0; font-size: 12px; color: #dc2626; font-weight: 500;"><i class="pi pi-exclamation-circle"></i> {{ serialValidationError }}</p>
+                                </div>
+
+                                <!-- Quantity mismatch warning -->
+                                <div *ngIf="quantitySerialMismatch && !serialValidationError" style="margin-top: 8px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 10px 12px;">
+                                    <p style="margin: 0; font-size: 12px; color: #ea580c; font-weight: 500;">
+                                        <i class="pi pi-exclamation-triangle"></i> Quantity ({{ newAsset.inventoryCustodianSlip.quantity || 0 }}) must match number of serial numbers entered ({{ serialNumbersParsed.length }})
+                                    </p>
+                                </div>
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Model Number</label>
@@ -620,8 +615,11 @@ export class AssetsComponent implements OnInit {
     newAsset: any = this.getEmptyAsset();
 
     // Serial numbers management
-    serialNumbers: string[] = [];
-    tempSerialNumber: string = '';
+    serialNumbersRaw: string = ''; // Raw textarea input
+    serialNumbersParsed: string[] = []; // Parsed and validated serials
+    serialValidationError: string = ''; // Validation error message
+    quantitySerialMismatch: boolean = false; // Quantity vs serial count mismatch
+    isSubmitting: boolean = false; // Form submission state
 
     // Request maintenance dialog state
     requestDialog: boolean = false;
@@ -1037,50 +1035,72 @@ export class AssetsComponent implements OnInit {
         this.assetDialog = true;
         this.currentStep = 0;
         this.newAsset = this.getEmptyAsset();
-        this.serialNumbers = [];
-        this.tempSerialNumber = '';
+        this.serialNumbersRaw = '';
+        this.serialNumbersParsed = [];
+        this.serialValidationError = '';
+        this.quantitySerialMismatch = false;
+        this.isSubmitting = false;
     }
 
-    addSerialNumber() {
-        if (this.tempSerialNumber && this.tempSerialNumber.trim()) {
-            const serial = this.tempSerialNumber.trim();
-            // Check for duplicates
-            if (!this.serialNumbers.includes(serial)) {
-                this.serialNumbers.push(serial);
-                this.tempSerialNumber = '';
+    validateSerialNumbers() {
+        this.serialValidationError = '';
+        this.quantitySerialMismatch = false;
+        this.serialNumbersParsed = [];
 
-                // Auto-update quantity to match serial numbers count
-                this.newAsset.inventoryCustodianSlip.quantity = this.serialNumbers.length;
+        if (!this.serialNumbersRaw || !this.serialNumbersRaw.trim()) {
+            return;
+        }
 
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Added',
-                    detail: 'Serial number added successfully',
-                    life: 2000
-                });
+        // Parse serial numbers by newline, comma, or semicolon
+        const rawTokens = this.serialNumbersRaw
+            .split(/[\n,;]+/) // Split by newline, comma, or semicolon
+            .map((s) => s.trim()) // Trim whitespace
+            .filter((s) => s.length > 0); // Remove empty values
+
+        console.log('📝 Parsing serials:', {
+            raw: this.serialNumbersRaw,
+            tokens: rawTokens,
+            count: rawTokens.length
+        });
+
+        // Check for duplicates (case-insensitive)
+        const seen = new Map<string, string>();
+        const duplicates: string[] = [];
+
+        rawTokens.forEach((serial) => {
+            const lowerSerial = serial.toLowerCase();
+            if (seen.has(lowerSerial)) {
+                if (!duplicates.includes(serial)) {
+                    duplicates.push(serial);
+                }
             } else {
-                this.messageService.add({
-                    severity: 'warn',
-                    summary: 'Duplicate',
-                    detail: 'This serial number is already added',
-                    life: 3000
-                });
+                seen.set(lowerSerial, serial);
             }
+        });
+
+        if (duplicates.length > 0) {
+            this.serialValidationError = `Duplicate serial number(s) found: ${duplicates.join(', ')}`;
+            return;
+        }
+
+        this.serialNumbersParsed = rawTokens;
+
+        // Check if quantity matches serial count
+        const quantity = this.newAsset.inventoryCustodianSlip.quantity || 0;
+        if (quantity > 0 && this.serialNumbersParsed.length > 0 && quantity !== this.serialNumbersParsed.length) {
+            this.quantitySerialMismatch = true;
         }
     }
 
+    // Deprecated - kept for backwards compatibility
+    addSerialNumber() {
+        // No longer used - using textarea instead
+        return;
+    }
+
     removeSerialNumber(index: number) {
-        this.serialNumbers.splice(index, 1);
-
-        // Auto-update quantity to match serial numbers count
-        this.newAsset.inventoryCustodianSlip.quantity = this.serialNumbers.length;
-
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Removed',
-            detail: 'Serial number removed',
-            life: 2000
-        });
+        // No longer used - using textarea instead
+        return;
     }
 
     isSoftwareCategory(): boolean {
@@ -1240,14 +1260,9 @@ export class AssetsComponent implements OnInit {
     }
 
     saveNewAsset() {
+        // Basic field validation
         if (!this.newAsset.assetName || !this.newAsset.propertyNumber || !this.newAsset.category) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Asset Name, Property Number, and Category are required' });
-            return;
-        }
-
-        // Validate serial numbers
-        if (this.serialNumbers.length === 0) {
-            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'At least one serial number is required' });
             return;
         }
 
@@ -1261,14 +1276,104 @@ export class AssetsComponent implements OnInit {
             return;
         }
 
-        // Combine all serial numbers into comma-separated string
-        this.newAsset.inventoryCustodianSlip.serialNumber = this.serialNumbers.join(', ');
-        this.newAsset.inventoryCustodianSlip.quantity = this.serialNumbers.length;
+        // Validate quantity
+        const quantity = this.newAsset.inventoryCustodianSlip.quantity;
+        if (!quantity || quantity <= 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Quantity is required and must be greater than 0' });
+            return;
+        }
 
-        // Create a copy and remove qrCodeImage and qrCode before sending to API
-        const assetToSend = { ...this.newAsset };
-        delete assetToSend.qrCodeImage;
-        delete assetToSend.qrCode;
+        // Re-validate serial numbers
+        this.validateSerialNumbers();
+
+        // Check for serial number validation errors
+        if (this.serialValidationError) {
+            this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: this.serialValidationError });
+            return;
+        }
+
+        // Check if at least one serial number is provided
+        if (this.serialNumbersParsed.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'At least one serial number is required' });
+            return;
+        }
+
+        // Strict validation: quantity must exactly match serial count
+        if (quantity !== this.serialNumbersParsed.length) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Quantity Mismatch',
+                detail: `Quantity (${quantity}) must exactly match number of serial numbers entered (${this.serialNumbersParsed.length})`
+            });
+            return;
+        }
+
+        console.log(`🔍 Creating ${this.serialNumbersParsed.length} separate assets SEQUENTIALLY (one per serial number)...`);
+        console.log('⚠️ Sequential creation prevents duplicate ICS ID race condition');
+
+        // Disable submit button
+        this.isSubmitting = true;
+
+        // Create assets SEQUENTIALLY to avoid duplicate ICS ID generation
+        this.createAssetsSequentially(0, [], this.newAsset.qrCodeImage);
+    }
+
+    // Helper method to create assets one by one (sequential)
+    async createAssetsSequentially(index: number, createdAssets: any[], qrCodeFile: any) {
+        // Base case: all assets created
+        if (index >= this.serialNumbersParsed.length) {
+            this.isSubmitting = false;
+            const createdCount = createdAssets.length;
+
+            console.log(`🎉 Successfully created ${createdCount} assets sequentially!`);
+
+            // Extract asset IDs for display
+            const assetIds = createdAssets.map((a: any) => a.assetId || a.id).filter(Boolean);
+
+            // Upload QR code to FIRST asset only
+            const firstAssetId = assetIds[0];
+
+            if (firstAssetId && qrCodeFile) {
+                this.assetService.uploadQrCode(firstAssetId, qrCodeFile).subscribe({
+                    next: () => {
+                        console.log(`✅ QR code uploaded to first asset: ${firstAssetId}`);
+                        this.showSuccessAndClose(createdCount, assetIds);
+                    },
+                    error: (qrError: any) => {
+                        console.warn('⚠️ QR upload failed:', qrError);
+                        this.messageService.add({
+                            severity: 'warn',
+                            summary: 'Partial Success',
+                            detail: `${createdCount} asset(s) created but QR upload failed`
+                        });
+                        this.closeAndRefresh();
+                    }
+                });
+            } else {
+                this.showSuccessAndClose(createdCount, assetIds);
+            }
+            return;
+        }
+
+        const serialNumber = this.serialNumbersParsed[index];
+
+        // Create a deep copy of the asset for this serial number
+        const assetToSend: any = {
+            assetName: this.newAsset.assetName,
+            propertyNumber: this.newAsset.propertyNumber,
+            category: this.newAsset.category,
+            foundCluster: this.newAsset.foundCluster,
+            purpose: this.newAsset.purpose,
+            issuedTo: this.newAsset.issuedTo,
+            program: this.newAsset.program,
+            supplier: this.newAsset.supplier,
+            laboratories: this.newAsset.laboratories,
+            inventoryCustodianSlip: {
+                ...this.newAsset.inventoryCustodianSlip,
+                serialNumber: serialNumber, // Single serial number
+                quantity: 1 // Quantity is always 1 per asset
+            }
+        };
 
         // laboratories field must be a string (laboratory ID)
         if (!assetToSend.laboratories || typeof assetToSend.laboratories !== 'string') {
@@ -1280,54 +1385,87 @@ export class AssetsComponent implements OnInit {
             assetToSend.issuedTo = this.getFullName(assetToSend.issuedTo);
         }
 
-        console.log('🔍 Creating 1 asset with combined serials:', {
-            serialNumber: assetToSend.inventoryCustodianSlip.serialNumber,
-            quantity: assetToSend.inventoryCustodianSlip.quantity
+        console.log(`📦 Creating asset ${index + 1}/${this.serialNumbersParsed.length}:`, {
+            serialNumber: serialNumber,
+            quantity: 1,
+            assetName: assetToSend.assetName
         });
 
-        // Create single asset with combined serial numbers
+        // Create this asset and wait for completion
         this.assetService.createAsset(assetToSend).subscribe({
             next: (response: any) => {
                 const assetId = String(response.assetId || response.id);
-                console.log('✅ Asset created:', assetId);
+                console.log(`✅ Created asset ${index + 1}: ${assetId} (Serial: ${serialNumber})`);
 
-                // Upload QR code
-                this.assetService.uploadQrCode(assetId, this.newAsset.qrCodeImage).subscribe({
-                    next: () => {
-                        Swal.fire({
-                            title: 'Good job!',
-                            text: `Asset created with ${this.serialNumbers.length} serial number(s)!`,
-                            icon: 'success'
-                        });
+                createdAssets.push(response);
 
-                        // Close dialog and refresh
-                        this.assetDialog = false;
-                        this.newAsset = this.getEmptyAsset();
-                        this.serialNumbers = [];
-                        this.tempSerialNumber = '';
-                        this.currentStep = 0;
-                        this.loadAssets();
-                    },
-                    error: (qrError: any) => {
-                        this.messageService.add({
-                            severity: 'warn',
-                            summary: 'Partial Success',
-                            detail: 'Asset created but QR upload failed'
-                        });
-                        this.assetDialog = false;
-                        this.loadAssets();
-                    }
-                });
+                // Create next asset (recursive call)
+                this.createAssetsSequentially(index + 1, createdAssets, qrCodeFile);
             },
             error: (error: any) => {
-                console.error('❌ Error creating asset:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Failed to create asset: ' + (error?.error?.message || error?.message)
-                });
+                this.isSubmitting = false;
+                console.error(`❌ Failed to create asset ${index + 1} (Serial: ${serialNumber}):`, error);
+
+                // Check for duplicate serial number error
+                const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+
+                if (createdAssets.length > 0) {
+                    // Some assets were created successfully
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Partial Success',
+                        html: `Created ${createdAssets.length} of ${this.serialNumbersParsed.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Error: ${errorMessage}`,
+                        confirmButtonText: 'OK'
+                    });
+                    this.closeAndRefresh();
+                } else {
+                    // No assets created
+                    if (errorMessage.toLowerCase().includes('duplicate') || errorMessage.toLowerCase().includes('duplicated')) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Duplicate Serial Number',
+                            text: errorMessage,
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed to Create Assets',
+                            text: errorMessage
+                        });
+                    }
+                }
             }
         });
+    }
+
+    showSuccessAndClose(count: number, assetIds: string[]) {
+        const idsText =
+            assetIds.length > 0 && assetIds.length <= 5
+                ? `<br><small style=\"font-size: 12px; color: #64748b;\">Asset IDs: ${assetIds.join(', ')}</small>`
+                : assetIds.length > 5
+                  ? `<br><small style=\"font-size: 12px; color: #64748b;\">First 5 IDs: ${assetIds.slice(0, 5).join(', ')} ...</small>`
+                  : '';
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            html: `Created <strong>${count}</strong> asset(s) successfully!${idsText}`,
+            confirmButtonText: 'OK'
+        });
+
+        this.closeAndRefresh();
+    }
+
+    closeAndRefresh() {
+        this.assetDialog = false;
+        this.newAsset = this.getEmptyAsset();
+        this.serialNumbersRaw = '';
+        this.serialNumbersParsed = [];
+        this.serialValidationError = '';
+        this.quantitySerialMismatch = false;
+        this.currentStep = 0;
+        this.loadAssets();
     }
 
     view(item: Asset) {
