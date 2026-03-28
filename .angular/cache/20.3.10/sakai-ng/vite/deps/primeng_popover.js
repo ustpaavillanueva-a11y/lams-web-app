@@ -5,15 +5,15 @@ import {
   zindexutils
 } from "./chunk-3DNZLJAM.js";
 import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
+import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
 import {
   OverlayService,
   PrimeTemplate,
@@ -94,8 +94,8 @@ import {
   ɵɵrestoreView,
   ɵɵtemplate
 } from "./chunk-FKRSZNWR.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-V4F5PRXT.js";
 

@@ -261,6 +261,39 @@ function createEventId() {
             :host ::ng-deep .fc .fc-toolbar {
                 gap: 0.5rem;
             }
+
+            /* Event title truncation with ellipsis */
+            :host ::ng-deep .fc-event-title,
+            :host ::ng-deep .fc .fc-event-title {
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                max-width: 100% !important;
+                display: block !important;
+            }
+
+            :host ::ng-deep .fc-event,
+            :host ::ng-deep .fc .fc-event {
+                cursor: pointer;
+                border-radius: 4px;
+                padding: 2px 4px;
+            }
+
+            :host ::ng-deep .fc-daygrid-event,
+            :host ::ng-deep .fc .fc-daygrid-event {
+                white-space: nowrap !important;
+                overflow: hidden !important;
+            }
+
+            :host ::ng-deep .fc-daygrid-event-harness,
+            :host ::ng-deep .fc .fc-daygrid-event-harness {
+                overflow: hidden !important;
+            }
+
+            :host ::ng-deep .fc-event-main,
+            :host ::ng-deep .fc .fc-event-main {
+                overflow: hidden !important;
+            }
         `
     ]
 })
@@ -292,22 +325,26 @@ export class DashboardSuperAdmin implements OnInit {
         eventContent: (arg) => {
             const view = arg.view.type;
             const props = arg.event.extendedProps;
+            const ellipsisStyle = 'width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;';
 
             // For Month view, show simplified text
             if (view === 'dayGridMonth') {
                 if (props['type'] === 'schedule') {
                     // Show only subject
-                    return { html: `<div class="fc-event-title">${props['subject'] || 'N/A'}</div>` };
+                    return { html: `<div style="${ellipsisStyle}">${props['subject'] || 'N/A'}</div>` };
                 } else if (props['type'] === 'maintenance') {
                     // Show only maintenanceType
-                    return { html: `<div class="fc-event-title">${props['maintenanceType'] || 'Maintenance'}</div>` };
+                    return { html: `<div style="${ellipsisStyle}">${props['maintenanceType'] || 'Maintenance'}</div>` };
+                } else if (props['type'] === 'masterplan') {
+                    // Show maintenance type and equipment for master plan
+                    return { html: `<div style="${ellipsisStyle}">${props['maintenanceType']} - ${props['equipment'] || 'Equipment'}</div>` };
                 } else if (props['type'] === 'custom') {
                     // Show title for custom events
-                    return { html: `<div class="fc-event-title">${arg.event.title}</div>` };
+                    return { html: `<div style="${ellipsisStyle}">${arg.event.title}</div>` };
                 }
             }
             // For other views (Week, Day, List), use default title
-            return { html: `<div class="fc-event-title">${arg.event.title}</div>` };
+            return { html: `<div style="${ellipsisStyle}">${arg.event.title}</div>` };
         }
         /* you can update a remote database when these fire:
     eventAdd:

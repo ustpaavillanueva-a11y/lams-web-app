@@ -1,11 +1,11 @@
 import {
-  AutoFocus,
-  AutoFocusModule
-} from "./chunk-IOM7T3UX.js";
-import {
   BaseEditableHolder
 } from "./chunk-4ZJYHXVI.js";
 import "./chunk-2NXK4IZZ.js";
+import {
+  AutoFocus,
+  AutoFocusModule
+} from "./chunk-IOM7T3UX.js";
 import {
   ConnectedOverlayScrollHandler,
   DomHandler
@@ -14,19 +14,22 @@ import {
   zindexutils
 } from "./chunk-3DNZLJAM.js";
 import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
-import {
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
+import {
   OverlayService,
   SharedModule,
   TranslationKeys
 } from "./chunk-6D2SAAIV.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-SJUOZCFA.js";
 import "./chunk-OTTARZB5.js";
 import {
   D,
@@ -40,9 +43,6 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-SJUOZCFA.js";
 import {
   CommonModule,
   NgIf,
@@ -95,8 +95,8 @@ import {
   ɵɵtemplate,
   ɵɵviewQuery
 } from "./chunk-FKRSZNWR.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-V4F5PRXT.js";
 

@@ -10,7 +10,7 @@ export interface CalendarEvent {
     start: string;
     end?: string;
     extendedProps: {
-        type: 'schedule' | 'maintenance' | 'custom'; // schedule, maintenance, or custom
+        type: 'schedule' | 'maintenance' | 'custom' | 'masterplan'; // schedule, maintenance, custom, or masterplan
         campus?: string;
         lab?: string;
         location?: string;
@@ -28,6 +28,8 @@ export interface CalendarEvent {
         createdBy?: string;
         campusId?: string;
         color?: string;
+        laboratoryName?: string;
+        assetId?: string;
     };
 }
 
@@ -68,7 +70,7 @@ export class CalendarService {
                     });
                 }
 
-                // Process maintenance
+                // Process maintenance (includes master plan events)
                 if (calendarEvents.data?.maintenance && Array.isArray(calendarEvents.data.maintenance)) {
                     calendarEvents.data.maintenance.forEach((maintenance: any) => {
                         events.push(this.createMaintenanceEvent(maintenance));
@@ -143,14 +145,18 @@ export class CalendarService {
         }
 
         // Generate unique ID based on available IDs
-        const eventId = maintenance.maintenanceApprovalId || maintenance.maintenanceRequestId || `maintenance-${Date.now()}`;
+        const eventId = maintenance.maintenanceApprovalId || maintenance.maintenanceRequestId || maintenance.maintenancePlanId || `maintenance-${Date.now()}`;
+
+        // Check if this is a master plan event
+        const isMasterPlan = maintenance.status === 'Master Plan';
+        const eventType = isMasterPlan ? 'masterplan' : 'maintenance';
 
         return {
-            id: `maintenance-${eventId}`,
+            id: `${eventType}-${eventId}`,
             title: `${maintenance.maintenanceType || 'Maintenance'} - ${maintenance.equipmentName || 'Equipment'}`,
             start: eventDate.toISOString(),
             extendedProps: {
-                type: 'maintenance',
+                type: eventType,
                 equipment: maintenance.equipmentName || 'N/A',
                 maintenanceType: maintenance.maintenanceType || 'N/A',
                 requestedBy: maintenance.requestedBy || 'N/A',
@@ -159,7 +165,9 @@ export class CalendarService {
                 status: maintenance.status || 'Pending',
                 description: maintenance.description || 'No description',
                 location: maintenance.building || 'N/A',
-                color: this.getMaintenanceColor(maintenance.priority)
+                lab: maintenance.laboratoryName,
+                campusId: maintenance.campusId,
+                color: isMasterPlan ? this.getMasterPlanColor(maintenance.maintenanceType) : this.getMaintenanceColor(maintenance.priority)
             }
         };
     }
@@ -223,6 +231,24 @@ export class CalendarService {
                 return '#10b981'; // Green
             default:
                 return '#8b5cf6'; // Purple
+        }
+    }
+
+    /**
+     * Get color based on master plan maintenance type
+     */
+    private getMasterPlanColor(maintenanceType: string): string {
+        switch (maintenanceType?.toLowerCase()) {
+            case 'inventory':
+                return '#06b6d4'; // Cyan
+            case 'preventive':
+                return '#10b981'; // Green
+            case 'corrective':
+                return '#f59e0b'; // Orange
+            case 'calibration':
+                return '#8b5cf6'; // Purple
+            default:
+                return '#6366f1'; // Indigo
         }
     }
 }

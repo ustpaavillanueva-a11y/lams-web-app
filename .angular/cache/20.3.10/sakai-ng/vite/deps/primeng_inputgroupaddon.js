@@ -1,14 +1,14 @@
 import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
 import {
   SharedModule
 } from "./chunk-6D2SAAIV.js";
@@ -38,8 +38,8 @@ import {
   ɵɵprojectionDef,
   ɵɵstyleMap
 } from "./chunk-FKRSZNWR.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-V4F5PRXT.js";
 
