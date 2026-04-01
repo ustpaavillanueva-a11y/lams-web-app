@@ -5,16 +5,16 @@ import {
   MinusIcon
 } from "./chunk-GGKQQQY2.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
 import {
   PrimeTemplate,
   SharedModule

@@ -4,10 +4,10 @@ import {
   BadgeDirective,
   BadgeModule,
   BadgeStyle
-} from "./chunk-QFW25L6H.js";
+} from "./chunk-2DG5XJ4L.js";
+import "./chunk-PXYWQ7E3.js";
 import "./chunk-M2NELYC7.js";
 import "./chunk-WBKIMRVV.js";
-import "./chunk-PXYWQ7E3.js";
 import "./chunk-6D2SAAIV.js";
 import "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";

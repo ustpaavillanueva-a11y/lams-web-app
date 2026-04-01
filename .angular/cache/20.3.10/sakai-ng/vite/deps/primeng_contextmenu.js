@@ -4,21 +4,25 @@ import {
 import {
   Badge,
   BadgeModule
-} from "./chunk-QFW25L6H.js";
+} from "./chunk-2DG5XJ4L.js";
 import {
   Tooltip,
   TooltipModule
-} from "./chunk-LERCPKH5.js";
+} from "./chunk-RI4JJN4Q.js";
 import {
   DomHandler
 } from "./chunk-P6SMTJBG.js";
 import {
   AngleRightIcon
 } from "./chunk-G3KLILSY.js";
-import "./chunk-GGKQQQY2.js";
 import {
   zindexutils
 } from "./chunk-3DNZLJAM.js";
+import "./chunk-GGKQQQY2.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -26,10 +30,6 @@ import {
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
 import {
   OverlayService,
   PrimeTemplate,
@@ -54,10 +54,6 @@ import {
   v,
   z2 as z
 } from "./chunk-U4LT4ZJN.js";
-import {
-  RouterLink,
-  RouterModule
-} from "./chunk-XZB45QF6.js";
 import "./chunk-CMHWE5XI.js";
 import {
   animate,
@@ -65,9 +61,12 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
-import "./chunk-YLSNHPQE.js";
+import {
+  RouterLink,
+  RouterModule
+} from "./chunk-HQXWA6LS.js";
+import "./chunk-LUIL3F5I.js";
 import "./chunk-YRBEEYOM.js";
-import "./chunk-P5A6SZJJ.js";
 import {
   CommonModule,
   NgForOf,
@@ -76,6 +75,7 @@ import {
   NgTemplateOutlet,
   isPlatformBrowser
 } from "./chunk-RH3RUHL2.js";
+import "./chunk-P5A6SZJJ.js";
 import "./chunk-APPCZKFW.js";
 import {
   ChangeDetectionStrategy,

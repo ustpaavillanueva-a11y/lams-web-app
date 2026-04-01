@@ -6,27 +6,27 @@ import {
   MinusIcon
 } from "./chunk-GGKQQQY2.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
+import {
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
-import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-6D2SAAIV.js";
 import {
-  NG_VALUE_ACCESSOR,
-  NgControl
-} from "./chunk-SJUOZCFA.js";
-import {
   k,
   q
 } from "./chunk-U4LT4ZJN.js";
+import {
+  NG_VALUE_ACCESSOR,
+  NgControl
+} from "./chunk-SJUOZCFA.js";
 import {
   CommonModule,
   NgClass,
@@ -730,4 +730,4 @@ export {
   Checkbox,
   CheckboxModule
 };
-//# sourceMappingURL=chunk-RZHKYLR6.js.map
+//# sourceMappingURL=chunk-D45AJ64E.js.map

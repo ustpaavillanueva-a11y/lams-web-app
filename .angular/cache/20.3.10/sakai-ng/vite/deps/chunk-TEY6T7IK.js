@@ -1,9 +1,9 @@
 import {
   Select
-} from "./chunk-DWZTGFIP.js";
+} from "./chunk-MOPRQLM3.js";
 import {
   InputNumber
-} from "./chunk-WRCDU5IX.js";
+} from "./chunk-QMCY7UW2.js";
 import {
   Ripple
 } from "./chunk-UCC4SYHQ.js";
@@ -14,15 +14,15 @@ import {
   AngleRightIcon
 } from "./chunk-G3KLILSY.js";
 import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
-import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
 import {
   PrimeTemplate,
   SharedModule
@@ -1382,4 +1382,4 @@ export {
   Paginator,
   PaginatorModule
 };
-//# sourceMappingURL=chunk-VF4CGIE5.js.map
+//# sourceMappingURL=chunk-TEY6T7IK.js.map

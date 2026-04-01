@@ -3,25 +3,25 @@ import {
 } from "./chunk-4ZJYHXVI.js";
 import "./chunk-2NXK4IZZ.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
+import {
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
-import {
   SharedModule
 } from "./chunk-6D2SAAIV.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-SJUOZCFA.js";
 import {
   rr
 } from "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-SJUOZCFA.js";
 import {
   CommonModule,
   NgIf
