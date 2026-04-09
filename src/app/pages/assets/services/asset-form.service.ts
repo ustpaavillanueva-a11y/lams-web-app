@@ -141,16 +141,30 @@ export class AssetFormService {
             assetName: asset.assetName,
             propertyNumber: asset.propertyNumber,
             category: asset.category,
-            foundCluster: asset.foundCluster,
-            purpose: asset.purpose,
-            issuedTo: asset.issuedTo,
-            program: asset.program,
-            supplier: asset.supplier,
-            laboratories: asset.laboratories,
+            foundCluster: asset.foundCluster || '',
+            purpose: asset.purpose || '',
+            issuedTo: asset.issuedTo || '',
+            qrCode: asset.qrCode || '',
+            program: asset.program || '',
+            supplier: asset.supplier || '',
+            laboratories: asset.laboratories || '',
             inventoryCustodianSlip: {
-                ...asset.inventoryCustodianSlip,
+                icsNo: asset.inventoryCustodianSlip.icsNo || '',
+                quantity: 1, // Always 1 per asset
+                uoM: asset.inventoryCustodianSlip.uoM || '',
+                unitCost: Number(asset.inventoryCustodianSlip.unitCost) || 0,
+                description: asset.inventoryCustodianSlip.description || '',
+                specifications: asset.inventoryCustodianSlip.specifications || '',
+                height: Number(asset.inventoryCustodianSlip.height) || 0,
+                width: Number(asset.inventoryCustodianSlip.width) || 0,
+                length: Number(asset.inventoryCustodianSlip.length) || 0,
+                package: asset.inventoryCustodianSlip.package || '',
+                material: asset.inventoryCustodianSlip.material || '',
                 serialNumber: serialNumber,
-                quantity: 1 // Always 1 per asset
+                modelNumber: asset.inventoryCustodianSlip.modelNumber || '',
+                estimatedUsefullLife: asset.inventoryCustodianSlip.estimatedUsefullLife || '',
+                brand: asset.inventoryCustodianSlip.brand || '',
+                color: asset.inventoryCustodianSlip.color || ''
             }
         };
 
@@ -165,13 +179,34 @@ export class AssetFormService {
         }
 
         // Extract program value
-        assetToSend.program = this.extractStringValue(assetToSend.program, 'programName');
+        if (assetToSend.program && typeof assetToSend.program === 'object') {
+            assetToSend.program = this.extractStringValue(assetToSend.program, 'programName');
+        }
 
         // Extract brand value
-        assetToSend.inventoryCustodianSlip.brand = this.extractStringValue(assetToSend.inventoryCustodianSlip.brand, 'brandName');
+        if (assetToSend.inventoryCustodianSlip.brand && typeof assetToSend.inventoryCustodianSlip.brand === 'object') {
+            assetToSend.inventoryCustodianSlip.brand = this.extractStringValue(assetToSend.inventoryCustodianSlip.brand, 'brandName');
+        }
 
         // Extract color value
-        assetToSend.inventoryCustodianSlip.color = this.extractStringValue(assetToSend.inventoryCustodianSlip.color, 'colorName');
+        if (assetToSend.inventoryCustodianSlip.color && typeof assetToSend.inventoryCustodianSlip.color === 'object') {
+            assetToSend.inventoryCustodianSlip.color = this.extractStringValue(assetToSend.inventoryCustodianSlip.color, 'colorName');
+        }
+
+        // Remove null/undefined values to prevent backend issues
+        Object.keys(assetToSend).forEach((key) => {
+            if (assetToSend[key] === null || assetToSend[key] === undefined) {
+                assetToSend[key] = '';
+            }
+        });
+
+        Object.keys(assetToSend.inventoryCustodianSlip).forEach((key) => {
+            if (assetToSend.inventoryCustodianSlip[key] === null || assetToSend.inventoryCustodianSlip[key] === undefined) {
+                assetToSend.inventoryCustodianSlip[key] = typeof assetToSend.inventoryCustodianSlip[key] === 'number' ? 0 : '';
+            }
+        });
+
+        console.log('📤 Prepared asset for submission:', assetToSend);
 
         return assetToSend;
     }

@@ -189,7 +189,7 @@ export class AssetService {
         return this.http.post<Program>(`${this.baseApiUrl}/programs`, body);
     }
     updateProgram(id: string, body: Partial<Program>): Observable<Program> {
-        return this.http.put<Program>(`${this.baseApiUrl}/programs/${id}`, body);
+        return this.http.patch<Program>(`${this.baseApiUrl}/programs/${id}`, body);
     }
     deleteProgram(id: string): Observable<void> {
         return this.http.delete<void>(`${this.baseApiUrl}/programs/${id}`);
@@ -237,7 +237,7 @@ export class AssetService {
         return this.http.post<Color>(`${this.baseApiUrl}/colors`, body);
     }
     updateColor(id: string, body: Partial<Color>): Observable<Color> {
-        return this.http.put<Color>(`${this.baseApiUrl}/colors/${id}`, body);
+        return this.http.patch<Color>(`${this.baseApiUrl}/colors/${id}`, body);
     }
     deleteColor(id: string): Observable<void> {
         return this.http.delete<void>(`${this.baseApiUrl}/colors/${id}`);
@@ -250,7 +250,7 @@ export class AssetService {
         return this.http.post<Brand>(`${this.baseApiUrl}/brands`, body);
     }
     updateBrand(id: string, body: Partial<Brand>): Observable<Brand> {
-        return this.http.put<Brand>(`${this.baseApiUrl}/brands/${id}`, body);
+        return this.http.patch<Brand>(`${this.baseApiUrl}/brands/${id}`, body);
     }
     deleteBrand(id: string): Observable<void> {
         return this.http.delete<void>(`${this.baseApiUrl}/brands/${id}`);

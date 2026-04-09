@@ -154,7 +154,7 @@ import { AssetUtils } from './utils/asset.utils';
             </ng-template>
         </p-table>
 
-        <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="true" [maximizable]="true">
+        <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="!isSubmitting" [maximizable]="true" [closeOnEscape]="!isSubmitting">
             <ng-template #content>
                 <!-- Professional Stepper -->
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 24px; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid #e5e5e5;">
@@ -520,9 +520,16 @@ import { AssetUtils } from './utils/asset.utils';
                 <div class="flex justify-between w-full">
                     <div></div>
                     <div class="flex gap-2">
-                        <p-button *ngIf="currentStep > 0" label="Back" severity="secondary" icon="pi pi-arrow-left" (onClick)="previousStep()" />
-                        <p-button *ngIf="currentStep < 1" label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" />
-                        <p-button *ngIf="currentStep === 1" label="Save Asset" icon="pi pi-check" (onClick)="saveNewAsset()" />
+                        <p-button *ngIf="currentStep > 0" label="Back" severity="secondary" icon="pi pi-arrow-left" (onClick)="previousStep()" [disabled]="isSubmitting" />
+                        <p-button *ngIf="currentStep < 1" label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" [disabled]="isSubmitting" />
+                        <p-button
+                            *ngIf="currentStep === 1"
+                            [label]="isSubmitting ? 'Saving...' : 'Save Asset'"
+                            [icon]="isSubmitting ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+                            (onClick)="saveNewAsset()"
+                            [disabled]="isSubmitting"
+                            [loading]="isSubmitting"
+                        />
                     </div>
                 </div>
             </ng-template>
@@ -1089,6 +1096,11 @@ export class AssetsComponent implements OnInit {
     }
 
     saveNewAsset() {
+        // Prevent multiple submissions
+        if (this.isSubmitting) {
+            return;
+        }
+
         // Basic field validation
         if (!this.newAsset.assetName || !this.newAsset.propertyNumber || !this.newAsset.category) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Asset Name, Property Number, and Category are required' });
@@ -1187,13 +1199,25 @@ export class AssetsComponent implements OnInit {
         const serialNumber = this.serialNumbersParsed[index];
 
         // Use form service to prepare asset data
-        const assetToSend = this.assetFormService.prepareAssetForSubmission(this.newAsset, serialNumber);
-
-        console.log(`📦 Creating asset ${index + 1}/${this.serialNumbersParsed.length}:`, {
-            serialNumber: serialNumber,
-            quantity: 1,
-            assetName: assetToSend.assetName
-        });
+        let assetToSend;
+        try {
+            assetToSend = this.assetFormService.prepareAssetForSubmission(this.newAsset, serialNumber);
+            console.log(`📦 Creating asset ${index + 1}/${this.serialNumbersParsed.length}:`, {
+                serialNumber: serialNumber,
+                quantity: 1,
+                assetName: assetToSend.assetName,
+                payload: assetToSend
+            });
+        } catch (prepError) {
+            this.isSubmitting = false;
+            console.error('❌ Asset preparation failed:', prepError);
+            Swal.fire({
+                icon: 'error',
+                title: 'Preparation Error',
+                text: 'Failed to prepare asset data. Please check all fields.'
+            });
+            return;
+        }
 
         // Create this asset and wait for completion
         this.assetService.createAsset(assetToSend).subscribe({
@@ -1209,16 +1233,20 @@ export class AssetsComponent implements OnInit {
             error: (error: any) => {
                 this.isSubmitting = false;
                 console.error(`❌ Failed to create asset ${index + 1} (Serial: ${serialNumber}):`, error);
+                console.error('Full error object:', JSON.stringify(error, null, 2));
+                console.error('Error response:', error?.error);
+                console.error('Status:', error?.status);
 
                 // Check for duplicate serial number error
                 const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+                const statusCode = error?.status || 'Unknown';
 
                 if (createdAssets.length > 0) {
                     // Some assets were created successfully
                     Swal.fire({
                         icon: 'warning',
                         title: 'Partial Success',
-                        html: `Created ${createdAssets.length} of ${this.serialNumbersParsed.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Error: ${errorMessage}`,
+                        html: `Created ${createdAssets.length} of ${this.serialNumbersParsed.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Status: ${statusCode}<br>Error: ${errorMessage}`,
                         confirmButtonText: 'OK'
                     });
                     this.closeAndRefresh();
@@ -1234,8 +1262,9 @@ export class AssetsComponent implements OnInit {
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Failed to Create Assets',
-                            text: errorMessage
+                            title: `Failed to Create Assets (Status: ${statusCode})`,
+                            html: `<strong>Error:</strong> ${errorMessage}<br><br><small>Check browser console for detailed logs.</small>`,
+                            confirmButtonText: 'OK'
                         });
                     }
                 }
