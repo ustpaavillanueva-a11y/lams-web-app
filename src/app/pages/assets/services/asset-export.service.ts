@@ -14,21 +14,65 @@ export class AssetExportService {
     /**
      * Export assets to Excel (CSV format)
      */
-    exportToExcel(assets: Asset[], selectedCampusId: string | null, campuses: any[]): void {
-        const data = assets.map((asset) => ({
-            'Asset ID': asset.assetId || '',
-            'Asset Name': asset.assetName || '',
-            'Property Number': asset.propertyNumber || '',
-            Campus: asset.campus?.campusName || '',
-            Laboratory: asset.laboratories?.laboratoryName || '',
-            'Issued To': asset.issuedTo || '',
-            Status: (asset as any).status?.statusName || '',
-            Brand: (asset as any).brand?.brandName || '',
-            Color: (asset as any).color?.colorName || '',
-            'Serial Number': asset.inventoryCustodianSlip?.serialNumber || '',
-            'Acquisition Date': (asset as any).acquisitionDate || '',
-            'Warranty Expiry': (asset as any).warrantyExpiry || ''
-        }));
+    exportToExcel(assets: Asset[], selectedCampusId: string | null, campuses: any[], brands: any[] = [], colors: any[] = [], programs: any[] = []): void {
+        const data = assets.map((asset) => {
+            // Get brand name - check multiple possible locations
+            let brandName = '';
+            const brandData = asset.inventoryCustodianSlip?.brand;
+
+            if (brandData) {
+                if (typeof brandData === 'object' && brandData.brandName) {
+                    // Brand is already an object with brandName
+                    brandName = brandData.brandName;
+                } else if (typeof brandData === 'string') {
+                    // Brand is an ID - look it up in brands array
+                    const foundBrand = brands.find((b) => b.brandId === brandData);
+                    brandName = foundBrand?.brandName || brandData;
+                }
+            }
+
+            // Get color name
+            let colorName = '';
+            const colorData = asset.inventoryCustodianSlip?.color;
+
+            if (colorData) {
+                if (typeof colorData === 'object' && colorData.colorName) {
+                    colorName = colorData.colorName;
+                } else if (typeof colorData === 'string') {
+                    const foundColor = colors.find((c) => c.colorId === colorData);
+                    colorName = foundColor?.colorName || colorData;
+                }
+            }
+
+            // Get program name
+            let programName = '';
+            const programData = (asset as any).program;
+
+            if (programData) {
+                if (typeof programData === 'object' && programData.programName) {
+                    programName = programData.programName;
+                } else if (typeof programData === 'string') {
+                    const foundProgram = programs.find((p) => p.programId === programData);
+                    programName = foundProgram?.programName || programData;
+                }
+            }
+
+            return {
+                'Asset ID': asset.assetId || '',
+                'Asset Name': asset.assetName || '',
+                'Property No.': asset.propertyNumber || '',
+                Campus: asset.campus?.campusName || '',
+                Laboratory: asset.laboratories?.laboratoryName || '',
+                Program: programName,
+                'Issued To': asset.issuedTo || '',
+                Status: (asset as any).status?.statusName || '',
+                Brand: brandName,
+                Color: colorName,
+                Specs: asset.inventoryCustodianSlip?.specifications || '',
+                Quantity: asset.inventoryCustodianSlip?.quantity || '1',
+                Price: asset.inventoryCustodianSlip?.unitCost || '0'
+            };
+        });
 
         // Convert to CSV
         const headers = Object.keys(data[0] || {});
@@ -70,10 +114,10 @@ export class AssetExportService {
     /**
      * Print assets list
      */
-    printAssets(assets: Asset[], selectedCampusId: string | null, campuses: any[]): void {
+    printAssets(assets: Asset[], selectedCampusId: string | null, campuses: any[], brands: any[] = [], colors: any[] = [], programs: any[] = []): void {
         const campusName = selectedCampusId ? campuses.find((c) => c.campusId === selectedCampusId)?.campusName || 'Filtered' : 'All Campuses';
 
-        const printContent = this.generatePrintContent(assets, campusName, false);
+        const printContent = this.generatePrintContent(assets, campusName, false, brands, colors, programs);
 
         const printWindow = window.open('', '_blank');
         if (printWindow) {
@@ -88,10 +132,10 @@ export class AssetExportService {
     /**
      * Export assets to PDF
      */
-    exportToPdf(assets: Asset[], selectedCampusId: string | null, campuses: any[]): void {
+    exportToPdf(assets: Asset[], selectedCampusId: string | null, campuses: any[], brands: any[] = [], colors: any[] = [], programs: any[] = []): void {
         const campusName = selectedCampusId ? campuses.find((c) => c.campusId === selectedCampusId)?.campusName || 'Filtered' : 'All Campuses';
 
-        const pdfContent = this.generatePrintContent(assets, campusName, true);
+        const pdfContent = this.generatePrintContent(assets, campusName, true, brands, colors, programs);
 
         const pdfWindow = window.open('', '_blank');
         if (pdfWindow) {
@@ -117,23 +161,69 @@ export class AssetExportService {
     /**
      * Generate HTML content for printing/PDF
      */
-    private generatePrintContent(assets: Asset[], campusName: string, isPdf: boolean): string {
+    private generatePrintContent(assets: Asset[], campusName: string, isPdf: boolean, brands: any[] = [], colors: any[] = [], programs: any[] = []): string {
         const styles = this.getPrintStyles(isPdf);
         const tableRows = assets
-            .map(
-                (asset) => `
+            .map((asset) => {
+                // Get brand name - check multiple possible locations
+                let brandName = '';
+                const brandData = asset.inventoryCustodianSlip?.brand;
+
+                if (brandData) {
+                    if (typeof brandData === 'object' && brandData.brandName) {
+                        // Brand is already an object with brandName
+                        brandName = brandData.brandName;
+                    } else if (typeof brandData === 'string') {
+                        // Brand is an ID - look it up in brands array
+                        const foundBrand = brands.find((b) => b.brandId === brandData);
+                        brandName = foundBrand?.brandName || brandData;
+                    }
+                }
+
+                // Get color name
+                let colorName = '';
+                const colorData = asset.inventoryCustodianSlip?.color;
+
+                if (colorData) {
+                    if (typeof colorData === 'object' && colorData.colorName) {
+                        colorName = colorData.colorName;
+                    } else if (typeof colorData === 'string') {
+                        const foundColor = colors.find((c) => c.colorId === colorData);
+                        colorName = foundColor?.colorName || colorData;
+                    }
+                }
+
+                // Get program name
+                let programName = '';
+                const programData = (asset as any).program;
+
+                if (programData) {
+                    if (typeof programData === 'object' && programData.programName) {
+                        programName = programData.programName;
+                    } else if (typeof programData === 'string') {
+                        const foundProgram = programs.find((p) => p.programId === programData);
+                        programName = foundProgram?.programName || programData;
+                    }
+                }
+
+                return `
             <tr>
                 <td>${asset.assetId || ''}</td>
                 <td>${asset.assetName || ''}</td>
                 <td>${asset.propertyNumber || ''}</td>
                 <td>${asset.campus?.campusName || ''}</td>
                 <td>${asset.laboratories?.laboratoryName || ''}</td>
+                <td>${programName}</td>
                 <td>${asset.issuedTo || ''}</td>
                 <td>${(asset as any).status?.statusName || ''}</td>
-                <td>${(asset as any).brand?.brandName || ''}</td>
+                <td>${brandName}</td>
+                <td>${colorName}</td>
+                <td>${asset.inventoryCustodianSlip?.specifications || ''}</td>
+                <td>${asset.inventoryCustodianSlip?.quantity || '1'}</td>
+                <td>${asset.inventoryCustodianSlip?.unitCost || '0'}</td>
             </tr>
-        `
-            )
+        `;
+            })
             .join('');
 
         const pdfInstructions = isPdf
@@ -166,14 +256,19 @@ export class AssetExportService {
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 12%">Asset ID</th>
-                            <th style="width: 15%">Asset Name</th>
-                            <th style="width: 12%">Property No.</th>
-                            <th style="width: 12%">Campus</th>
-                            <th style="width: 12%">Laboratory</th>
-                            <th style="width: 15%">Issued To</th>
-                            <th style="width: 10%">Status</th>
-                            <th style="width: 12%">Brand</th>
+                            <th style="width: 7%">Asset ID</th>
+                            <th style="width: 10%">Asset Name</th>
+                            <th style="width: 7%">Property No.</th>
+                            <th style="width: 9%">Campus</th>
+                            <th style="width: 9%">Laboratory</th>
+                            <th style="width: 9%">Program</th>
+                            <th style="width: 10%">Issued To</th>
+                            <th style="width: 7%">Status</th>
+                            <th style="width: 8%">Brand</th>
+                            <th style="width: 7%">Color</th>
+                            <th style="width: 10%">Specs</th>
+                            <th style="width: 4%">Quantity</th>
+                            <th style="width: 3%">Price</th>
                         </tr>
                     </thead>
                     <tbody>

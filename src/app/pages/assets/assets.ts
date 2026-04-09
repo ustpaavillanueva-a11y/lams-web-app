@@ -25,6 +25,7 @@ import { MaintenanceService, MaintenanceRequestPayload } from '../service/mainte
 import { AuthService } from '../service/auth.service';
 import { UserService } from '../service/user.service';
 import Swal from 'sweetalert2';
+import { forkJoin } from 'rxjs';
 
 // Refactored imports
 import { AssetConstants } from './constants/asset.constants';
@@ -653,7 +654,6 @@ export class AssetsComponent implements OnInit {
 
     ngOnInit() {
         this.checkUserRole();
-        this.loadAssets();
         this.loadReferenceData();
         this.loadMaintenanceDialogOptions();
     }
@@ -681,51 +681,37 @@ export class AssetsComponent implements OnInit {
     }
 
     loadReferenceData() {
-        this.assetService.getPrograms().subscribe({
+        // Load all reference data in parallel using forkJoin
+        forkJoin({
+            programs: this.assetService.getPrograms(),
+            suppliers: this.assetService.getSuppliers(),
+            locations: this.assetService.getLocations(),
+            statuses: this.assetService.getStatuses(),
+            colors: this.assetService.getColors(),
+            brands: this.assetService.getBrands()
+        }).subscribe({
             next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.programs = data || [];
-            }
-        });
+                // Store all reference data
+                this.programs = data.programs || [];
+                this.suppliers = data.suppliers || [];
+                this.locations = data.locations || [];
+                this.statuses = data.statuses || [];
+                this.colors = data.colors || [];
+                this.brands = data.brands || [];
 
-        this.assetService.getSuppliers().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.suppliers = data || [];
-            }
-        });
+                console.log('=== REFERENCE DATA LOADED ===');
+                console.log('Programs:', this.programs.length);
+                console.log('Brands:', this.brands.length);
+                console.log('Colors:', this.colors.length);
+                console.log('============================');
 
-        this.assetService.getLocations().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.locations = data || [];
-            }
-        });
-
-        this.assetService.getStatuses().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.statuses = data || [];
-            }
-        });
-
-        this.assetService.getColors().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.colors = data || [];
-            }
-        });
-
-        this.assetService.getBrands().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.brands = data || [];
+                // Now that reference data is loaded, load and enrich assets
+                this.loadAssets();
+            },
+            error: (error) => {
+                console.error('Error loading reference data:', error);
+                // Still try to load assets even if reference data fails
+                this.loadAssets();
             }
         });
 
@@ -785,9 +771,14 @@ export class AssetsComponent implements OnInit {
 
                 // Use utility to expand assets with multiple serial numbers
                 this.assets = AssetUtils.expandAssetsForDisplay(data);
+
+                // Enrich assets with brand/color/program names from loaded reference data
+                this.enrichAssetsWithNames();
+
                 this.filteredAssets = [...this.assets];
 
                 console.log('Expanded assets for display:', this.assets.length);
+                console.log('Assets after enrichment (sample):', this.assets[0]);
                 console.log('=========================');
 
                 this.loading = false;
@@ -802,6 +793,98 @@ export class AssetsComponent implements OnInit {
                 this.loading = false;
             }
         });
+    }
+
+    /**
+     * Enrich assets with brand, color, and program names from loaded reference data
+     * Backend returns only IDs, so we need to populate names from our cached arrays
+     */
+    enrichAssetsWithNames() {
+        console.log('=== ENRICHING ASSETS ===');
+        console.log('Available brands:', this.brands.length);
+        console.log('Available colors:', this.colors.length);
+        console.log('Available programs:', this.programs.length);
+        console.log('Sample brand:', this.brands[0]);
+        console.log('Sample color:', this.colors[0]);
+        console.log('Sample program:', this.programs[0]);
+
+        let brandEnriched = 0;
+        let colorEnriched = 0;
+        let programEnriched = 0;
+
+        this.assets.forEach((asset, index) => {
+            // Enrich brand name
+            if (asset.inventoryCustodianSlip?.brand) {
+                const brandData = asset.inventoryCustodianSlip.brand;
+                if (index === 0) {
+                    console.log('First asset brand data (before):', brandData);
+                }
+
+                if (typeof brandData === 'object' && brandData.brandId && !brandData.brandName) {
+                    const foundBrand = this.brands.find((b) => b.brandId === brandData.brandId);
+                    if (foundBrand) {
+                        asset.inventoryCustodianSlip.brand = foundBrand;
+                        brandEnriched++;
+                        if (index === 0) {
+                            console.log('Found brand by ID (object):', foundBrand);
+                        }
+                    }
+                } else if (typeof brandData === 'string') {
+                    const foundBrand = this.brands.find((b) => b.brandId === brandData);
+                    if (foundBrand) {
+                        asset.inventoryCustodianSlip.brand = foundBrand;
+                        brandEnriched++;
+                        if (index === 0) {
+                            console.log('Found brand by ID (string):', foundBrand);
+                        }
+                    } else if (index === 0) {
+                        console.log('Brand NOT found for ID:', brandData);
+                    }
+                }
+            }
+
+            // Enrich color name
+            if (asset.inventoryCustodianSlip?.color) {
+                const colorData = asset.inventoryCustodianSlip.color;
+                if (typeof colorData === 'object' && colorData.colorId && !colorData.colorName) {
+                    const foundColor = this.colors.find((c) => c.colorId === colorData.colorId);
+                    if (foundColor) {
+                        asset.inventoryCustodianSlip.color = foundColor;
+                        colorEnriched++;
+                    }
+                } else if (typeof colorData === 'string') {
+                    const foundColor = this.colors.find((c) => c.colorId === colorData);
+                    if (foundColor) {
+                        asset.inventoryCustodianSlip.color = foundColor;
+                        colorEnriched++;
+                    }
+                }
+            }
+
+            // Enrich program name
+            if (asset['program']) {
+                const programData = asset['program'];
+                if (typeof programData === 'object' && programData.programId && !programData.programName) {
+                    const foundProgram = this.programs.find((p) => p.programId === programData.programId);
+                    if (foundProgram) {
+                        asset['program'] = foundProgram;
+                        programEnriched++;
+                    }
+                } else if (typeof programData === 'string') {
+                    const foundProgram = this.programs.find((p) => p.programId === programData);
+                    if (foundProgram) {
+                        asset['program'] = foundProgram;
+                        programEnriched++;
+                    }
+                }
+            }
+        });
+
+        console.log('Enrichment complete:');
+        console.log('- Brands enriched:', brandEnriched);
+        console.log('- Colors enriched:', colorEnriched);
+        console.log('- Programs enriched:', programEnriched);
+        console.log('========================');
     }
 
     filter() {
@@ -1871,14 +1954,14 @@ export class AssetsComponent implements OnInit {
     }
 
     exportToExcel() {
-        this.assetExportService.exportToExcel(this.filteredAssets, this.selectedCampus, this.campuses);
+        this.assetExportService.exportToExcel(this.filteredAssets, this.selectedCampus, this.campuses, this.brands, this.colors, this.programs);
     }
 
     printAssets() {
-        this.assetExportService.printAssets(this.filteredAssets, this.selectedCampus, this.campuses);
+        this.assetExportService.printAssets(this.filteredAssets, this.selectedCampus, this.campuses, this.brands, this.colors, this.programs);
     }
 
     exportToPdf() {
-        this.assetExportService.exportToPdf(this.filteredAssets, this.selectedCampus, this.campuses);
+        this.assetExportService.exportToPdf(this.filteredAssets, this.selectedCampus, this.campuses, this.brands, this.colors, this.programs);
     }
 }
