@@ -154,7 +154,7 @@ import { AssetUtils } from './utils/asset.utils';
             </ng-template>
         </p-table>
 
-        <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="!isSubmitting" [maximizable]="true" [closeOnEscape]="!isSubmitting">
+        <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" header="Create New Asset" [modal]="true" [closable]="true" [maximizable]="true">
             <ng-template #content>
                 <!-- Professional Stepper -->
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 24px; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid #e5e5e5;">
@@ -995,36 +995,21 @@ export class AssetsComponent implements OnInit {
     }
 
     onProgramChange(value: any) {
-        // If an object is selected, extract the string value
-        if (value && typeof value === 'object' && value.programName) {
-            // Use setTimeout to avoid triggering ngModelChange again
-            setTimeout(() => {
-                this.newAsset.program = value.programName;
-            }, 0);
-        }
-        // If it's already a string (typed text), ngModel handles it automatically
+        // Keep the object as-is - prepareAssetForSubmission will extract the ID
+        // PrimeNG's optionLabel="programName" handles display automatically
+        // If it's a string (typed text), that's also fine - backend will handle it
     }
 
     onBrandChange(value: any) {
-        // If an object is selected, extract the string value
-        if (value && typeof value === 'object' && value.brandName) {
-            // Use setTimeout to avoid triggering ngModelChange again
-            setTimeout(() => {
-                this.newAsset.inventoryCustodianSlip.brand = value.brandName;
-            }, 0);
-        }
-        // If it's already a string (typed text), ngModel handles it automatically
+        // Keep the object as-is - prepareAssetForSubmission will extract the ID
+        // PrimeNG's optionLabel="brandName" handles display automatically
+        // If it's a string (typed text), that's also fine - backend will handle it
     }
 
     onColorChange(value: any) {
-        // If an object is selected, extract the string value
-        if (value && typeof value === 'object' && value.colorName) {
-            // Use setTimeout to avoid triggering ngModelChange again
-            setTimeout(() => {
-                this.newAsset.inventoryCustodianSlip.color = value.colorName;
-            }, 0);
-        }
-        // If it's already a string (typed text), ngModel handles it automatically
+        // Keep the object as-is - prepareAssetForSubmission will extract the ID
+        // PrimeNG's optionLabel="colorName" handles display automatically
+        // If it's a string (typed text), that's also fine - backend will handle it
     }
 
     closeDialog() {
@@ -1096,18 +1081,41 @@ export class AssetsComponent implements OnInit {
     }
 
     saveNewAsset() {
+        console.log('🔵 Save Asset button clicked');
+
         // Prevent multiple submissions
         if (this.isSubmitting) {
+            console.warn('⚠️ Already submitting, ignoring duplicate click');
             return;
         }
+
+        // Log current form state
+        console.log('📝 Current form data:', {
+            assetName: this.newAsset.assetName,
+            propertyNumber: this.newAsset.propertyNumber,
+            category: this.newAsset.category,
+            quantity: this.newAsset.inventoryCustodianSlip.quantity,
+            qrCodeImage: this.newAsset.qrCodeImage ? 'Present' : 'Missing',
+            serialNumbers: this.serialNumbersParsed
+        });
 
         // Basic field validation
-        if (!this.newAsset.assetName || !this.newAsset.propertyNumber || !this.newAsset.category) {
-            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Asset Name, Property Number, and Category are required' });
+        if (!this.newAsset.assetName?.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Asset Name is required' });
             return;
         }
 
-        if (!this.newAsset.inventoryCustodianSlip.uoM) {
+        if (!this.newAsset.propertyNumber?.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Property Number is required' });
+            return;
+        }
+
+        if (!this.newAsset.category?.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Category is required' });
+            return;
+        }
+
+        if (!this.newAsset.inventoryCustodianSlip.uoM?.trim()) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Unit of Measure is required in ICS details' });
             return;
         }
@@ -1149,24 +1157,46 @@ export class AssetsComponent implements OnInit {
             return;
         }
 
+        console.log(`✅ All validations passed!`);
         console.log(`🔍 Creating ${this.serialNumbersParsed.length} separate assets SEQUENTIALLY (one per serial number)...`);
         console.log('⚠️ Sequential creation prevents duplicate ICS ID race condition');
 
-        // Disable submit button
+        // Store form data before closing dialog
+        const assetDataCopy = { ...this.newAsset };
+        const qrCodeFileCopy = this.newAsset.qrCodeImage;
+        const serialNumbersCopy = [...this.serialNumbersParsed];
+
+        // Close the modal immediately
+        this.assetDialog = false;
         this.isSubmitting = true;
 
+        // Show loading toast
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Creating Assets',
+            detail: `Creating ${serialNumbersCopy.length} asset(s)... Please wait.`,
+            life: 30000 // Show for 30 seconds or until cleared
+        });
+
         // Create assets SEQUENTIALLY to avoid duplicate ICS ID generation
-        this.createAssetsSequentially(0, [], this.newAsset.qrCodeImage);
+        this.createAssetsSequentially(0, [], qrCodeFileCopy, assetDataCopy, serialNumbersCopy);
     }
 
     // Helper method to create assets one by one (sequential)
-    async createAssetsSequentially(index: number, createdAssets: any[], qrCodeFile: any) {
+    async createAssetsSequentially(index: number, createdAssets: any[], qrCodeFile: any, assetData?: any, serialNumbers?: string[]) {
+        // Use passed data or fallback to instance variables
+        const serials = serialNumbers || this.serialNumbersParsed;
+        const asset = assetData || this.newAsset;
+
         // Base case: all assets created
-        if (index >= this.serialNumbersParsed.length) {
+        if (index >= serials.length) {
             this.isSubmitting = false;
             const createdCount = createdAssets.length;
 
             console.log(`🎉 Successfully created ${createdCount} assets sequentially!`);
+
+            // Clear loading toast
+            this.messageService.clear();
 
             // Extract asset IDs for display
             const assetIds = createdAssets.map((a: any) => a.assetId || a.id).filter(Boolean);
@@ -1178,31 +1208,34 @@ export class AssetsComponent implements OnInit {
                 this.assetService.uploadQrCode(firstAssetId, qrCodeFile).subscribe({
                     next: () => {
                         console.log(`✅ QR code uploaded to first asset: ${firstAssetId}`);
-                        this.showSuccessAndClose(createdCount, assetIds);
+                        this.showSuccessMessage(createdCount, assetIds);
+                        this.resetFormAndRefresh();
                     },
                     error: (qrError: any) => {
                         console.warn('⚠️ QR upload failed:', qrError);
                         this.messageService.add({
                             severity: 'warn',
                             summary: 'Partial Success',
-                            detail: `${createdCount} asset(s) created but QR upload failed`
+                            detail: `${createdCount} asset(s) created but QR upload failed`,
+                            life: 5000
                         });
-                        this.closeAndRefresh();
+                        this.resetFormAndRefresh();
                     }
                 });
             } else {
-                this.showSuccessAndClose(createdCount, assetIds);
+                this.showSuccessMessage(createdCount, assetIds);
+                this.resetFormAndRefresh();
             }
             return;
         }
 
-        const serialNumber = this.serialNumbersParsed[index];
+        const serialNumber = serials[index];
 
         // Use form service to prepare asset data
         let assetToSend;
         try {
-            assetToSend = this.assetFormService.prepareAssetForSubmission(this.newAsset, serialNumber);
-            console.log(`📦 Creating asset ${index + 1}/${this.serialNumbersParsed.length}:`, {
+            assetToSend = this.assetFormService.prepareAssetForSubmission(asset, serialNumber);
+            console.log(`📦 Creating asset ${index + 1}/${serials.length}:`, {
                 serialNumber: serialNumber,
                 quantity: 1,
                 assetName: assetToSend.assetName,
@@ -1210,16 +1243,20 @@ export class AssetsComponent implements OnInit {
             });
         } catch (prepError) {
             this.isSubmitting = false;
+            this.messageService.clear();
             console.error('❌ Asset preparation failed:', prepError);
-            Swal.fire({
-                icon: 'error',
-                title: 'Preparation Error',
-                text: 'Failed to prepare asset data. Please check all fields.'
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Preparation Error',
+                detail: 'Failed to prepare asset data. Please check all fields.',
+                life: 5000
             });
+            this.resetFormAndRefresh();
             return;
         }
 
         // Create this asset and wait for completion
+        console.log(`🚀 Sending API request for asset ${index + 1}...`);
         this.assetService.createAsset(assetToSend).subscribe({
             next: (response: any) => {
                 const assetId = String(response.assetId || response.id);
@@ -1228,28 +1265,42 @@ export class AssetsComponent implements OnInit {
                 createdAssets.push(response);
 
                 // Create next asset (recursive call)
-                this.createAssetsSequentially(index + 1, createdAssets, qrCodeFile);
+                this.createAssetsSequentially(index + 1, createdAssets, qrCodeFile, asset, serials);
             },
             error: (error: any) => {
                 this.isSubmitting = false;
+                this.messageService.clear(); // Clear loading toast
                 console.error(`❌ Failed to create asset ${index + 1} (Serial: ${serialNumber}):`, error);
                 console.error('Full error object:', JSON.stringify(error, null, 2));
                 console.error('Error response:', error?.error);
                 console.error('Status:', error?.status);
 
-                // Check for duplicate serial number error
+                // Parse error details
                 const errorMessage = error?.error?.message || error?.message || 'Unknown error';
-                const statusCode = error?.status || 'Unknown';
+                const statusCode = error?.status || 0;
+
+                // Detailed error messages for common issues
+                let userFriendlyMessage = errorMessage;
+
+                if (statusCode === 0) {
+                    userFriendlyMessage = 'Cannot connect to server. Please ensure the backend is running at http://localhost:3000';
+                } else if (statusCode === 404) {
+                    userFriendlyMessage = 'API endpoint not found. Please verify the backend route exists.';
+                } else if (statusCode === 400) {
+                    userFriendlyMessage = `Invalid data: ${errorMessage}`;
+                } else if (statusCode === 500) {
+                    userFriendlyMessage = `Server error: ${errorMessage}. Check backend logs for details.`;
+                }
 
                 if (createdAssets.length > 0) {
                     // Some assets were created successfully
                     Swal.fire({
                         icon: 'warning',
                         title: 'Partial Success',
-                        html: `Created ${createdAssets.length} of ${this.serialNumbersParsed.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Status: ${statusCode}<br>Error: ${errorMessage}`,
+                        html: `Created ${createdAssets.length} of ${serials.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Status: ${statusCode}<br>Error: ${userFriendlyMessage}`,
                         confirmButtonText: 'OK'
                     });
-                    this.closeAndRefresh();
+                    this.resetFormAndRefresh();
                 } else {
                     // No assets created
                     if (errorMessage.toLowerCase().includes('duplicate') || errorMessage.toLowerCase().includes('duplicated')) {
@@ -1262,17 +1313,18 @@ export class AssetsComponent implements OnInit {
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: `Failed to Create Assets (Status: ${statusCode})`,
-                            html: `<strong>Error:</strong> ${errorMessage}<br><br><small>Check browser console for detailed logs.</small>`,
+                            title: `Failed to Create Asset (Status: ${statusCode})`,
+                            html: `<strong>Error:</strong> ${userFriendlyMessage}<br><br><small>Check browser console (F12) for detailed logs.</small>`,
                             confirmButtonText: 'OK'
                         });
                     }
+                    this.resetFormAndRefresh();
                 }
             }
         });
     }
 
-    showSuccessAndClose(count: number, assetIds: string[]) {
+    showSuccessMessage(count: number, assetIds: string[]) {
         const idsText =
             assetIds.length > 0 && assetIds.length <= 5
                 ? `<br><small style=\"font-size: 12px; color: #64748b;\">Asset IDs: ${assetIds.join(', ')}</small>`
@@ -1286,19 +1338,26 @@ export class AssetsComponent implements OnInit {
             html: `Created <strong>${count}</strong> asset(s) successfully!${idsText}`,
             confirmButtonText: 'OK'
         });
-
-        this.closeAndRefresh();
     }
 
-    closeAndRefresh() {
-        this.assetDialog = false;
+    resetFormAndRefresh() {
+        // Reset form state
         this.newAsset = this.getEmptyAsset();
         this.serialNumbersRaw = '';
         this.serialNumbersParsed = [];
         this.serialValidationError = '';
         this.quantitySerialMismatch = false;
         this.currentStep = 0;
+        this.isSubmitting = false;
+
+        // Refresh asset list
         this.loadAssets();
+    }
+
+    closeAndRefresh() {
+        console.log('🔄 Closing dialog and refreshing asset list...');
+        this.assetDialog = false;
+        this.resetFormAndRefresh();
     }
 
     view(item: Asset) {

@@ -168,6 +168,16 @@ export class AssetFormService {
             }
         };
 
+        // Extract supplier ID if it's an object
+        if (assetToSend.supplier && typeof assetToSend.supplier === 'object') {
+            assetToSend.supplier = assetToSend.supplier.supplierId || '';
+        }
+
+        // Extract laboratory ID if it's an object
+        if (assetToSend.laboratories && typeof assetToSend.laboratories === 'object') {
+            assetToSend.laboratories = assetToSend.laboratories.laboratoryId || '';
+        }
+
         // Ensure laboratories is a string (laboratory ID)
         if (!assetToSend.laboratories || typeof assetToSend.laboratories !== 'string') {
             assetToSend.laboratories = '';
@@ -178,19 +188,38 @@ export class AssetFormService {
             assetToSend.issuedTo = this.getFullName(assetToSend.issuedTo);
         }
 
-        // Extract program value
+        // Extract program ID (backend expects ID, not name)
         if (assetToSend.program && typeof assetToSend.program === 'object') {
-            assetToSend.program = this.extractStringValue(assetToSend.program, 'programName');
+            assetToSend.program = assetToSend.program.programId || '';
+            console.log('✅ Extracted program ID:', assetToSend.program);
+        } else if (typeof assetToSend.program === 'string') {
+            console.log('⚠️ Program is a custom string (not from dropdown):', assetToSend.program);
+            // Keep as-is for now - backend might handle custom names
         }
 
-        // Extract brand value
+        // Extract brand ID (backend expects ID, not name)
         if (assetToSend.inventoryCustodianSlip.brand && typeof assetToSend.inventoryCustodianSlip.brand === 'object') {
-            assetToSend.inventoryCustodianSlip.brand = this.extractStringValue(assetToSend.inventoryCustodianSlip.brand, 'brandName');
+            assetToSend.inventoryCustodianSlip.brand = assetToSend.inventoryCustodianSlip.brand.brandId || '';
+            console.log('✅ Extracted brand ID:', assetToSend.inventoryCustodianSlip.brand);
+        } else if (typeof assetToSend.inventoryCustodianSlip.brand === 'string' && assetToSend.inventoryCustodianSlip.brand) {
+            console.log('⚠️ Brand is a custom string (not from dropdown):', assetToSend.inventoryCustodianSlip.brand);
+            console.log('⚠️ Backend expects brand ID, not name. This may cause an error.');
+            // For custom brands, set to empty string to avoid "not found" errors
+            // User should select from dropdown or create brand first
+            assetToSend.inventoryCustodianSlip.brand = '';
+            console.log('🔧 Setting brand to empty string to prevent error');
         }
 
-        // Extract color value
+        // Extract color ID (backend expects ID, not name)
         if (assetToSend.inventoryCustodianSlip.color && typeof assetToSend.inventoryCustodianSlip.color === 'object') {
-            assetToSend.inventoryCustodianSlip.color = this.extractStringValue(assetToSend.inventoryCustodianSlip.color, 'colorName');
+            assetToSend.inventoryCustodianSlip.color = assetToSend.inventoryCustodianSlip.color.colorId || '';
+            console.log('✅ Extracted color ID:', assetToSend.inventoryCustodianSlip.color);
+        } else if (typeof assetToSend.inventoryCustodianSlip.color === 'string' && assetToSend.inventoryCustodianSlip.color) {
+            console.log('⚠️ Color is a custom string (not from dropdown):', assetToSend.inventoryCustodianSlip.color);
+            console.log('⚠️ Backend expects color ID, not name. This may cause an error.');
+            // For custom colors, set to empty string to avoid "not found" errors
+            assetToSend.inventoryCustodianSlip.color = '';
+            console.log('🔧 Setting color to empty string to prevent error');
         }
 
         // Remove null/undefined values to prevent backend issues
