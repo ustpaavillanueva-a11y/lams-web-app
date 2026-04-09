@@ -1,0 +1,92 @@
+/**
+ * Asset Component Styles
+ * Extracted from inline styles for better maintainability
+ */
+
+:host ::ng-deep {
+    // Expansion animations
+    .expand-btn {
+        transition: transform 0.3s ease-in-out;
+
+        &.expanded {
+            transform: rotate(90deg);
+        }
+    }
+
+    .expansion-row {
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .expansion-content {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animate-expand {
+        animation: slideDown 0.3s ease-out;
+    }
+
+    // Compact datatable styling
+    .p-datatable.p-datatable-compact {
+        font-size: 14px;
+        width: 100%;
+        max-height: calc(100vh - 200px);
+
+        .p-datatable-wrapper {
+            overflow-x: visible;
+            overflow-y: auto;
+        }
+
+        .p-datatable-thead > tr > th {
+            padding: 6px 4px;
+            font-size: 15px;
+            font-weight: 600;
+            background-color: #f3f4f6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .p-datatable-tbody > tr > td {
+            padding: 6px 4px;
+            font-size: 14px;
+            height: 32px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .p-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+
+        .p-button-text {
+            padding: 0.25rem 0.25rem;
+            font-size: 14px;
+        }
+
+        .p-datatable-tbody > tr:hover {
+            background-color: #eff6ff;
+        }
+    }
+}
