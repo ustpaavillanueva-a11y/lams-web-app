@@ -14,6 +14,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { FileUploadModule } from 'primeng/fileupload';
@@ -23,9 +24,15 @@ import { AssetService, Asset, Program, Supplier, Location, Color, Brand, Status,
 import { MaintenanceService, MaintenanceRequestPayload } from '../service/maintenance.service';
 import { AuthService } from '../service/auth.service';
 import { UserService } from '../service/user.service';
-import { environment } from '../../../environments/environment';
-import jsQR from 'jsqr';
 import Swal from 'sweetalert2';
+import { forkJoin } from 'rxjs';
+
+// Refactored imports
+import { AssetConstants } from './constants/asset.constants';
+import { QrCodeService } from './services/qr-code.service';
+import { AssetExportService } from './services/asset-export.service';
+import { AssetFormService } from './services/asset-form.service';
+import { AssetUtils } from './utils/asset.utils';
 
 @Component({
     selector: 'app-assets',
@@ -45,101 +52,14 @@ import Swal from 'sweetalert2';
         TooltipModule,
         DialogModule,
         SelectModule,
+        AutoCompleteModule,
         InputNumberModule,
         TextareaModule,
         FileUploadModule,
         StepperModule
     ],
-    providers: [MessageService],
-    styles: [
-        `
-            :host ::ng-deep {
-                .expand-btn {
-                    transition: transform 0.3s ease-in-out;
-                }
-
-                .expand-btn.expanded {
-                    transform: rotate(90deg);
-                }
-
-                .expansion-row {
-                    animation: slideDown 0.3s ease-out;
-                }
-
-                .expansion-content {
-                    animation: fadeIn 0.3s ease-out;
-                }
-
-                @keyframes slideDown {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-10px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-
-                .animate-expand {
-                    animation: slideDown 0.3s ease-out;
-                }
-
-                .p-datatable.p-datatable-compact {
-                    font-size: 14px;
-                    width: 100%;
-                    max-height: calc(100vh - 200px);
-                }
-
-                .p-datatable.p-datatable-compact .p-datatable-wrapper {
-                    overflow-x: visible;
-                    overflow-y: auto;
-                }
-
-                .p-datatable.p-datatable-compact .p-datatable-thead > tr > th {
-                    padding: 6px 4px;
-                    font-size: 15px;
-                    font-weight: 600;
-                    background-color: #f3f4f6;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .p-datatable.p-datatable-compact .p-datatable-tbody > tr > td {
-                    padding: 6px 4px;
-                    font-size: 14px;
-                    height: 32px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                .p-datatable.p-datatable-compact .p-checkbox {
-                    width: 18px;
-                    height: 18px;
-                }
-
-                .p-datatable.p-datatable-compact .p-button-text {
-                    padding: 0.25rem 0.25rem;
-                    font-size: 14px;
-                }
-
-                .p-datatable.p-datatable-compact .p-datatable-tbody > tr:hover {
-                    background-color: #eff6ff;
-                }
-            }
-        `
-    ],
+    providers: [MessageService, QrCodeService, AssetExportService, AssetFormService],
+    styleUrls: ['./assets.component.scss'],
     template: `
         <p-toast />
 
@@ -316,18 +236,44 @@ import Swal from 'sweetalert2';
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Issued To</label>
-                                <p-select [(ngModel)]="newAsset.issuedTo" [options]="users" placeholder="Select user" class="w-full" appendTo="body" optionLabel="lastName" [showClear]="true">
-                                    <ng-template let-value pTemplate="selectedItem">
-                                        <div *ngIf="value">{{ getFullName(value) }}</div>
-                                    </ng-template>
+                                <p-autoComplete
+                                    [(ngModel)]="newAsset.issuedTo"
+                                    (ngModelChange)="onIssuedToChange($event)"
+                                    [suggestions]="filteredUsers"
+                                    (completeMethod)="filterUsers($event)"
+                                    placeholder="Search user"
+                                    [dropdown]="true"
+                                    [forceSelection]="false"
+                                    [showClear]="true"
+                                    class="w-full"
+                                    appendTo="body"
+                                >
                                     <ng-template let-option pTemplate="item">
                                         <div>{{ getFullName(option) }}</div>
                                     </ng-template>
-                                </p-select>
+                                </p-autoComplete>
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Program</label>
-                                <p-select [(ngModel)]="newAsset.program" [options]="programs" optionLabel="programName" optionValue="programId" placeholder="Select program" class="w-full" appendTo="body" />
+                                <p-autoComplete
+                                    [(ngModel)]="newAsset.program"
+                                    (ngModelChange)="onProgramChange($event)"
+                                    [suggestions]="filteredPrograms"
+                                    (completeMethod)="filterPrograms($event)"
+                                    dataKey="programId"
+                                    optionLabel="programName"
+                                    placeholder="Search existing or type new program"
+                                    [dropdown]="true"
+                                    [forceSelection]="false"
+                                    [showEmptyMessage]="true"
+                                    emptyMessage="No matches found. Type to add custom program."
+                                    class="w-full"
+                                    appendTo="body"
+                                >
+                                    <ng-template let-program pTemplate="item">
+                                        <div>{{ program.programName }}</div>
+                                    </ng-template>
+                                </p-autoComplete>
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Supplier</label>
@@ -504,20 +450,48 @@ import Swal from 'sweetalert2';
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Brand</label>
-                                <p-select [(ngModel)]="newAsset.inventoryCustodianSlip.brand" [options]="brands" optionLabel="brandName" optionValue="brandId" placeholder="Select brand" class="w-full" appendTo="body" />
+                                <p-autoComplete
+                                    [(ngModel)]="newAsset.inventoryCustodianSlip.brand"
+                                    (ngModelChange)="onBrandChange($event)"
+                                    [suggestions]="filteredBrands"
+                                    (completeMethod)="filterBrands($event)"
+                                    dataKey="brandId"
+                                    optionLabel="brandName"
+                                    placeholder="Search existing or type new brand"
+                                    [dropdown]="true"
+                                    [forceSelection]="false"
+                                    [showEmptyMessage]="true"
+                                    emptyMessage="No matches found. Type to add custom brand."
+                                    class="w-full"
+                                    appendTo="body"
+                                >
+                                    <ng-template let-brand pTemplate="item">
+                                        <div>{{ brand.brandName }}</div>
+                                    </ng-template>
+                                </p-autoComplete>
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Color</label>
-                                <p-select
+                                <p-autoComplete
                                     [(ngModel)]="newAsset.inventoryCustodianSlip.color"
-                                    [options]="colors"
+                                    (ngModelChange)="onColorChange($event)"
+                                    [suggestions]="filteredColors"
+                                    (completeMethod)="filterColors($event)"
+                                    dataKey="colorId"
                                     optionLabel="colorName"
-                                    optionValue="colorId"
-                                    placeholder="Select color"
+                                    placeholder="Search existing or type new color"
+                                    [dropdown]="true"
+                                    [forceSelection]="false"
+                                    [showEmptyMessage]="true"
+                                    emptyMessage="No matches found. Type to add custom color."
+                                    [disabled]="isSoftwareCategory()"
                                     class="w-full"
                                     appendTo="body"
-                                    [disabled]="isSoftwareCategory()"
-                                />
+                                >
+                                    <ng-template let-color pTemplate="item">
+                                        <div>{{ color.colorName }}</div>
+                                    </ng-template>
+                                </p-autoComplete>
                             </div>
                             <div style="grid-column: 1 / -1;">
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">QR Code Image *</label>
@@ -547,9 +521,16 @@ import Swal from 'sweetalert2';
                 <div class="flex justify-between w-full">
                     <div></div>
                     <div class="flex gap-2">
-                        <p-button *ngIf="currentStep > 0" label="Back" severity="secondary" icon="pi pi-arrow-left" (onClick)="previousStep()" />
-                        <p-button *ngIf="currentStep < 1" label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" />
-                        <p-button *ngIf="currentStep === 1" label="Save Asset" icon="pi pi-check" (onClick)="saveNewAsset()" />
+                        <p-button *ngIf="currentStep > 0" label="Back" severity="secondary" icon="pi pi-arrow-left" (onClick)="previousStep()" [disabled]="isSubmitting" />
+                        <p-button *ngIf="currentStep < 1" label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" [disabled]="isSubmitting" />
+                        <p-button
+                            *ngIf="currentStep === 1"
+                            [label]="isSubmitting ? 'Saving...' : 'Save Asset'"
+                            [icon]="isSubmitting ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+                            (onClick)="saveNewAsset()"
+                            [disabled]="isSubmitting"
+                            [loading]="isSubmitting"
+                        />
                     </div>
                 </div>
             </ng-template>
@@ -647,10 +628,13 @@ export class AssetsComponent implements OnInit {
     brands: Brand[] = [];
     campuses: any[] = [];
     users: any[] = [];
-    categoryOptions = [
-        { label: 'Software', value: 'Software' },
-        { label: 'Hardware', value: 'Hardware' }
-    ];
+    categoryOptions = AssetConstants.CATEGORY_OPTIONS;
+
+    // Filtered data for autocomplete
+    filteredUsers: any[] = [];
+    filteredPrograms: Program[] = [];
+    filteredBrands: Brand[] = [];
+    filteredColors: Color[] = [];
 
     constructor(
         private assetService: AssetService,
@@ -658,46 +642,18 @@ export class AssetsComponent implements OnInit {
         private maintenanceService: MaintenanceService,
         private authService: AuthService,
         private userService: UserService,
-        private router: Router
+        private router: Router,
+        private qrCodeService: QrCodeService,
+        private assetExportService: AssetExportService,
+        private assetFormService: AssetFormService
     ) {}
 
     getEmptyAsset() {
-        return {
-            assetName: '',
-            propertyNumber: '',
-            category: '',
-            foundCluster: '',
-            purpose: '',
-            issuedTo: '',
-            qrCode: '',
-            qrCodeImage: null,
-            program: '',
-            supplier: '',
-            laboratories: '',
-            inventoryCustodianSlip: {
-                icsNo: '',
-                quantity: 0,
-                uoM: '',
-                unitCost: 0,
-                description: '',
-                specifications: '',
-                height: 0,
-                width: 0,
-                length: 0,
-                package: '',
-                material: '',
-                serialNumber: '',
-                modelNumber: '',
-                estimatedUsefullLife: '',
-                brand: '',
-                color: ''
-            }
-        };
+        return { ...AssetConstants.DEFAULT_EMPTY_ASSET };
     }
 
     ngOnInit() {
         this.checkUserRole();
-        this.loadAssets();
         this.loadReferenceData();
         this.loadMaintenanceDialogOptions();
     }
@@ -725,51 +681,37 @@ export class AssetsComponent implements OnInit {
     }
 
     loadReferenceData() {
-        this.assetService.getPrograms().subscribe({
+        // Load all reference data in parallel using forkJoin
+        forkJoin({
+            programs: this.assetService.getPrograms(),
+            suppliers: this.assetService.getSuppliers(),
+            locations: this.assetService.getLocations(),
+            statuses: this.assetService.getStatuses(),
+            colors: this.assetService.getColors(),
+            brands: this.assetService.getBrands()
+        }).subscribe({
             next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.programs = data || [];
-            }
-        });
+                // Store all reference data
+                this.programs = data.programs || [];
+                this.suppliers = data.suppliers || [];
+                this.locations = data.locations || [];
+                this.statuses = data.statuses || [];
+                this.colors = data.colors || [];
+                this.brands = data.brands || [];
 
-        this.assetService.getSuppliers().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.suppliers = data || [];
-            }
-        });
+                console.log('=== REFERENCE DATA LOADED ===');
+                console.log('Programs:', this.programs.length);
+                console.log('Brands:', this.brands.length);
+                console.log('Colors:', this.colors.length);
+                console.log('============================');
 
-        this.assetService.getLocations().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.locations = data || [];
-            }
-        });
-
-        this.assetService.getStatuses().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.statuses = data || [];
-            }
-        });
-
-        this.assetService.getColors().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.colors = data || [];
-            }
-        });
-
-        this.assetService.getBrands().subscribe({
-            next: (data) => {
-                if (data && data.length > 0) {
-                }
-                this.brands = data || [];
+                // Now that reference data is loaded, load and enrich assets
+                this.loadAssets();
+            },
+            error: (error) => {
+                console.error('Error loading reference data:', error);
+                // Still try to load assets even if reference data fails
+                this.loadAssets();
             }
         });
 
@@ -827,45 +769,16 @@ export class AssetsComponent implements OnInit {
                 console.log('Raw data from API:', data);
                 console.log('Number of assets:', data?.length || 0);
 
-                // Split assets with multiple serial numbers for display
-                const expandedAssets: Asset[] = [];
+                // Use utility to expand assets with multiple serial numbers
+                this.assets = AssetUtils.expandAssetsForDisplay(data);
 
-                if (data && data.length > 0) {
-                    data.forEach((asset) => {
-                        const serialNumber = asset.inventoryCustodianSlip?.serialNumber;
+                // Enrich assets with brand/color/program names from loaded reference data
+                this.enrichAssetsWithNames();
 
-                        // Check if serial number contains comma (multiple serials)
-                        if (serialNumber && serialNumber.includes(',')) {
-                            // Split by comma and create one row per serial
-                            const serials = serialNumber.split(',').map((s: string) => s.trim());
-                            console.log(`📦 Expanding asset ${asset.assetId}: ${serials.length} serials`);
-
-                            serials.forEach((serial: string, index: number) => {
-                                // Create a copy of the asset for each serial
-                                const expandedAsset = {
-                                    ...asset,
-                                    // Deep copy ICS to avoid reference issues
-                                    inventoryCustodianSlip: {
-                                        ...asset.inventoryCustodianSlip,
-                                        serialNumber: serial,
-                                        quantity: 1
-                                    },
-                                    // Add unique identifier for table (append serial index)
-                                    _displayId: `${asset.assetId}_${index}`
-                                };
-                                expandedAssets.push(expandedAsset);
-                            });
-                        } else {
-                            // Single serial number, add as-is
-                            expandedAssets.push(asset);
-                        }
-                    });
-                }
-
-                this.assets = expandedAssets;
                 this.filteredAssets = [...this.assets];
 
                 console.log('Expanded assets for display:', this.assets.length);
+                console.log('Assets after enrichment (sample):', this.assets[0]);
                 console.log('=========================');
 
                 this.loading = false;
@@ -882,68 +795,112 @@ export class AssetsComponent implements OnInit {
         });
     }
 
-    filter() {
-        this.filteredAssets = this.assets.filter((asset) => {
-            const searchTerm = this.searchValue.toLowerCase();
-            const matchesSearch =
-                !this.searchValue ||
-                asset.assetId?.toLowerCase().includes(searchTerm) ||
-                this.getShortAssetId(asset.assetId)?.toLowerCase().includes(searchTerm) ||
-                asset.assetName?.toLowerCase().includes(searchTerm) ||
-                asset.propertyNumber?.toLowerCase().includes(searchTerm) ||
-                asset.category?.toLowerCase().includes(searchTerm) ||
-                asset.foundCluster?.toLowerCase().includes(searchTerm) ||
-                asset.purpose?.toLowerCase().includes(searchTerm) ||
-                asset.issuedTo?.toLowerCase().includes(searchTerm) ||
-                asset.supplier?.toLowerCase().includes(searchTerm) ||
-                asset.laboratories?.laboratoryName?.toLowerCase().includes(searchTerm) ||
-                asset.campus?.campusName?.toLowerCase().includes(searchTerm) ||
-                // Search in ICS details
-                asset.inventoryCustodianSlip?.icsNo?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.uoM?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.description?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.specifications?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.package?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.material?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.serialNumber?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.modelNumber?.toLowerCase().includes(searchTerm) ||
-                asset.inventoryCustodianSlip?.estimatedUsefullLife?.toLowerCase().includes(searchTerm);
+    /**
+     * Enrich assets with brand, color, and program names from loaded reference data
+     * Backend returns only IDs, so we need to populate names from our cached arrays
+     */
+    enrichAssetsWithNames() {
+        console.log('=== ENRICHING ASSETS ===');
+        console.log('Available brands:', this.brands.length);
+        console.log('Available colors:', this.colors.length);
+        console.log('Available programs:', this.programs.length);
+        console.log('Sample brand:', this.brands[0]);
+        console.log('Sample color:', this.colors[0]);
+        console.log('Sample program:', this.programs[0]);
 
-            const matchesCampus = !this.selectedCampus || asset.campus?.campusId === this.selectedCampus;
+        let brandEnriched = 0;
+        let colorEnriched = 0;
+        let programEnriched = 0;
 
-            return matchesSearch && matchesCampus;
+        this.assets.forEach((asset, index) => {
+            // Enrich brand name
+            if (asset.inventoryCustodianSlip?.brand) {
+                const brandData = asset.inventoryCustodianSlip.brand;
+                if (index === 0) {
+                    console.log('First asset brand data (before):', brandData);
+                }
+
+                if (typeof brandData === 'object' && brandData.brandId && !brandData.brandName) {
+                    const foundBrand = this.brands.find((b) => b.brandId === brandData.brandId);
+                    if (foundBrand) {
+                        asset.inventoryCustodianSlip.brand = foundBrand;
+                        brandEnriched++;
+                        if (index === 0) {
+                            console.log('Found brand by ID (object):', foundBrand);
+                        }
+                    }
+                } else if (typeof brandData === 'string') {
+                    const foundBrand = this.brands.find((b) => b.brandId === brandData);
+                    if (foundBrand) {
+                        asset.inventoryCustodianSlip.brand = foundBrand;
+                        brandEnriched++;
+                        if (index === 0) {
+                            console.log('Found brand by ID (string):', foundBrand);
+                        }
+                    } else if (index === 0) {
+                        console.log('Brand NOT found for ID:', brandData);
+                    }
+                }
+            }
+
+            // Enrich color name
+            if (asset.inventoryCustodianSlip?.color) {
+                const colorData = asset.inventoryCustodianSlip.color;
+                if (typeof colorData === 'object' && colorData.colorId && !colorData.colorName) {
+                    const foundColor = this.colors.find((c) => c.colorId === colorData.colorId);
+                    if (foundColor) {
+                        asset.inventoryCustodianSlip.color = foundColor;
+                        colorEnriched++;
+                    }
+                } else if (typeof colorData === 'string') {
+                    const foundColor = this.colors.find((c) => c.colorId === colorData);
+                    if (foundColor) {
+                        asset.inventoryCustodianSlip.color = foundColor;
+                        colorEnriched++;
+                    }
+                }
+            }
+
+            // Enrich program name
+            if (asset['program']) {
+                const programData = asset['program'];
+                if (typeof programData === 'object' && programData.programId && !programData.programName) {
+                    const foundProgram = this.programs.find((p) => p.programId === programData.programId);
+                    if (foundProgram) {
+                        asset['program'] = foundProgram;
+                        programEnriched++;
+                    }
+                } else if (typeof programData === 'string') {
+                    const foundProgram = this.programs.find((p) => p.programId === programData);
+                    if (foundProgram) {
+                        asset['program'] = foundProgram;
+                        programEnriched++;
+                    }
+                }
+            }
         });
+
+        console.log('Enrichment complete:');
+        console.log('- Brands enriched:', brandEnriched);
+        console.log('- Colors enriched:', colorEnriched);
+        console.log('- Programs enriched:', programEnriched);
+        console.log('========================');
+    }
+
+    filter() {
+        this.filteredAssets = AssetUtils.filterAssets(this.assets, this.searchValue, this.selectedCampus);
     }
 
     getShortAssetId(assetId: string | undefined): string {
-        if (!assetId) return 'N/A';
-        // Extract numbers from assetId format like "CAMPUS004-LAB002-001"
-        // Result: "004-002-001"
-        const parts = assetId.split('-');
-        return parts.map((part) => part.replace(/[^\d]/g, '')).join('-');
+        return AssetConstants.getShortAssetId(assetId);
     }
 
     getStatusSeverity(status: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-        if (!status) return 'secondary';
-        const statusLower = status.toLowerCase();
-        if (statusLower.includes('serviceable') || statusLower.includes('working') || statusLower.includes('available')) {
-            return 'success';
-        } else if (statusLower.includes('unserviceable') || statusLower.includes('broken') || statusLower.includes('defective')) {
-            return 'danger';
-        } else if (statusLower.includes('maintenance') || statusLower.includes('repair')) {
-            return 'warn';
-        } else if (statusLower.includes('deployed') || statusLower.includes('in use')) {
-            return 'info';
-        }
-        return 'secondary';
+        return AssetConstants.getStatusSeverity(status);
     }
 
     getFullName(user: any): string {
-        if (!user) return '';
-        const firstName = user.firstName || '';
-        const middleName = user.middleName || '';
-        const lastName = user.lastName || '';
-        return [firstName, middleName, lastName].filter((name) => name).join(' ');
+        return AssetUtils.getFullName(user);
     }
 
     onSelectionChange(event: any) {
@@ -998,37 +955,7 @@ export class AssetsComponent implements OnInit {
     }
 
     getIcsTableData(icsData: any): any[] {
-        if (!icsData) return [];
-
-        const tableData: any[] = [];
-        const fields = [
-            { key: 'inventoryCustodianSlipId', label: 'Inventory Custodian Slip ID' },
-            { key: 'icsNo', label: 'ICS No' },
-            { key: 'quantity', label: 'Quantity' },
-            { key: 'uoM', label: 'Unit of Measure' },
-            { key: 'unitCost', label: 'Unit Cost' },
-            { key: 'description', label: 'Description' },
-            { key: 'specifications', label: 'Specifications' },
-            { key: 'height', label: 'Height' },
-            { key: 'width', label: 'Width' },
-            { key: 'length', label: 'Length' },
-            { key: 'package', label: 'Package' },
-            { key: 'material', label: 'Material' },
-            { key: 'serialNumber', label: 'Serial Number' },
-            { key: 'modelNumber', label: 'Model Number' },
-            { key: 'estimatedUsefullLife', label: 'Estimated Useful Life' }
-        ];
-
-        fields.forEach((field) => {
-            if (icsData[field.key] !== undefined && icsData[field.key] !== null) {
-                tableData.push({
-                    field: field.label,
-                    value: icsData[field.key]
-                });
-            }
-        });
-
-        return tableData;
+        return AssetUtils.getIcsTableData(icsData);
     }
 
     openNew() {
@@ -1043,53 +970,11 @@ export class AssetsComponent implements OnInit {
     }
 
     validateSerialNumbers() {
-        this.serialValidationError = '';
-        this.quantitySerialMismatch = false;
-        this.serialNumbersParsed = [];
+        const validation = this.assetFormService.validateSerialNumbers(this.serialNumbersRaw, this.newAsset.inventoryCustodianSlip.quantity);
 
-        if (!this.serialNumbersRaw || !this.serialNumbersRaw.trim()) {
-            return;
-        }
-
-        // Parse serial numbers by newline, comma, or semicolon
-        const rawTokens = this.serialNumbersRaw
-            .split(/[\n,;]+/) // Split by newline, comma, or semicolon
-            .map((s) => s.trim()) // Trim whitespace
-            .filter((s) => s.length > 0); // Remove empty values
-
-        console.log('📝 Parsing serials:', {
-            raw: this.serialNumbersRaw,
-            tokens: rawTokens,
-            count: rawTokens.length
-        });
-
-        // Check for duplicates (case-insensitive)
-        const seen = new Map<string, string>();
-        const duplicates: string[] = [];
-
-        rawTokens.forEach((serial) => {
-            const lowerSerial = serial.toLowerCase();
-            if (seen.has(lowerSerial)) {
-                if (!duplicates.includes(serial)) {
-                    duplicates.push(serial);
-                }
-            } else {
-                seen.set(lowerSerial, serial);
-            }
-        });
-
-        if (duplicates.length > 0) {
-            this.serialValidationError = `Duplicate serial number(s) found: ${duplicates.join(', ')}`;
-            return;
-        }
-
-        this.serialNumbersParsed = rawTokens;
-
-        // Check if quantity matches serial count
-        const quantity = this.newAsset.inventoryCustodianSlip.quantity || 0;
-        if (quantity > 0 && this.serialNumbersParsed.length > 0 && quantity !== this.serialNumbersParsed.length) {
-            this.quantitySerialMismatch = true;
-        }
+        this.serialValidationError = validation.error;
+        this.quantitySerialMismatch = validation.quantityMismatch;
+        this.serialNumbersParsed = validation.parsed;
     }
 
     // Deprecated - kept for backwards compatibility
@@ -1104,7 +989,7 @@ export class AssetsComponent implements OnInit {
     }
 
     isSoftwareCategory(): boolean {
-        return this.newAsset.category === 'Software';
+        return AssetUtils.isSoftwareCategory(this.newAsset.category);
     }
 
     onCategoryChange(): void {
@@ -1122,72 +1007,181 @@ export class AssetsComponent implements OnInit {
         }
     }
 
-    onQRCodeSelect(event: any) {
+    async onQRCodeSelect(event: any) {
         const file = event.files[0];
         if (file) {
-            // Store the file for later upload
             this.newAsset.qrCodeImage = file;
 
-            // Read and decode QR code from image
-            const reader = new FileReader();
-            reader.onload = (e: any) => {
-                const img = new Image();
-                img.onload = () => {
-                    try {
-                        // Create canvas and draw image
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        if (!ctx) {
-                            throw new Error('Failed to get canvas context');
-                        }
+            try {
+                const decodedQR = await this.qrCodeService.decodeQrCodeFromFile(file);
+                if (decodedQR) {
+                    this.newAsset.qrCode = decodedQR;
+                }
+            } catch (error) {
+                console.error('QR code decoding error:', error);
+            }
+        }
+    }
 
-                        ctx.drawImage(img, 0, 0);
-                        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+    // AutoComplete filter methods
+    filterUsers(event: any) {
+        const query = event.query.toLowerCase();
+        this.filteredUsers = this.users.filter((user) => {
+            const fullName = this.getFullName(user).toLowerCase();
+            return fullName.includes(query);
+        });
+    }
 
-                        // Decode QR code
-                        const decodedQR = jsQR(imageData.data, img.width, img.height);
+    filterPrograms(event: any) {
+        const query = event.query.toLowerCase();
+        const filtered = this.programs.filter((program) => program.programName?.toLowerCase().includes(query));
 
-                        if (decodedQR) {
-                            this.newAsset.qrCode = decodedQR.data;
-                            this.messageService.add({
-                                severity: 'success',
-                                summary: 'QR Code Scanned',
-                                detail: `QR Code: ${decodedQR.data}`
-                            });
-                        } else {
-                            this.messageService.add({
-                                severity: 'warn',
-                                summary: 'No QR Code',
-                                detail: 'Could not find QR code in the image. Please try another image.'
-                            });
-                        }
-                    } catch (error) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'Failed to decode QR code from image'
-                        });
+        // If no exact match found and query is not empty, show all matching results
+        // This allows users to see existing options or type a completely new value
+        this.filteredPrograms = filtered.length > 0 ? filtered : [];
+
+        // Note: With forceSelection=false, users can type any custom text even if no matches are shown
+    }
+
+    filterBrands(event: any) {
+        const query = event.query.toLowerCase();
+        const filtered = this.brands.filter((brand) => brand.brandName?.toLowerCase().includes(query));
+
+        // If no exact match found and query is not empty, show all matching results
+        // This allows users to see existing options or type a completely new value
+        this.filteredBrands = filtered.length > 0 ? filtered : [];
+
+        // Note: With forceSelection=false, users can type any custom text even if no matches are shown
+    }
+
+    filterColors(event: any) {
+        const query = event.query.toLowerCase();
+        const filtered = this.colors.filter((color) => color.colorName?.toLowerCase().includes(query));
+
+        // If no exact match found and query is not empty, show all matching results
+        // This allows users to see existing options or type a completely new value
+        this.filteredColors = filtered.length > 0 ? filtered : [];
+
+        // Note: With forceSelection=false, users can type any custom text even if no matches are shown
+    }
+
+    // AutoComplete change handlers - convert objects to strings when value changes
+    onIssuedToChange(value: any) {
+        // If a user object is selected, extract the full name string
+        if (value && typeof value === 'object') {
+            // Use setTimeout to avoid triggering ngModelChange again
+            setTimeout(() => {
+                this.newAsset.issuedTo = this.getFullName(value);
+            }, 0);
+        }
+        // If it's already a string (typed text), ngModel handles it automatically
+    }
+
+    onProgramChange(value: any) {
+        // Keep the object as-is - prepareAssetForSubmission will extract the ID
+        // PrimeNG's optionLabel="programName" handles display automatically
+        // If it's a string (typed text), that's also fine - backend will handle it
+    }
+
+    onBrandChange(value: any) {
+        // Keep the object as-is - prepareAssetForSubmission will extract the ID
+        // PrimeNG's optionLabel="brandName" handles display automatically
+        // If it's a string (typed text), that's also fine - backend will handle it
+    }
+
+    onColorChange(value: any) {
+        // Keep the object as-is - prepareAssetForSubmission will extract the ID
+        // PrimeNG's optionLabel="colorName" handles display automatically
+        // If it's a string (typed text), that's also fine - backend will handle it
+    }
+
+    /**
+     * Ensure reference data (brand, color, program) exists
+     * Creates them via API if user typed custom values
+     */
+    async ensureReferenceDataExists(): Promise<void> {
+        const promises: Promise<any>[] = [];
+
+        // Check and create Brand if it's a custom string
+        if (this.newAsset.inventoryCustodianSlip.brand && typeof this.newAsset.inventoryCustodianSlip.brand === 'string') {
+            const brandName = this.newAsset.inventoryCustodianSlip.brand.trim();
+            console.log('🔨 Creating new brand:', brandName);
+
+            const brandPromise = this.assetService
+                .createBrand({ brandName })
+                .toPromise()
+                .then((createdBrand) => {
+                    console.log('✅ Brand created:', createdBrand);
+                    if (createdBrand) {
+                        // Replace string with the created brand object
+                        this.newAsset.inventoryCustodianSlip.brand = createdBrand;
+                        // Add to brands list for future use
+                        this.brands.push(createdBrand);
                     }
-                };
-                img.onerror = () => {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to load image file'
-                    });
-                };
-                img.src = e.target.result;
-            };
-            reader.onerror = () => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to read file'
+                })
+                .catch((error) => {
+                    console.error('❌ Failed to create brand:', error);
+                    // Set to empty to avoid error
+                    this.newAsset.inventoryCustodianSlip.brand = '';
                 });
-            };
-            reader.readAsDataURL(file);
+            promises.push(brandPromise);
+        }
+
+        // Check and create Color if it's a custom string
+        if (this.newAsset.inventoryCustodianSlip.color && typeof this.newAsset.inventoryCustodianSlip.color === 'string') {
+            const colorName = this.newAsset.inventoryCustodianSlip.color.trim();
+            console.log('🔨 Creating new color:', colorName);
+
+            const colorPromise = this.assetService
+                .createColor({ colorName })
+                .toPromise()
+                .then((createdColor) => {
+                    console.log('✅ Color created:', createdColor);
+                    if (createdColor) {
+                        // Replace string with the created color object
+                        this.newAsset.inventoryCustodianSlip.color = createdColor;
+                        // Add to colors list for future use
+                        this.colors.push(createdColor);
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Failed to create color:', error);
+                    // Set to empty to avoid error
+                    this.newAsset.inventoryCustodianSlip.color = '';
+                });
+            promises.push(colorPromise);
+        }
+
+        // Check and create Program if it's a custom string
+        if (this.newAsset.program && typeof this.newAsset.program === 'string') {
+            const programName = this.newAsset.program.trim();
+            console.log('🔨 Creating new program:', programName);
+
+            const programPromise = this.assetService
+                .createProgram({ programName })
+                .toPromise()
+                .then((createdProgram) => {
+                    console.log('✅ Program created:', createdProgram);
+                    if (createdProgram) {
+                        // Replace string with the created program object
+                        this.newAsset.program = createdProgram;
+                        // Add to programs list for future use
+                        this.programs.push(createdProgram);
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Failed to create program:', error);
+                    // Set to empty to avoid error
+                    this.newAsset.program = '';
+                });
+            promises.push(programPromise);
+        }
+
+        // Wait for all creations to complete
+        await Promise.all(promises);
+
+        if (promises.length > 0) {
+            console.log('🎉 All reference data created successfully!');
         }
     }
 
@@ -1260,13 +1254,41 @@ export class AssetsComponent implements OnInit {
     }
 
     saveNewAsset() {
-        // Basic field validation
-        if (!this.newAsset.assetName || !this.newAsset.propertyNumber || !this.newAsset.category) {
-            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Asset Name, Property Number, and Category are required' });
+        console.log('🔵 Save Asset button clicked');
+
+        // Prevent multiple submissions
+        if (this.isSubmitting) {
+            console.warn('⚠️ Already submitting, ignoring duplicate click');
             return;
         }
 
-        if (!this.newAsset.inventoryCustodianSlip.uoM) {
+        // Log current form state
+        console.log('📝 Current form data:', {
+            assetName: this.newAsset.assetName,
+            propertyNumber: this.newAsset.propertyNumber,
+            category: this.newAsset.category,
+            quantity: this.newAsset.inventoryCustodianSlip.quantity,
+            qrCodeImage: this.newAsset.qrCodeImage ? 'Present' : 'Missing',
+            serialNumbers: this.serialNumbersParsed
+        });
+
+        // Basic field validation
+        if (!this.newAsset.assetName?.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Asset Name is required' });
+            return;
+        }
+
+        if (!this.newAsset.propertyNumber?.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Property Number is required' });
+            return;
+        }
+
+        if (!this.newAsset.category?.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Category is required' });
+            return;
+        }
+
+        if (!this.newAsset.inventoryCustodianSlip.uoM?.trim()) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Unit of Measure is required in ICS details' });
             return;
         }
@@ -1308,24 +1330,60 @@ export class AssetsComponent implements OnInit {
             return;
         }
 
+        console.log(`✅ All validations passed!`);
         console.log(`🔍 Creating ${this.serialNumbersParsed.length} separate assets SEQUENTIALLY (one per serial number)...`);
         console.log('⚠️ Sequential creation prevents duplicate ICS ID race condition');
 
-        // Disable submit button
-        this.isSubmitting = true;
+        // Check and create missing reference data (brands, colors, programs)
+        this.ensureReferenceDataExists()
+            .then(() => {
+                // Store form data AFTER creating reference data (so we have the IDs)
+                const assetDataCopy = JSON.parse(JSON.stringify(this.newAsset)); // Deep copy
+                const qrCodeFileCopy = this.newAsset.qrCodeImage;
+                const serialNumbersCopy = [...this.serialNumbersParsed];
 
-        // Create assets SEQUENTIALLY to avoid duplicate ICS ID generation
-        this.createAssetsSequentially(0, [], this.newAsset.qrCodeImage);
+                // Close the modal immediately
+                this.assetDialog = false;
+                this.isSubmitting = true;
+
+                // Show loading toast
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Creating Assets',
+                    detail: `Creating ${serialNumbersCopy.length} asset(s)... Please wait.`,
+                    life: 30000 // Show for 30 seconds or until cleared
+                });
+
+                // Create assets SEQUENTIALLY to avoid duplicate ICS ID generation
+                this.createAssetsSequentially(0, [], qrCodeFileCopy, assetDataCopy, serialNumbersCopy);
+            })
+            .catch((error) => {
+                this.isSubmitting = false;
+                console.error('❌ Failed to create reference data:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to create reference data. Please try again.',
+                    life: 5000
+                });
+            });
     }
 
     // Helper method to create assets one by one (sequential)
-    async createAssetsSequentially(index: number, createdAssets: any[], qrCodeFile: any) {
+    async createAssetsSequentially(index: number, createdAssets: any[], qrCodeFile: any, assetData?: any, serialNumbers?: string[]) {
+        // Use passed data or fallback to instance variables
+        const serials = serialNumbers || this.serialNumbersParsed;
+        const asset = assetData || this.newAsset;
+
         // Base case: all assets created
-        if (index >= this.serialNumbersParsed.length) {
+        if (index >= serials.length) {
             this.isSubmitting = false;
             const createdCount = createdAssets.length;
 
             console.log(`🎉 Successfully created ${createdCount} assets sequentially!`);
+
+            // Clear loading toast
+            this.messageService.clear();
 
             // Extract asset IDs for display
             const assetIds = createdAssets.map((a: any) => a.assetId || a.id).filter(Boolean);
@@ -1337,61 +1395,55 @@ export class AssetsComponent implements OnInit {
                 this.assetService.uploadQrCode(firstAssetId, qrCodeFile).subscribe({
                     next: () => {
                         console.log(`✅ QR code uploaded to first asset: ${firstAssetId}`);
-                        this.showSuccessAndClose(createdCount, assetIds);
+                        this.showSuccessMessage(createdCount, assetIds);
+                        this.resetFormAndRefresh();
                     },
                     error: (qrError: any) => {
                         console.warn('⚠️ QR upload failed:', qrError);
                         this.messageService.add({
                             severity: 'warn',
                             summary: 'Partial Success',
-                            detail: `${createdCount} asset(s) created but QR upload failed`
+                            detail: `${createdCount} asset(s) created but QR upload failed`,
+                            life: 5000
                         });
-                        this.closeAndRefresh();
+                        this.resetFormAndRefresh();
                     }
                 });
             } else {
-                this.showSuccessAndClose(createdCount, assetIds);
+                this.showSuccessMessage(createdCount, assetIds);
+                this.resetFormAndRefresh();
             }
             return;
         }
 
-        const serialNumber = this.serialNumbersParsed[index];
+        const serialNumber = serials[index];
 
-        // Create a deep copy of the asset for this serial number
-        const assetToSend: any = {
-            assetName: this.newAsset.assetName,
-            propertyNumber: this.newAsset.propertyNumber,
-            category: this.newAsset.category,
-            foundCluster: this.newAsset.foundCluster,
-            purpose: this.newAsset.purpose,
-            issuedTo: this.newAsset.issuedTo,
-            program: this.newAsset.program,
-            supplier: this.newAsset.supplier,
-            laboratories: this.newAsset.laboratories,
-            inventoryCustodianSlip: {
-                ...this.newAsset.inventoryCustodianSlip,
-                serialNumber: serialNumber, // Single serial number
-                quantity: 1 // Quantity is always 1 per asset
-            }
-        };
-
-        // laboratories field must be a string (laboratory ID)
-        if (!assetToSend.laboratories || typeof assetToSend.laboratories !== 'string') {
-            assetToSend.laboratories = '';
+        // Use form service to prepare asset data
+        let assetToSend;
+        try {
+            assetToSend = this.assetFormService.prepareAssetForSubmission(asset, serialNumber);
+            console.log(`📦 Creating asset ${index + 1}/${serials.length}:`, {
+                serialNumber: serialNumber,
+                quantity: 1,
+                assetName: assetToSend.assetName,
+                payload: assetToSend
+            });
+        } catch (prepError) {
+            this.isSubmitting = false;
+            this.messageService.clear();
+            console.error('❌ Asset preparation failed:', prepError);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Preparation Error',
+                detail: 'Failed to prepare asset data. Please check all fields.',
+                life: 5000
+            });
+            this.resetFormAndRefresh();
+            return;
         }
-
-        // issuedTo field must be a string (full name)
-        if (assetToSend.issuedTo && typeof assetToSend.issuedTo === 'object') {
-            assetToSend.issuedTo = this.getFullName(assetToSend.issuedTo);
-        }
-
-        console.log(`📦 Creating asset ${index + 1}/${this.serialNumbersParsed.length}:`, {
-            serialNumber: serialNumber,
-            quantity: 1,
-            assetName: assetToSend.assetName
-        });
 
         // Create this asset and wait for completion
+        console.log(`🚀 Sending API request for asset ${index + 1}...`);
         this.assetService.createAsset(assetToSend).subscribe({
             next: (response: any) => {
                 const assetId = String(response.assetId || response.id);
@@ -1400,24 +1452,42 @@ export class AssetsComponent implements OnInit {
                 createdAssets.push(response);
 
                 // Create next asset (recursive call)
-                this.createAssetsSequentially(index + 1, createdAssets, qrCodeFile);
+                this.createAssetsSequentially(index + 1, createdAssets, qrCodeFile, asset, serials);
             },
             error: (error: any) => {
                 this.isSubmitting = false;
+                this.messageService.clear(); // Clear loading toast
                 console.error(`❌ Failed to create asset ${index + 1} (Serial: ${serialNumber}):`, error);
+                console.error('Full error object:', JSON.stringify(error, null, 2));
+                console.error('Error response:', error?.error);
+                console.error('Status:', error?.status);
 
-                // Check for duplicate serial number error
+                // Parse error details
                 const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+                const statusCode = error?.status || 0;
+
+                // Detailed error messages for common issues
+                let userFriendlyMessage = errorMessage;
+
+                if (statusCode === 0) {
+                    userFriendlyMessage = 'Cannot connect to server. Please ensure the backend is running at http://localhost:3000';
+                } else if (statusCode === 404) {
+                    userFriendlyMessage = 'API endpoint not found. Please verify the backend route exists.';
+                } else if (statusCode === 400) {
+                    userFriendlyMessage = `Invalid data: ${errorMessage}`;
+                } else if (statusCode === 500) {
+                    userFriendlyMessage = `Server error: ${errorMessage}. Check backend logs for details.`;
+                }
 
                 if (createdAssets.length > 0) {
                     // Some assets were created successfully
                     Swal.fire({
                         icon: 'warning',
                         title: 'Partial Success',
-                        html: `Created ${createdAssets.length} of ${this.serialNumbersParsed.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Error: ${errorMessage}`,
+                        html: `Created ${createdAssets.length} of ${serials.length} assets.<br><br>Failed on serial: <strong>${serialNumber}</strong><br>Status: ${statusCode}<br>Error: ${userFriendlyMessage}`,
                         confirmButtonText: 'OK'
                     });
-                    this.closeAndRefresh();
+                    this.resetFormAndRefresh();
                 } else {
                     // No assets created
                     if (errorMessage.toLowerCase().includes('duplicate') || errorMessage.toLowerCase().includes('duplicated')) {
@@ -1430,16 +1500,18 @@ export class AssetsComponent implements OnInit {
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Failed to Create Assets',
-                            text: errorMessage
+                            title: `Failed to Create Asset (Status: ${statusCode})`,
+                            html: `<strong>Error:</strong> ${userFriendlyMessage}<br><br><small>Check browser console (F12) for detailed logs.</small>`,
+                            confirmButtonText: 'OK'
                         });
                     }
+                    this.resetFormAndRefresh();
                 }
             }
         });
     }
 
-    showSuccessAndClose(count: number, assetIds: string[]) {
+    showSuccessMessage(count: number, assetIds: string[]) {
         const idsText =
             assetIds.length > 0 && assetIds.length <= 5
                 ? `<br><small style=\"font-size: 12px; color: #64748b;\">Asset IDs: ${assetIds.join(', ')}</small>`
@@ -1453,19 +1525,26 @@ export class AssetsComponent implements OnInit {
             html: `Created <strong>${count}</strong> asset(s) successfully!${idsText}`,
             confirmButtonText: 'OK'
         });
-
-        this.closeAndRefresh();
     }
 
-    closeAndRefresh() {
-        this.assetDialog = false;
+    resetFormAndRefresh() {
+        // Reset form state
         this.newAsset = this.getEmptyAsset();
         this.serialNumbersRaw = '';
         this.serialNumbersParsed = [];
         this.serialValidationError = '';
         this.quantitySerialMismatch = false;
         this.currentStep = 0;
+        this.isSubmitting = false;
+
+        // Refresh asset list
         this.loadAssets();
+    }
+
+    closeAndRefresh() {
+        console.log('🔄 Closing dialog and refreshing asset list...');
+        this.assetDialog = false;
+        this.resetFormAndRefresh();
     }
 
     view(item: Asset) {
@@ -1862,326 +1941,27 @@ export class AssetsComponent implements OnInit {
         window.URL.revokeObjectURL(url);
     }
 
-    // QR Code display helper methods
     isBase64Image(qrCode: string): boolean {
-        if (!qrCode) return false;
-        return qrCode.startsWith('data:image/') || qrCode.startsWith('data:application/') || qrCode.startsWith('http://') || qrCode.startsWith('https://');
+        return this.qrCodeService.isBase64Image(qrCode);
     }
 
     viewQrCode(qrCode: string) {
-        if (qrCode) {
-            Swal.fire({
-                title: 'QR Code',
-                html: `<img src="${qrCode}" alt="QR Code" style="width: 4in; height: 4in; border-radius: 8px; object-fit: contain;" />`,
-                confirmButtonText: 'Close'
-            });
-        }
+        this.qrCodeService.viewQrCode(qrCode);
     }
 
     copyToClipboard(text: string) {
-        navigator.clipboard
-            .writeText(text)
-            .then(() => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Copied!',
-                    detail: 'QR Code copied to clipboard',
-                    life: 2000
-                });
-            })
-            .catch(() => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to copy to clipboard',
-                    life: 2000
-                });
-            });
+        this.qrCodeService.copyToClipboard(text);
     }
 
     exportToExcel() {
-        const data = this.filteredAssets.map((asset) => ({
-            'Asset ID': asset.assetId || '',
-            'Asset Name': asset.assetName || '',
-            'Property Number': asset.propertyNumber || '',
-            Campus: asset.campus?.campusName || '',
-            Laboratory: (asset as any).laboratory?.labName || (asset as any)['laboratory']?.labName || '',
-            'Issued To': asset.issuedTo || '',
-            Status: (asset as any).status?.statusName || (asset as any)['status']?.statusName || '',
-            Brand: (asset as any).brand?.brandName || (asset as any)['brand']?.brandName || '',
-            Color: (asset as any).color?.colorName || (asset as any)['color']?.colorName || '',
-            'Serial Number': (asset as any).serialNumber || (asset as any)['serialNumber'] || '',
-            'Acquisition Date': (asset as any).acquisitionDate || (asset as any)['acquisitionDate'] || '',
-            'Warranty Expiry': (asset as any).warrantyExpiry || (asset as any)['warrantyExpiry'] || ''
-        }));
-
-        // Convert to CSV
-        const headers = Object.keys(data[0] || {});
-        const csvContent = [
-            headers.join(','),
-            ...data.map((row) =>
-                headers
-                    .map((header) => {
-                        const value = (row as any)[header] || '';
-                        // Escape quotes and wrap in quotes if contains comma
-                        const escaped = String(value).replace(/"/g, '""');
-                        return escaped.includes(',') || escaped.includes('"') ? `"${escaped}"` : escaped;
-                    })
-                    .join(',')
-            )
-        ].join('\n');
-
-        // Create and download file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        const campusName = this.selectedCampus ? this.campuses.find((c) => c.campusId === this.selectedCampus)?.campusName || 'filtered' : 'all';
-        const filename = `assets_${campusName}_${new Date().toISOString().split('T')[0]}.csv`;
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        this.messageService.add({
-            severity: 'success',
-            summary: 'Exported',
-            detail: `${this.filteredAssets.length} assets exported to ${filename}`,
-            life: 3000
-        });
+        this.assetExportService.exportToExcel(this.filteredAssets, this.selectedCampus, this.campuses, this.brands, this.colors, this.programs);
     }
 
     printAssets() {
-        const campusName = this.selectedCampus ? this.campuses.find((c) => c.campusId === this.selectedCampus)?.campusName || 'Filtered' : 'All Campuses';
-
-        const printContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Assets Report - ${campusName}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    h1 { text-align: center; margin-bottom: 5px; }
-                    h3 { text-align: center; color: #666; margin-top: 0; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f4f4f4; font-weight: bold; }
-                    tr:nth-child(even) { background-color: #f9f9f9; }
-                    .print-date { text-align: right; font-size: 11px; color: #888; margin-bottom: 10px; }
-                    .total { margin-top: 10px; font-weight: bold; }
-                    @media print {
-                        body { margin: 0; }
-                        table { page-break-inside: auto; }
-                        tr { page-break-inside: avoid; page-break-after: auto; }
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>Assets Report</h1>
-                <h3>${campusName}</h3>
-                <div class="print-date">Generated: ${new Date().toLocaleString()}</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Asset ID</th>
-                            <th>Asset Name</th>
-                            <th>Property No.</th>
-                            <th>Campus</th>
-                            <th>Laboratory</th>
-                            <th>Issued To</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${this.filteredAssets
-                            .map(
-                                (asset) => `
-                            <tr>
-                                <td>${asset.assetId || ''}</td>
-                                <td>${asset.assetName || ''}</td>
-                                <td>${asset.propertyNumber || ''}</td>
-                                <td>${asset.campus?.campusName || ''}</td>
-                                <td>${(asset as any).laboratory?.labName || (asset as any)['laboratory']?.labName || ''}</td>
-                                <td>${asset.issuedTo || ''}</td>
-                                <td>${(asset as any).status?.statusName || (asset as any)['status']?.statusName || ''}</td>
-                            </tr>
-                        `
-                            )
-                            .join('')}
-                    </tbody>
-                </table>
-                <div class="total">Total Assets: ${this.filteredAssets.length}</div>
-            </body>
-            </html>
-        `;
-
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.onload = () => {
-                printWindow.print();
-            };
-        }
+        this.assetExportService.printAssets(this.filteredAssets, this.selectedCampus, this.campuses, this.brands, this.colors, this.programs);
     }
 
     exportToPdf() {
-        const campusName = this.selectedCampus ? this.campuses.find((c) => c.campusId === this.selectedCampus)?.campusName || 'Filtered' : 'All Campuses';
-
-        const pdfContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Assets Report - ${campusName}</title>
-                <style>
-                    @page { 
-                        size: A4 landscape; 
-                        margin: 10mm; 
-                    }
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        padding: 15px;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                    .header { 
-                        text-align: center; 
-                        margin-bottom: 20px;
-                        border-bottom: 2px solid #333;
-                        padding-bottom: 10px;
-                    }
-                    .header h1 { 
-                        margin: 0; 
-                        font-size: 24px; 
-                        color: #333;
-                    }
-                    .header h3 { 
-                        margin: 5px 0 0 0; 
-                        font-size: 16px; 
-                        color: #666; 
-                        font-weight: normal;
-                    }
-                    .meta-info {
-                        display: flex;
-                        justify-content: space-between;
-                        font-size: 11px;
-                        color: #888;
-                        margin-bottom: 15px;
-                    }
-                    table { 
-                        width: 100%; 
-                        border-collapse: collapse; 
-                        font-size: 10px; 
-                    }
-                    th { 
-                        background-color: #2563eb !important; 
-                        color: white !important;
-                        padding: 10px 6px; 
-                        text-align: left; 
-                        font-weight: bold;
-                        border: 1px solid #1d4ed8;
-                    }
-                    td { 
-                        border: 1px solid #ddd; 
-                        padding: 8px 6px; 
-                        text-align: left; 
-                    }
-                    tr:nth-child(even) { background-color: #f8fafc !important; }
-                    tr:hover { background-color: #e0f2fe !important; }
-                    .footer { 
-                        margin-top: 15px; 
-                        padding-top: 10px;
-                        border-top: 1px solid #ddd;
-                        display: flex;
-                        justify-content: space-between;
-                        font-size: 12px;
-                    }
-                    .total { font-weight: bold; }
-                    .no-print { display: none; }
-                    @media print {
-                        body { margin: 0; }
-                        .no-print { display: none !important; }
-                        table { page-break-inside: auto; }
-                        tr { page-break-inside: avoid; page-break-after: auto; }
-                        thead { display: table-header-group; }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>Laboratory Assets Management System</h1>
-                    <h3>Assets Report - ${campusName}</h3>
-                </div>
-                <div class="meta-info">
-                    <span>Generated: ${new Date().toLocaleString()}</span>
-                    <span>Total Records: ${this.filteredAssets.length}</span>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 12%">Asset ID</th>
-                            <th style="width: 15%">Asset Name</th>
-                            <th style="width: 12%">Property No.</th>
-                            <th style="width: 12%">Campus</th>
-                            <th style="width: 12%">Laboratory</th>
-                            <th style="width: 15%">Issued To</th>
-                            <th style="width: 10%">Status</th>
-                            <th style="width: 12%">Brand</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${this.filteredAssets
-                            .map(
-                                (asset) => `
-                            <tr>
-                                <td>${asset.assetId || ''}</td>
-                                <td>${asset.assetName || ''}</td>
-                                <td>${asset.propertyNumber || ''}</td>
-                                <td>${asset.campus?.campusName || ''}</td>
-                                <td>${asset.laboratories?.laboratoryName || ''}</td>
-                                <td>${asset.issuedTo || ''}</td>
-                                <td>${(asset as any).status?.statusName || (asset as any)['status']?.statusName || ''}</td>
-                                <td>${(asset as any).brand?.brandName || (asset as any)['brand']?.brandName || ''}</td>
-                            </tr>
-                        `
-                            )
-                            .join('')}
-                    </tbody>
-                </table>
-                <div class="footer">
-                    <span class="total">Total Assets: ${this.filteredAssets.length}</span>
-                    <span>LAMS - Laboratory Assets Management System</span>
-                </div>
-                <div class="no-print" style="margin-top: 20px; text-align: center;">
-                    <p style="color: #666; font-size: 14px;">
-                        <strong>To save as PDF:</strong> Press <kbd>Ctrl</kbd> + <kbd>P</kbd> (or <kbd>Cmd</kbd> + <kbd>P</kbd> on Mac) 
-                        → Select "Save as PDF" as destination → Click Save
-                    </p>
-                </div>
-            </body>
-            </html>
-        `;
-
-        const pdfWindow = window.open('', '_blank');
-        if (pdfWindow) {
-            pdfWindow.document.write(pdfContent);
-            pdfWindow.document.close();
-
-            // Auto-trigger print dialog for PDF saving
-            pdfWindow.onload = () => {
-                setTimeout(() => {
-                    pdfWindow.print();
-                }, 500);
-            };
-        }
-
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Export to PDF',
-            detail: 'Select "Save as PDF" in the print dialog to download',
-            life: 5000
-        });
+        this.assetExportService.exportToPdf(this.filteredAssets, this.selectedCampus, this.campuses, this.brands, this.colors, this.programs);
     }
 }

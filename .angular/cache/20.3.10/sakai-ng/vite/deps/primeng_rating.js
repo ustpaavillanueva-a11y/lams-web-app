@@ -12,6 +12,10 @@ import {
 } from "./chunk-G3KLILSY.js";
 import "./chunk-GGKQQQY2.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
+import {
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
@@ -21,10 +25,13 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-6D2SAAIV.js";
+<<<<<<< HEAD
 import {
   Bind,
   BindModule
 } from "./chunk-PXYWQ7E3.js";
+=======
+>>>>>>> refractor
 import "./chunk-OTTARZB5.js";
 import {
   bt,

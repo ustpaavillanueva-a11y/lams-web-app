@@ -1,6 +1,7 @@
 import {
   Paginator,
   PaginatorModule
+<<<<<<< HEAD
 } from "./chunk-3RGXW6HS.js";
 import "./chunk-3JM62VTA.js";
 import "./chunk-Y62XZCUQ.js";
@@ -19,6 +20,26 @@ import "./chunk-KJPWV6WR.js";
 import "./chunk-4ZJYHXVI.js";
 import "./chunk-2NXK4IZZ.js";
 import "./chunk-QV5SN4WD.js";
+=======
+} from "./chunk-5XMSUOFH.js";
+import "./chunk-PEQBXZP4.js";
+import "./chunk-YFP7JF3K.js";
+import "./chunk-SUE3Y5MR.js";
+import "./chunk-X2EZR5H7.js";
+import "./chunk-RI4JJN4Q.js";
+import {
+  Checkbox
+} from "./chunk-D45AJ64E.js";
+import "./chunk-WXO45VH5.js";
+import {
+  Scroller
+} from "./chunk-2B2MXKIS.js";
+import "./chunk-YUCR7PP2.js";
+import "./chunk-3TIPYNT6.js";
+import "./chunk-4ZJYHXVI.js";
+import "./chunk-2NXK4IZZ.js";
+import "./chunk-2P7JFTHD.js";
+>>>>>>> refractor
 import "./chunk-IOM7T3UX.js";
 import {
   DomHandler
@@ -45,6 +66,14 @@ import {
   CheckIcon
 } from "./chunk-GGKQQQY2.js";
 import {
+  Badge,
+  BadgeModule
+} from "./chunk-2DG5XJ4L.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
@@ -56,10 +85,13 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-6D2SAAIV.js";
+<<<<<<< HEAD
 import {
   Bind,
   BindModule
 } from "./chunk-PXYWQ7E3.js";
+=======
+>>>>>>> refractor
 import "./chunk-OTTARZB5.js";
 import {
   B,

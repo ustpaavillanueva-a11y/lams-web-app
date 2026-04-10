@@ -1,7 +1,11 @@
 import {
   Tooltip,
   TooltipModule
+<<<<<<< HEAD
 } from "./chunk-LERCPKH5.js";
+=======
+} from "./chunk-RI4JJN4Q.js";
+>>>>>>> refractor
 import {
   ConnectedOverlayScrollHandler,
   DomHandler
@@ -16,6 +20,14 @@ import {
 import {
   Ripple
 } from "./chunk-UCC4SYHQ.js";
+import {
+  Badge,
+  BadgeModule
+} from "./chunk-2DG5XJ4L.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
 import {
   BaseComponent,
   PARENT_INSTANCE

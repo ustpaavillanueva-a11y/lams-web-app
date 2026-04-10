@@ -1,7 +1,14 @@
 import {
   Badge,
   BadgeModule
+<<<<<<< HEAD
 } from "./chunk-EVSARLCR.js";
+=======
+} from "./chunk-2DG5XJ4L.js";
+import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
+>>>>>>> refractor
 import {
   BaseComponent,
   PARENT_INSTANCE

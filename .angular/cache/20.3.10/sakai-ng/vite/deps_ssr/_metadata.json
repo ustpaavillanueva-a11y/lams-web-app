@@ -1,8 +1,15 @@
 {
+<<<<<<< HEAD
   "hash": "d74d6d0f",
   "configHash": "e37b3371",
   "lockfileHash": "d812f5bd",
   "browserHash": "1ffc194d",
+=======
+  "hash": "ff170eb7",
+  "configHash": "99dbb9f8",
+  "lockfileHash": "d812f5bd",
+  "browserHash": "025255a2",
+>>>>>>> refractor
   "optimized": {},
   "chunks": {}
 }

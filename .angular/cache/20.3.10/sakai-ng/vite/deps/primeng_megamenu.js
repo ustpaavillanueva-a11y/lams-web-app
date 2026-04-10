@@ -1,12 +1,17 @@
 import {
   Tooltip,
   TooltipModule
+<<<<<<< HEAD
 } from "./chunk-LERCPKH5.js";
 import "./chunk-P6SMTJBG.js";
 import {
   Badge,
   BadgeModule
 } from "./chunk-EVSARLCR.js";
+=======
+} from "./chunk-RI4JJN4Q.js";
+import "./chunk-P6SMTJBG.js";
+>>>>>>> refractor
 import {
   zindexutils
 } from "./chunk-3DNZLJAM.js";
@@ -19,6 +24,13 @@ import {
   BarsIcon
 } from "./chunk-G3KLILSY.js";
 import "./chunk-GGKQQQY2.js";
+import {
+  Badge,
+  BadgeModule
+} from "./chunk-2DG5XJ4L.js";
+import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
