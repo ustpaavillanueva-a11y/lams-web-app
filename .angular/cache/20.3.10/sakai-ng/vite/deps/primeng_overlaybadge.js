@@ -1,14 +1,7 @@
 import {
   Badge,
   BadgeModule
-<<<<<<< HEAD
-} from "./chunk-EVSARLCR.js";
-=======
-} from "./chunk-2DG5XJ4L.js";
-import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
->>>>>>> refractor
+} from "./chunk-QFW25L6H.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -17,11 +10,11 @@ import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
-  SharedModule
-} from "./chunk-6D2SAAIV.js";
-import {
   Bind
 } from "./chunk-PXYWQ7E3.js";
+import {
+  SharedModule
+} from "./chunk-6D2SAAIV.js";
 import "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";
 import {

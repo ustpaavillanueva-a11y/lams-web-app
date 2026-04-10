@@ -1,18 +1,14 @@
 import {
-  transformToBoolean
-} from "./chunk-3DNZLJAM.js";
-import {
   Ripple
 } from "./chunk-UCC4SYHQ.js";
+import {
+  transformToBoolean
+} from "./chunk-3DNZLJAM.js";
 import {
   ChevronDownIcon,
   ChevronUpIcon
 } from "./chunk-G3KLILSY.js";
 import "./chunk-GGKQQQY2.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -21,15 +17,12 @@ import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
-  SharedModule
-} from "./chunk-6D2SAAIV.js";
-<<<<<<< HEAD
-import {
   Bind,
   BindModule
 } from "./chunk-PXYWQ7E3.js";
-=======
->>>>>>> refractor
+import {
+  SharedModule
+} from "./chunk-6D2SAAIV.js";
 import "./chunk-OTTARZB5.js";
 import {
   Q,

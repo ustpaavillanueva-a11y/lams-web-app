@@ -1,8 +1,4 @@
 import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
@@ -10,15 +6,12 @@ import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
-  SharedModule
-} from "./chunk-6D2SAAIV.js";
-<<<<<<< HEAD
-import {
   Bind,
   BindModule
 } from "./chunk-PXYWQ7E3.js";
-=======
->>>>>>> refractor
+import {
+  SharedModule
+} from "./chunk-6D2SAAIV.js";
 import "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";
 import {

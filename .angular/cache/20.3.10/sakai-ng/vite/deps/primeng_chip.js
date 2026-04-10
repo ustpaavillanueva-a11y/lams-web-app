@@ -3,18 +3,13 @@ import {
   ChipClasses,
   ChipModule,
   ChipStyle
-<<<<<<< HEAD
-} from "./chunk-VICELNQI.js";
-=======
-} from "./chunk-JRBD2CHL.js";
->>>>>>> refractor
+} from "./chunk-7JDORBO3.js";
 import "./chunk-G3KLILSY.js";
 import "./chunk-GGKQQQY2.js";
-import "./chunk-PXYWQ7E3.js";
 import "./chunk-M2NELYC7.js";
 import "./chunk-WBKIMRVV.js";
-import "./chunk-6D2SAAIV.js";
 import "./chunk-PXYWQ7E3.js";
+import "./chunk-6D2SAAIV.js";
 import "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";
 import "./chunk-RH3RUHL2.js";

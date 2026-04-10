@@ -1,7 +1,4 @@
 import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
@@ -9,12 +6,12 @@ import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
+import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-6D2SAAIV.js";
-import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
 import "./chunk-OTTARZB5.js";
 import "./chunk-U4LT4ZJN.js";
 import {

@@ -1,16 +1,11 @@
 import {
   Button,
   ButtonModule
-<<<<<<< HEAD
-} from "./chunk-HU4PBENI.js";
+} from "./chunk-5OOGPNSH.js";
 import "./chunk-QV5SN4WD.js";
-=======
-} from "./chunk-5ITT3EJK.js";
-import "./chunk-2P7JFTHD.js";
->>>>>>> refractor
 import "./chunk-IOM7T3UX.js";
 import "./chunk-P6SMTJBG.js";
-import "./chunk-EVSARLCR.js";
+import "./chunk-QFW25L6H.js";
 import "./chunk-UCC4SYHQ.js";
 import {
   ChevronDownIcon,
@@ -19,11 +14,6 @@ import {
   ChevronUpIcon
 } from "./chunk-G3KLILSY.js";
 import "./chunk-GGKQQQY2.js";
-import "./chunk-2DG5XJ4L.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -32,15 +22,15 @@ import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-PXYWQ7E3.js";
+import {
   Footer,
   Header,
   PrimeTemplate,
   SharedModule
 } from "./chunk-6D2SAAIV.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-PXYWQ7E3.js";
 import "./chunk-OTTARZB5.js";
 import {
   Q,

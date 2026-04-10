@@ -14,25 +14,22 @@ import {
   zindexutils
 } from "./chunk-3DNZLJAM.js";
 import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
-import {
   PARENT_INSTANCE
 } from "./chunk-M2NELYC7.js";
 import {
   BaseStyle
 } from "./chunk-WBKIMRVV.js";
 import {
+  Bind
+} from "./chunk-PXYWQ7E3.js";
+import {
   OverlayService,
   SharedModule,
   TranslationKeys
 } from "./chunk-6D2SAAIV.js";
-<<<<<<< HEAD
 import {
-  Bind
-} from "./chunk-PXYWQ7E3.js";
-=======
->>>>>>> refractor
+  NG_VALUE_ACCESSOR
+} from "./chunk-SJUOZCFA.js";
 import "./chunk-OTTARZB5.js";
 import {
   D,
@@ -46,9 +43,6 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-SJUOZCFA.js";
 import {
   CommonModule,
   NgIf,
