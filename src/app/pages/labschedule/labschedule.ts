@@ -123,7 +123,7 @@ import Swal from 'sweetalert2';
                                 >
                                     <div class="text-sm font-bold">{{ schedule.subject?.subjectCode }}</div>
                                     <div class="text-xs mt-1">{{ schedule.faculty?.firstName }} {{ schedule.faculty?.lastName }}</div>
-                                    <div class="text-xs mt-1 font-semibold">{{ schedule.startTime }} - {{ schedule.endTime }}</div>
+                                    <div class="text-xs mt-1 font-semibold">{{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}</div>
                                 </div>
                             </td>
                         </tr>
@@ -222,7 +222,7 @@ import Swal from 'sweetalert2';
                     </div>
                     <div class="flex items-center gap-3">
                         <i class="pi pi-clock text-gray-500"></i>
-                        <span>{{ selectedSchedule.startTime }} - {{ selectedSchedule.endTime }}</span>
+                        <span>{{ formatTime(selectedSchedule.startTime) }} - {{ formatTime(selectedSchedule.endTime) }}</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i class="pi pi-building text-gray-500"></i>
@@ -653,6 +653,15 @@ export class LabScheduleComponent implements OnInit {
         if (!timeString) return 0;
         const [hours, minutes] = timeString.split(':').map(Number);
         return hours * 60 + minutes;
+    }
+
+    // Convert 24-hour time (HH:MM) to 12-hour AM/PM format
+    formatTime(time: string): string {
+        if (!time) return '';
+        const [hours, minutes] = time.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours % 12 || 12;
+        return `${displayHour}:${String(minutes).padStart(2, '0')} ${ampm}`;
     }
 
     // Extract time from time slot string (e.g., "07:00 AM" -> 420)
