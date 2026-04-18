@@ -60,11 +60,67 @@ export class MasterPlanService {
     constructor(private http: HttpClient) {}
 
     /**
+     * Load an image from URL and return as base64 string (without data URL prefix)
+     */
+    private loadImageAsBase64(url: string): Promise<string> {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                // Remove the data:image/png;base64, prefix
+                resolve(dataUrl.split(',')[1] || '');
+            };
+            img.onerror = () => resolve('');
+            img.src = url;
+        });
+    }
+
+    /**
+     * Add header and footer images to a worksheet
+     */
+    private addImagesToWorksheet(
+        workbook: ExcelJS.Workbook,
+        worksheet: ExcelJS.Worksheet,
+        headerBase64: string,
+        footerBase64: string,
+        headerRow: number,
+        footerRow: number,
+        totalColumns: number
+    ): void {
+        if (headerBase64) {
+            const headerId = workbook.addImage({ base64: headerBase64, extension: 'png' });
+            worksheet.addImage(headerId, {
+                tl: { col: 0, row: headerRow },
+                ext: { width: Math.min(totalColumns * 50, 800), height: 80 }
+            });
+        }
+        if (footerBase64) {
+            const footerId = workbook.addImage({ base64: footerBase64, extension: 'png' });
+            worksheet.addImage(footerId, {
+                tl: { col: 0, row: footerRow },
+                ext: { width: Math.min(totalColumns * 50, 800), height: 60 }
+            });
+        }
+    }
+
+    /**
      * Export master plan data to Excel with multiple sheets using ExcelJS for better formatting
      * @param masterPlanData - Master plan data to export
      * @param fileName - Output file name
      */
     async exportToExcel(masterPlanData: MasterPlanData, fileName: string = 'MasterPlan.xlsx'): Promise<void> {
+        // Load header and footer images
+        const [headerBase64, footerBase64] = await Promise.all([
+            this.loadImageAsBase64(`${window.location.origin}/header.png`),
+            this.loadImageAsBase64(`${window.location.origin}/footer.png`)
+        ]);
+
         const workbook = new ExcelJS.Workbook();
         workbook.creator = 'LAMS';
         workbook.created = new Date();
@@ -74,12 +130,27 @@ export class MasterPlanService {
             const sheetName = sheet.sheetName.substring(0, 31);
             const worksheet = workbook.addWorksheet(sheetName);
 
-            let currentRow = 1;
             const totalColumns = 56; // 8 (particulars) + 4 maintenance types * 12 months
 
+            // Add header image - reserve rows 1-4 for it
+            let currentRow = 1;
+            if (headerBase64) {
+                const headerId = workbook.addImage({ base64: headerBase64, extension: 'png' });
+                worksheet.addImage(headerId, {
+                    tl: { col: 0, row: 0 },
+                    ext: { width: 750, height: 80 }
+                });
+                // Reserve space for header image
+                worksheet.getRow(1).height = 20;
+                worksheet.getRow(2).height = 20;
+                worksheet.getRow(3).height = 20;
+                worksheet.getRow(4).height = 15;
+                currentRow = 5;
+            }
+
             // Add title row - merged across all columns
-            const titleCell = worksheet.getCell('A1');
-            worksheet.mergeCells(1, 1, 1, totalColumns);
+            const titleCell = worksheet.getCell(`A${currentRow}`);
+            worksheet.mergeCells(currentRow, 1, currentRow, totalColumns);
             titleCell.value = sheet.sheetName.toUpperCase();
             titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
             titleCell.fill = {
@@ -291,6 +362,16 @@ export class MasterPlanService {
             for (let i = 9; i <= totalColumns; i++) {
                 worksheet.getColumn(i).width = 7; // Month columns (narrower since there are many)
             }
+
+            // Add footer image after data
+            if (footerBase64) {
+                currentRow += 1; // Add spacing
+                const footerId = workbook.addImage({ base64: footerBase64, extension: 'png' });
+                worksheet.addImage(footerId, {
+                    tl: { col: 0, row: currentRow - 1 },
+                    ext: { width: 750, height: 60 }
+                });
+            }
         }
 
         // Generate Excel file buffer
@@ -310,11 +391,37 @@ export class MasterPlanService {
      * @param year - Year
      */
     async exportEquipmentListToExcel(equipmentList: any[], laboratoryName: string, year: string): Promise<void> {
+        // Load header and footer images
+        const [headerBase64, footerBase64] = await Promise.all([
+            this.loadImageAsBase64(`${window.location.origin}/header.png`),
+            this.loadImageAsBase64(`${window.location.origin}/footer.png`)
+        ]);
+
         const workbook = new ExcelJS.Workbook();
         workbook.creator = 'LAMS';
         workbook.created = new Date();
 
         const worksheet = workbook.addWorksheet('Master Plan');
+
+        // Add header image
+        let dataStartRow = 1;
+        if (headerBase64) {
+            const headerId = workbook.addImage({ base64: headerBase64, extension: 'png' });
+            worksheet.addImage(headerId, {
+                tl: { col: 0, row: 0 },
+                ext: { width: 750, height: 80 }
+            });
+            // Reserve 4 rows for header image
+            worksheet.getRow(1).height = 20;
+            worksheet.getRow(2).height = 20;
+            worksheet.getRow(3).height = 20;
+            worksheet.getRow(4).height = 15;
+            dataStartRow = 5;
+            // Add empty rows to push data down
+            for (let i = 1; i < dataStartRow; i++) {
+                worksheet.addRow([]);
+            }
+        }
 
         // Define headers
         const headers = ['ID Number', 'Asset Name', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory Schedule', 'Preventive Maintenance', 'Corrective Maintenance', 'Calibration Schedule'];
@@ -389,6 +496,17 @@ export class MasterPlanService {
         worksheet.getColumn(11).width = 25; // Preventive Maintenance
         worksheet.getColumn(12).width = 25; // Corrective Maintenance
         worksheet.getColumn(13).width = 25; // Calibration Schedule
+
+        // Add footer image after data
+        if (footerBase64) {
+            const lastDataRow = worksheet.rowCount;
+            worksheet.addRow([]); // spacing row
+            const footerId = workbook.addImage({ base64: footerBase64, extension: 'png' });
+            worksheet.addImage(footerId, {
+                tl: { col: 0, row: lastDataRow + 1 },
+                ext: { width: 750, height: 60 }
+            });
+        }
 
         // Generate Excel file buffer
         const buffer = await workbook.xlsx.writeBuffer();
