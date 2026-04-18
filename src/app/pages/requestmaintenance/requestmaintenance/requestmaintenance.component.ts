@@ -382,7 +382,7 @@ import Swal from 'sweetalert2';
                             <thead>
                                 <tr>
                                     <th style="width: 3rem;">
-                                        <input type="checkbox" (change)="toggleSelectAll('pending')" />
+                                        <input type="checkbox" [checked]="isAllSelected('pending')" (change)="toggleSelectAll('pending')" />
                                     </th>
                                     <th>Request ID</th>
                                     <th>Asset Name</th>
@@ -446,7 +446,7 @@ import Swal from 'sweetalert2';
                             <thead>
                                 <tr>
                                     <th style="width: 3rem;">
-                                        <input type="checkbox" (change)="toggleSelectAll('approved')" />
+                                        <input type="checkbox" [checked]="isAllSelected('approved')" (change)="toggleSelectAll('approved')" />
                                     </th>
                                     <th>ID</th>
                                     <th>Maintenance Name</th>
@@ -501,7 +501,7 @@ import Swal from 'sweetalert2';
                             <thead>
                                 <tr>
                                     <th style="width: 3rem;">
-                                        <input type="checkbox" (change)="toggleSelectAll('completed')" />
+                                        <input type="checkbox" [checked]="isAllSelected('completed')" (change)="toggleSelectAll('completed')" />
                                     </th>
                                     <th>ID</th>
                                     <th>Maintenance Name</th>
@@ -571,7 +571,7 @@ import Swal from 'sweetalert2';
                         <input type="text" class="form-control" [value]="getCurrentUserFullName()" disabled />
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Reason *</label>
+                        <label class="form-label">Details *</label>
                         <textarea class="form-control" [(ngModel)]="approveFormData.reason" placeholder="Enter reason..."></textarea>
                     </div>
                 </div>
@@ -966,8 +966,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     // Selection management methods
+    private isSameItem(a: any, b: any): boolean {
+        return (a.requestId && a.requestId === b.requestId) || (a.maintenanceApprovalId && a.maintenanceApprovalId === b.maintenanceApprovalId) || (a.id && a.id === b.id);
+    }
+
     toggleSelect(item: any) {
-        const index = this.selectedItems.findIndex((selected) => selected.requestId === item.requestId || selected.maintenanceApprovalId === item.maintenanceApprovalId || selected.id === item.id);
+        const index = this.selectedItems.findIndex((selected) => this.isSameItem(selected, item));
 
         if (index > -1) {
             this.selectedItems.splice(index, 1);
@@ -992,7 +996,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
         if (allSelected) {
             // Deselect all items from this tab
-            this.selectedItems = this.selectedItems.filter((selected) => !items.some((item) => item.requestId === selected.requestId || item.maintenanceApprovalId === selected.maintenanceApprovalId || item.id === selected.id));
+            this.selectedItems = this.selectedItems.filter((selected) => !items.some((item) => this.isSameItem(item, selected)));
         } else {
             // Select all items from this tab
             items.forEach((item) => {
@@ -1004,7 +1008,15 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     isSelected(item: any): boolean {
-        return this.selectedItems.some((selected) => selected.requestId === item.requestId || selected.maintenanceApprovalId === item.maintenanceApprovalId || selected.id === item.id);
+        return this.selectedItems.some((selected) => this.isSameItem(selected, item));
+    }
+
+    isAllSelected(tab: string): boolean {
+        let items: any[] = [];
+        if (tab === 'pending') items = this.filteredPendingItems;
+        else if (tab === 'approved') items = this.filteredApprovedItems;
+        else if (tab === 'completed') items = this.filteredCompletedItems;
+        return items.length > 0 && items.every((item) => this.isSelected(item));
     }
 
     // Priority level helper
