@@ -369,31 +369,29 @@ export class MasterPlanPdfService {
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+        let allDates: Date[] = [];
+
         if (type === 'inventory') {
-            const inventoryDates = item.monthlyData
-                .filter((m: any) => {
-                    const created = m.maintenance?.inventoryCreated;
-                    const updated = m.maintenance?.inventoryUpdated;
-                    return (created && created !== '') || (updated && updated !== '');
-                })
-                .map((m: any) => {
-                    const dateStr = m.maintenance?.inventoryCreated || m.maintenance?.inventoryUpdated;
-                    const date = new Date(dateStr);
-                    return `${months[date.getMonth()]} ${date.getDate()}`;
-                });
-            return inventoryDates.join(', ') || '-';
+            item.monthlyData.forEach((m: any) => {
+                const dateStr = m.maintenance?.inventory || m.maintenance?.inventoryCreated || m.maintenance?.inventoryUpdated;
+                if (dateStr && dateStr !== '') {
+                    const d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) allDates.push(d);
+                }
+            });
+        } else {
+            item.monthlyData.forEach((m: any) => {
+                const dateStr = m.maintenance?.[type];
+                if (dateStr && dateStr !== '') {
+                    const d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) allDates.push(d);
+                }
+            });
         }
 
-        const dates = item.monthlyData
-            .filter((m: any) => {
-                const value = m.maintenance?.[type];
-                return value && value !== '';
-            })
-            .map((m: any) => {
-                const dateStr = m.maintenance?.[type];
-                const date = new Date(dateStr);
-                return `${months[date.getMonth()]} ${date.getDate()}`;
-            });
-        return dates.join(', ') || '-';
+        if (allDates.length === 0) return '-';
+
+        const latest = allDates.sort((a, b) => b.getTime() - a.getTime())[0];
+        return `${months[latest.getMonth()]} ${latest.getDate()}`;
     }
 }

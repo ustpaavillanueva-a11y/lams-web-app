@@ -655,34 +655,32 @@ export class MasterPlanComponent implements OnInit {
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        // For inventory, check both inventoryCreated and inventoryUpdated
+        // Collect all valid dates for this type
+        let allDates: Date[] = [];
+
         if (type === 'inventory') {
-            const inventoryDates = item.monthlyData
-                .filter((m: any) => {
-                    const created = m.maintenance?.inventoryCreated;
-                    const updated = m.maintenance?.inventoryUpdated;
-                    return (created && created !== '') || (updated && updated !== '');
-                })
-                .map((m: any) => {
-                    const dateStr = m.maintenance?.inventoryCreated || m.maintenance?.inventoryUpdated;
-                    const date = new Date(dateStr);
-                    return `${months[date.getMonth()]} ${date.getDate()}`;
-                });
-            return inventoryDates.join(', ') || '-';
+            item.monthlyData.forEach((m: any) => {
+                const dateStr = m.maintenance?.inventory || m.maintenance?.inventoryCreated || m.maintenance?.inventoryUpdated;
+                if (dateStr && dateStr !== '') {
+                    const d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) allDates.push(d);
+                }
+            });
+        } else {
+            item.monthlyData.forEach((m: any) => {
+                const dateStr = m.maintenance?.[type];
+                if (dateStr && dateStr !== '') {
+                    const d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) allDates.push(d);
+                }
+            });
         }
 
-        // For preventive, corrective, calibration
-        const dates = item.monthlyData
-            .filter((m: any) => {
-                const value = m.maintenance?.[type];
-                return value && value !== '';
-            })
-            .map((m: any) => {
-                const dateStr = m.maintenance?.[type];
-                const date = new Date(dateStr);
-                return `${months[date.getMonth()]} ${date.getDate()}`;
-            });
-        return dates.join(', ') || '-';
+        if (allDates.length === 0) return '-';
+
+        // Return only the latest date
+        const latest = allDates.sort((a, b) => b.getTime() - a.getTime())[0];
+        return `${months[latest.getMonth()]} ${latest.getDate()}`;
     }
 
     openEditDialog(item: any, maintenanceType: string) {
@@ -694,9 +692,10 @@ export class MasterPlanComponent implements OnInit {
             let dateStr = null;
 
             if (maintenanceType === 'inventory') {
+                const inv = month.maintenance?.inventory;
                 const created = month.maintenance?.inventoryCreated;
                 const updated = month.maintenance?.inventoryUpdated;
-                dateStr = created && created !== '' ? created : updated && updated !== '' ? updated : null;
+                dateStr = (inv && inv !== '') ? inv : (created && created !== '') ? created : (updated && updated !== '') ? updated : null;
             } else {
                 dateStr = month.maintenance?.[maintenanceType];
                 if (dateStr === '') dateStr = null;
