@@ -1,11 +1,11 @@
 import {
-  ObjectUtils,
-  zindexutils
-} from "./chunk-3DNZLJAM.js";
-import {
   ConnectedOverlayScrollHandler,
   DomHandler
 } from "./chunk-P6SMTJBG.js";
+import {
+  ObjectUtils,
+  zindexutils
+} from "./chunk-3DNZLJAM.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -1080,4 +1080,4 @@ var OverlayModule = class _OverlayModule {
 export {
   Overlay
 };
-//# sourceMappingURL=chunk-JST2WI76.js.map
+//# sourceMappingURL=chunk-N7IT2AO2.js.map

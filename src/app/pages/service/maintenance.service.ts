@@ -185,4 +185,89 @@ export class MaintenanceService {
         const url = `${this.baseApiUrl}/maintenance-approvals/${requestId}/decline`;
         return this.http.post<any>(url, { reason });
     }
+
+    // ==================== NEW WORKFLOW API METHODS ====================
+
+    /**
+     * Confirm Schedule - Lab tech confirms that scheduled maintenance time is available
+     * Status transition: Pending → Scheduled
+     */
+    confirmSchedule(id: string, data: { notes?: string }): Observable<any> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${id}/confirm-schedule`;
+        return this.http.post<any>(url, data);
+    }
+
+    /**
+     * Start Maintenance - Lab tech starts the maintenance work
+     * Status transition: Scheduled/Approved → In Progress
+     * Side effect: Asset status changes to "Unserviceable"
+     */
+    startMaintenance(id: string, data: { notes?: string }): Observable<any> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${id}/start`;
+        return this.http.post<any>(url, data);
+    }
+
+    /**
+     * Hold Maintenance - Lab tech puts maintenance work on hold
+     * Status transition: In Progress → On Hold
+     * Reason is required
+     */
+    holdMaintenance(id: string, data: { reason: string }): Observable<any> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${id}/hold`;
+        return this.http.post<any>(url, data);
+    }
+
+    /**
+     * Resume Maintenance - Lab tech resumes maintenance work from hold
+     * Status transition: On Hold → In Progress
+     */
+    resumeMaintenance(id: string, data: { notes?: string }): Observable<any> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${id}/resume`;
+        return this.http.post<any>(url, data);
+    }
+
+    /**
+     * Complete Maintenance - Lab tech completes the maintenance work
+     * Status transition: In Progress → Completed
+     * Side effect: Asset status changes to "Serviceable"
+     * Uses new POST endpoint (replaces old PATCH completeMaintenanceApproval)
+     */
+    completeMaintenance(
+        id: string,
+        data: {
+            actionTaken: string;
+            observations?: string;
+            expectedReading?: string;
+            actualReading?: string;
+        }
+    ): Observable<any> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${id}/complete`;
+        return this.http.post<any>(url, data);
+    }
+
+    /**
+     * Count Overdue Maintenance - Get count of maintenance items over 24 hours overdue
+     * Used for Lab Tech dashboard metrics
+     */
+    countOverdueMaintenance(): Observable<{ count: number }> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/count-overdue`;
+        return this.http.get<{ count: number }>(url);
+    }
+
+    /**
+     * Delete Maintenance Approval - Remove a maintenance approval record
+     * Authorization: CampusAdmin, SuperAdmin
+     */
+    deleteMaintenanceApproval(id: string): Observable<void> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/${id}`;
+        return this.http.delete<void>(url);
+    }
+
+    /**
+     * Get Approvals by Asset - Returns completed maintenance history for a specific asset
+     */
+    getApprovalsByAsset(assetId: string): Observable<any[]> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/asset/${assetId}`;
+        return this.http.get<any[]>(url);
+    }
 }

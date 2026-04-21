@@ -59,6 +59,32 @@ export function createEventId() {
                         </div>
                     </div>
 
+                    <!-- In Progress Maintenance Card -->
+                    <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">In Progress</p>
+                                <h3 class="text-4xl font-bold text-green-600 dark:text-green-400 mt-2">{{ inProgressCount }}</h3>
+                            </div>
+                            <div class="bg-green-500 bg-opacity-10 dark:bg-opacity-20 p-4 rounded-full">
+                                <i class="pi pi-play text-2xl text-green-600 dark:text-green-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- On Hold Maintenance Card -->
+                    <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">On Hold</p>
+                                <h3 class="text-4xl font-bold text-orange-600 dark:text-orange-400 mt-2">{{ onHoldCount }}</h3>
+                            </div>
+                            <div class="bg-orange-500 bg-opacity-10 dark:bg-opacity-20 p-4 rounded-full">
+                                <i class="pi pi-pause text-2xl text-orange-600 dark:text-orange-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Line Chart for Requests by Service Type -->
                     <div class="md:col-span-2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                         <h4 class="text-lg font-semibold dark:text-white text-center mb-4">Requests by Service Type (Monthly)</h4>
@@ -211,6 +237,8 @@ export function createEventId() {
 export class DashboardLabTech implements OnInit {
     overdueApprovalsCount: number = 0;
     requestsForApprovalCount: number = 0;
+    inProgressCount: number = 0;
+    onHoldCount: number = 0;
     serviceTypeChartData: any;
     donutChartOptions: any;
     lineChartOptions: any;
@@ -282,6 +310,8 @@ export class DashboardLabTech implements OnInit {
     ngOnInit() {
         this.loadOverdueApprovalsCount();
         this.loadRequestsForApprovalCount();
+        this.loadInProgressCount();
+        this.loadOnHoldCount();
         this.loadServiceTypeData();
         this.loadCalendarEvents();
         this.initDonutOptions();
@@ -314,6 +344,30 @@ export class DashboardLabTech implements OnInit {
             },
             error: (error) => {
                 console.error('Error loading requests for approval count:', error);
+            }
+        });
+    }
+
+    loadInProgressCount() {
+        const apiUrl = `${environment.apiUrl}/maintenance-approvals`;
+        this.http.get<any[]>(apiUrl).subscribe({
+            next: (approvals) => {
+                this.inProgressCount = approvals.filter((a) => a.maintenanceRequest?.maintenanceStatus?.requestStatusName === 'In Progress').length;
+            },
+            error: (error) => {
+                console.error('Error loading in progress count:', error);
+            }
+        });
+    }
+
+    loadOnHoldCount() {
+        const apiUrl = `${environment.apiUrl}/maintenance-approvals`;
+        this.http.get<any[]>(apiUrl).subscribe({
+            next: (approvals) => {
+                this.onHoldCount = approvals.filter((a) => a.maintenanceRequest?.maintenanceStatus?.requestStatusName === 'On Hold').length;
+            },
+            error: (error) => {
+                console.error('Error loading on hold count:', error);
             }
         });
     }
