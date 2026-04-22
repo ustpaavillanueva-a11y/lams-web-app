@@ -186,12 +186,12 @@ export class MaintenanceStateService {
 
         // Campus Admin and Lab Tech see only their campus
         if (currentUser.role === 'CampusAdmin' || currentUser.role === 'LabTech') {
-            return approvals.filter((approval) => approval.maintenanceRequest?.asset?.campus?.campusId === currentUser.campus?.campusId);
+            return approvals.filter((approval) => approval.maintenanceRequest?.asset?.campus?.campusId === currentUser.campus);
         }
 
         // Faculty sees only their own requests
         if (currentUser.role === 'Faculty') {
-            return approvals.filter((approval) => approval.maintenanceRequest?.requestedBy?.userId === currentUser.userId);
+            return approvals.filter((approval) => approval.maintenanceRequest?.requestedBy?.userId === currentUser.user_id);
         }
 
         return [];

@@ -9,15 +9,15 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { CalendarModule } from 'primeng/calendar';
+import { TextareaModule } from 'primeng/textarea';
+import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, HoldMaintenancePayload, ResumeMaintenancePayload, CompleteMaintenancePayload, CancelMaintenancePayload } from '../../models/maintenance.models';
 
 @Component({
     selector: 'app-maintenance-action-dialogs',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, InputTextareaModule, CalendarModule, SelectModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, SelectModule],
     template: `
         <!-- Confirm Schedule Dialog -->
         <p-dialog [(visible)]="confirmScheduleVisible" header="Confirm Maintenance Schedule" [modal]="true" [closable]="true" [style]="{ width: '500px' }" (onHide)="onConfirmScheduleCancel()">
@@ -31,7 +31,7 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
 
                 <div class="mb-4">
                     <label for="confirmNotes" class="block mb-2">Notes (Optional)</label>
-                    <textarea id="confirmNotes" formControlName="notes" pInputTextarea rows="3" class="w-full" placeholder="Add any notes about schedule availability..."></textarea>
+                    <textarea id="confirmNotes" formControlName="notes" rows="3" class="w-full" placeholder="Add any notes about schedule availability..."></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2">
@@ -53,7 +53,7 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
 
                 <div class="mb-4">
                     <label for="startNotes" class="block mb-2">Notes (Optional)</label>
-                    <textarea id="startNotes" formControlName="notes" pInputTextarea rows="3" class="w-full" placeholder="Add notes about starting the work..."></textarea>
+                    <textarea id="startNotes" formControlName="notes" rows="3" class="w-full" placeholder="Add notes about starting the work..."></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2">
@@ -77,7 +77,6 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
                     <textarea
                         id="holdReason"
                         formControlName="reason"
-                        pInputTextarea
                         rows="4"
                         class="w-full"
                         placeholder="Explain why the work is being put on hold (e.g., waiting for parts)..."
@@ -105,7 +104,7 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
 
                 <div class="mb-4">
                     <label for="resumeNotes" class="block mb-2">Notes (Optional)</label>
-                    <textarea id="resumeNotes" formControlName="notes" pInputTextarea rows="3" class="w-full" placeholder="Add notes about resuming the work..."></textarea>
+                    <textarea id="resumeNotes" formControlName="notes" rows="3" class="w-full" placeholder="Add notes about resuming the work..."></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2">
@@ -130,7 +129,6 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
                     <textarea
                         id="actionTaken"
                         formControlName="actionTaken"
-                        pInputTextarea
                         rows="4"
                         class="w-full"
                         placeholder="Describe the work performed (e.g., Replaced microscope lens, cleaned optical path...)"
@@ -141,7 +139,7 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
 
                 <div class="mb-4">
                     <label for="observations" class="block mb-2">Observations (Optional)</label>
-                    <textarea id="observations" formControlName="observations" pInputTextarea rows="3" class="w-full" placeholder="Any findings or observations during maintenance..."></textarea>
+                    <textarea id="observations" formControlName="observations" rows="3" class="w-full" placeholder="Any findings or observations during maintenance..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -179,7 +177,6 @@ import { MaintenanceApproval, ConfirmSchedulePayload, StartMaintenancePayload, H
                     <textarea
                         id="cancelReason"
                         formControlName="reason"
-                        pInputTextarea
                         rows="4"
                         class="w-full"
                         placeholder="Explain why the maintenance is being cancelled (e.g., issue resolved, equipment no longer needed)..."

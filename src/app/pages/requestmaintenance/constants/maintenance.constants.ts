@@ -11,7 +11,7 @@ export class MaintenanceConstants {
     /**
      * Maps maintenance request status to PrimeNG severity for consistent badge styling
      */
-    static getStatusSeverity(status: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    static getStatusSeverity(status: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         if (!status) return 'secondary';
 
         const statusLower = status.toLowerCase();

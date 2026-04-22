@@ -54,8 +54,8 @@ import { MaintenanceConstants } from '../constants/maintenance.constants';
                                 <span class="font-medium">Priority:</span>
                                 <p-tag
                                     *ngIf="approval.maintenanceRequest?.priorityLevel"
-                                    [value]="approval.maintenanceRequest.priorityLevel.priorityLevelName"
-                                    [severity]="getPrioritySeverity(approval.maintenanceRequest.priorityLevel.priorityLevelName)"
+                                    [value]="approval.maintenanceRequest?.priorityLevel?.priorityLevelName || 'N/A'"
+                                    [severity]="getPrioritySeverity(approval.maintenanceRequest?.priorityLevel?.priorityLevelName)"
                                     class="ml-2"
                                 />
                             </div>
@@ -209,8 +209,8 @@ export class MaintenanceDetailModalComponent implements OnChanges {
         return MaintenanceConstants.getStatusSeverity(status);
     }
 
-    getPrioritySeverity(priority: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-        return MaintenanceConstants.getPrioritySeverity(priority);
+    getPrioritySeverity(priority: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        return MaintenanceConstants.getPrioritySeverity(priority || '');
     }
 
     formatUserName(user: any): string {
@@ -223,7 +223,7 @@ export class MaintenanceDetailModalComponent implements OnChanges {
 
     getEventColor(event: MaintenanceTimelineEvent): string {
         const severity = MaintenanceConstants.getStatusSeverity(event.status);
-        const colorMap = {
+        const colorMap: Record<'success' | 'info' | 'warn' | 'danger' | 'secondary', string> = {
             success: '#10b981',
             info: '#3b82f6',
             warn: '#f59e0b',

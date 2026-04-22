@@ -371,8 +371,9 @@ import Swal from 'sweetalert2';
             <div class="tabs-container">
                 <div class="tab-headers">
                     <button class="tab-header" [class.active]="activeTabIndex === 0" (click)="onActiveIndexChange(0)">Pending</button>
-                    <button class="tab-header" [class.active]="activeTabIndex === 1" (click)="onActiveIndexChange(1)">Approved</button>
-                    <button class="tab-header" [class.active]="activeTabIndex === 2" (click)="onActiveIndexChange(2)">Completed</button>
+                    <button class="tab-header" [class.active]="activeTabIndex === 1" (click)="onActiveIndexChange(1)">Scheduled</button>
+                    <button class="tab-header" [class.active]="activeTabIndex === 2" (click)="onActiveIndexChange(2)">In Progress</button>
+                    <button class="tab-header" [class.active]="activeTabIndex === 3" (click)="onActiveIndexChange(3)">Completed</button>
                 </div>
 
                 <!-- Pending Tab -->
@@ -439,14 +440,14 @@ import Swal from 'sweetalert2';
                     </div>
                 </div>
 
-                <!-- Approved Tab -->
+                <!-- Scheduled Tab -->
                 <div class="tab-content" [class.active]="activeTabIndex === 1">
                     <div class="table-wrapper" *ngIf="!loading">
-                        <table *ngIf="filteredApprovedItems.length > 0">
+                        <table *ngIf="filteredScheduledItems.length > 0">
                             <thead>
                                 <tr>
                                     <th style="width: 3rem;">
-                                        <input type="checkbox" [checked]="isAllSelected('approved')" (change)="toggleSelectAll('approved')" />
+                                        <input type="checkbox" [checked]="isAllSelected('scheduled')" (change)="toggleSelectAll('scheduled')" />
                                     </th>
                                     <th>ID</th>
                                     <th>Maintenance Name</th>
@@ -457,7 +458,7 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let row of paginatedApprovedItems">
+                                <tr *ngFor="let row of paginatedScheduledItems">
                                     <td>
                                         <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
                                     </td>
@@ -467,7 +468,7 @@ import Swal from 'sweetalert2';
                                     <td>{{ row.scheduledAt | date: 'short' }}</td>
                                     <td>
                                         <span class="tag tag-info">
-                                            {{ row.isCompleted ? 'Completed' : row.isApproved ? 'Approved' : 'Pending' }}
+                                            {{ row.status || 'Scheduled' }}
                                         </span>
                                     </td>
                                     <td *ngIf="isLabTech()">
@@ -478,24 +479,79 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </tbody>
                         </table>
-                        <!-- Paginator for Approved -->
-                        <div class="paginator" *ngIf="filteredApprovedItems.length > 0">
-                            <span class="paginator-info">Showing {{ getPageStart('approved') }} to {{ getPageEnd('approved') }} of {{ getTotalItems('approved') }} requests</span>
-                            <button [disabled]="approvedPage === 1" (click)="goToPage('approved', 1)"><i class="pi pi-angle-double-left"></i></button>
-                            <button [disabled]="approvedPage === 1" (click)="goToPage('approved', approvedPage - 1)"><i class="pi pi-angle-left"></i></button>
-                            <span class="page-number">{{ approvedPage }}</span>
-                            <button [disabled]="approvedPage === getTotalPages('approved')" (click)="goToPage('approved', approvedPage + 1)"><i class="pi pi-angle-right"></i></button>
-                            <button [disabled]="approvedPage === getTotalPages('approved')" (click)="goToPage('approved', getTotalPages('approved'))"><i class="pi pi-angle-double-right"></i></button>
+                        <!-- Paginator for Scheduled -->
+                        <div class="paginator" *ngIf="filteredScheduledItems.length > 0">
+                            <span class="paginator-info">Showing {{ getPageStart('scheduled') }} to {{ getPageEnd('scheduled') }} of {{ getTotalItems('scheduled') }} requests</span>
+                            <button [disabled]="scheduledPage === 1" (click)="goToPage('scheduled', 1)"><i class="pi pi-angle-double-left"></i></button>
+                            <button [disabled]="scheduledPage === 1" (click)="goToPage('scheduled', scheduledPage - 1)"><i class="pi pi-angle-left"></i></button>
+                            <span class="page-number">{{ scheduledPage }}</span>
+                            <button [disabled]="scheduledPage === getTotalPages('scheduled')" (click)="goToPage('scheduled', scheduledPage + 1)"><i class="pi pi-angle-right"></i></button>
+                            <button [disabled]="scheduledPage === getTotalPages('scheduled')" (click)="goToPage('scheduled', getTotalPages('scheduled'))"><i class="pi pi-angle-double-right"></i></button>
                             <select [value]="rowsPerPage" (change)="onRowsPerPageChange($event)">
                                 <option *ngFor="let opt of rowsPerPageOptions" [value]="opt">{{ opt }}</option>
                             </select>
                         </div>
-                        <div class="empty-message" *ngIf="filteredApprovedItems.length === 0">No approved requests found</div>
+                        <div class="empty-message" *ngIf="filteredScheduledItems.length === 0">No scheduled requests found</div>
+                    </div>
+                </div>
+
+                <!-- In Progress Tab -->
+                <div class="tab-content" [class.active]="activeTabIndex === 2">
+                    <div class="table-wrapper" *ngIf="!loading">
+                        <table *ngIf="filteredInProgressItems.length > 0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 3rem;">
+                                        <input type="checkbox" [checked]="isAllSelected('inprogress')" (change)="toggleSelectAll('inprogress')" />
+                                    </th>
+                                    <th>ID</th>
+                                    <th>Maintenance Name</th>
+                                    <th>Assigned Technician</th>
+                                    <th>Started At</th>
+                                    <th>Status</th>
+                                    <th *ngIf="isLabTech()">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of paginatedInProgressItems">
+                                    <td>
+                                        <input type="checkbox" [checked]="isSelected(row)" (change)="toggleSelect(row)" />
+                                    </td>
+                                    <td>{{ formatId(row.maintenanceRequest?.requestId) }}</td>
+                                    <td>{{ row.maintenanceRequest?.maintenanceName }}</td>
+                                    <td>{{ row.assignedTechnician?.firstName }} {{ row.assignedTechnician?.lastName || '' }}</td>
+                                    <td>{{ row.startedAt | date: 'short' }}</td>
+                                    <td>
+                                        <span class="tag tag-warning">
+                                            {{ row.status || 'In Progress' }}
+                                        </span>
+                                    </td>
+                                    <td *ngIf="isLabTech()">
+                                        <div class="actions">
+                                            <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Complete" (onClick)="confirm(row)" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Paginator for In Progress -->
+                        <div class="paginator" *ngIf="filteredInProgressItems.length > 0">
+                            <span class="paginator-info">Showing {{ getPageStart('inprogress') }} to {{ getPageEnd('inprogress') }} of {{ getTotalItems('inprogress') }} requests</span>
+                            <button [disabled]="inProgressPage === 1" (click)="goToPage('inprogress', 1)"><i class="pi pi-angle-double-left"></i></button>
+                            <button [disabled]="inProgressPage === 1" (click)="goToPage('inprogress', inProgressPage - 1)"><i class="pi pi-angle-left"></i></button>
+                            <span class="page-number">{{ inProgressPage }}</span>
+                            <button [disabled]="inProgressPage === getTotalPages('inprogress')" (click)="goToPage('inprogress', inProgressPage + 1)"><i class="pi pi-angle-right"></i></button>
+                            <button [disabled]="inProgressPage === getTotalPages('inprogress')" (click)="goToPage('inprogress', getTotalPages('inprogress'))"><i class="pi pi-angle-double-right"></i></button>
+                            <select [value]="rowsPerPage" (change)="onRowsPerPageChange($event)">
+                                <option *ngFor="let opt of rowsPerPageOptions" [value]="opt">{{ opt }}</option>
+                            </select>
+                        </div>
+                        <div class="empty-message" *ngIf="filteredInProgressItems.length === 0">No in-progress requests found</div>
                     </div>
                 </div>
 
                 <!-- Completed Tab -->
-                <div class="tab-content" [class.active]="activeTabIndex === 2">
+                <div class="tab-content" [class.active]="activeTabIndex === 3">
                     <div class="table-wrapper" *ngIf="!loading">
                         <table *ngIf="filteredCompletedItems.length > 0">
                             <thead>
@@ -620,16 +676,17 @@ import Swal from 'sweetalert2';
 export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     items: any[] = [];
     pendingItems: any[] = [];
-    approvedItems: any[] = [];
+    scheduledItems: any[] = [];
+    inProgressItems: any[] = [];
     completedItems: any[] = [];
-    completedApprovedItems: any[] = [];
     selectedItems: any[] = [];
     searchValue: string = '';
     loading: boolean = true;
 
     // Pagination state
     pendingPage: number = 1;
-    approvedPage: number = 1;
+    scheduledPage: number = 1;
+    inProgressPage: number = 1;
     completedPage: number = 1;
     rowsPerPage: number = 10;
     rowsPerPageOptions: number[] = [10, 20, 30];
@@ -689,17 +746,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         return isMatch;
     }
 
-    getFilteredApprovedItems(): any[] {
-        if (this.isLabTech()) {
-            const filtered = this.approvedItems.filter((item) => {
-                const isMatch = this.isCurrentUserTechnician(item.assignedTechnician?.userId);
-                return isMatch;
-            });
-            return filtered;
-        }
-        return this.approvedItems;
-    }
-
     getFullName(row: any): string {
         const firstName = row.requestedBy?.firstName || '';
         const middleName = row.requestedBy?.middleName || '';
@@ -756,14 +802,22 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
                 const allApprovals = data || [];
 
-                // Separate into approved (not completed) and completed
-                this.approvedItems = allApprovals.filter((item) => !item.isCompleted);
-                this.completedApprovedItems = allApprovals.filter((item) => item.isCompleted);
+                // Categorize by actual status field from API
+                this.scheduledItems = allApprovals.filter((item) => item.status?.toUpperCase() === 'SCHEDULED' || item.status?.toUpperCase() === 'APPROVED');
+                this.inProgressItems = allApprovals.filter((item) => item.status?.toUpperCase() === 'IN_PROGRESS');
+                // Filter completed items from approvals
+                const completedApprovals = allApprovals.filter((item) => item.status?.toUpperCase() === 'COMPLETED');
+                // Merge with existing completedItems
+                this.completedItems = [...this.completedItems, ...completedApprovals];
 
-                console.log('--- APPROVED TAB DATA ---');
-                console.log('Approved items (not completed):', this.approvedItems.length);
-                console.table(this.approvedItems);
-                console.log('Completed approved items:', this.completedApprovedItems.length);
+                console.log('--- SCHEDULED TAB DATA ---');
+                console.log('Scheduled items:', this.scheduledItems.length);
+                console.table(this.scheduledItems);
+                console.log('--- IN PROGRESS TAB DATA ---');
+                console.log('In Progress items:', this.inProgressItems.length);
+                console.table(this.inProgressItems);
+                console.log('--- COMPLETED TAB DATA ---');
+                console.log('Completed items:', this.completedItems.length);
                 console.log('==========================');
             },
             error: (error: any) => {
@@ -793,7 +847,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         this.categorizeItems();
         // Reset pages when search changes
         this.pendingPage = 1;
-        this.approvedPage = 1;
+        this.scheduledPage = 1;
+        this.inProgressPage = 1;
         this.completedPage = 1;
     }
 
@@ -803,7 +858,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     onActiveIndexChange(index: number) {
-        const tabNames = ['Pending', 'Approved', 'Completed'];
+        const tabNames = ['Pending', 'Scheduled', 'In Progress', 'Completed'];
         console.log(`=== TAB CHANGED TO: ${tabNames[index]} ===`);
         console.log('Active tab index:', index);
 
@@ -813,7 +868,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         if (index === 0) {
             console.log('Showing pending items:', this.pendingItems.length);
         } else if (index === 1) {
-            console.log('Showing approved items:', this.approvedItems.length);
+            console.log('Showing scheduled items:', this.scheduledItems.length);
         } else if (index === 2) {
             console.log('Showing completed items:', this.completedItems.length);
         }
@@ -824,7 +879,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         this.filterByTab();
         // Reset pages when filtering
         this.pendingPage = 1;
-        this.approvedPage = 1;
+        this.scheduledPage = 1;
+        this.inProgressPage = 1;
         this.completedPage = 1;
     }
 
@@ -855,9 +911,15 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         });
     }
 
-    get filteredApprovedItems(): any[] {
+    get filteredScheduledItems(): any[] {
         const searchLower = this.searchValue.toLowerCase().trim();
-        const filtered = this.getFilteredApprovedItems();
+        let filtered = this.scheduledItems;
+
+        // Filter by lab tech if applicable
+        if (this.isLabTech()) {
+            filtered = filtered.filter((item) => this.isCurrentUserTechnician(item.assignedTechnician?.userId));
+        }
+
         if (!searchLower) return filtered;
 
         return filtered.filter((item) => {
@@ -865,7 +927,30 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             const formattedId = this.formatId(requestId).toLowerCase();
             const maintenanceName = (item.maintenanceRequest?.maintenanceName || item.maintenanceName || '').toLowerCase();
             const technicianName = `${item.assignedTechnician?.firstName || ''} ${item.assignedTechnician?.lastName || ''}`.toLowerCase();
-            const status = item.isCompleted ? 'completed' : item.isApproved ? 'approved' : 'pending';
+            const status = (item.status || '').toLowerCase();
+            const rawId = requestId.toLowerCase();
+
+            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || technicianName.includes(searchLower) || status.includes(searchLower) || rawId.includes(searchLower);
+        });
+    }
+
+    get filteredInProgressItems(): any[] {
+        const searchLower = this.searchValue.toLowerCase().trim();
+        let filtered = this.inProgressItems;
+
+        // Filter by lab tech if applicable
+        if (this.isLabTech()) {
+            filtered = filtered.filter((item) => this.isCurrentUserTechnician(item.assignedTechnician?.userId));
+        }
+
+        if (!searchLower) return filtered;
+
+        return filtered.filter((item) => {
+            const requestId = item.maintenanceRequest?.requestId || item.requestId || '';
+            const formattedId = this.formatId(requestId).toLowerCase();
+            const maintenanceName = (item.maintenanceRequest?.maintenanceName || item.maintenanceName || '').toLowerCase();
+            const technicianName = `${item.assignedTechnician?.firstName || ''} ${item.assignedTechnician?.lastName || ''}`.toLowerCase();
+            const status = (item.status || '').toLowerCase();
             const rawId = requestId.toLowerCase();
 
             return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || technicianName.includes(searchLower) || status.includes(searchLower) || rawId.includes(searchLower);
@@ -876,8 +961,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         const searchLower = this.searchValue.toLowerCase().trim();
         let items: any[] = [];
 
-        // Only show completed approvals (not the original requests to avoid duplicates)
-        items = [...this.completedApprovedItems];
+        // Show all completed items
+        items = [...this.completedItems];
         console.log('items', items);
 
         if (!searchLower) return items;
@@ -899,9 +984,14 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
         return this.filteredPendingItems.slice(start, start + this.rowsPerPage);
     }
 
-    get paginatedApprovedItems(): any[] {
-        const start = (this.approvedPage - 1) * this.rowsPerPage;
-        return this.filteredApprovedItems.slice(start, start + this.rowsPerPage);
+    get paginatedScheduledItems(): any[] {
+        const start = (this.scheduledPage - 1) * this.rowsPerPage;
+        return this.filteredScheduledItems.slice(start, start + this.rowsPerPage);
+    }
+
+    get paginatedInProgressItems(): any[] {
+        const start = (this.inProgressPage - 1) * this.rowsPerPage;
+        return this.filteredInProgressItems.slice(start, start + this.rowsPerPage);
     }
 
     get paginatedCompletedItems(): any[] {
@@ -910,58 +1000,65 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     // Pagination helper methods
-    getTotalPages(tab: 'pending' | 'approved' | 'completed'): number {
+    getTotalPages(tab: 'pending' | 'scheduled' | 'inprogress' | 'completed'): number {
         let total = 0;
         if (tab === 'pending') total = this.filteredPendingItems.length;
-        else if (tab === 'approved') total = this.filteredApprovedItems.length;
+        else if (tab === 'scheduled') total = this.filteredScheduledItems.length;
+        else if (tab === 'inprogress') total = this.filteredInProgressItems.length;
         else if (tab === 'completed') total = this.filteredCompletedItems.length;
         return Math.ceil(total / this.rowsPerPage) || 1;
     }
 
-    getCurrentPage(tab: 'pending' | 'approved' | 'completed'): number {
+    getCurrentPage(tab: 'pending' | 'scheduled' | 'inprogress' | 'completed'): number {
         if (tab === 'pending') return this.pendingPage;
-        if (tab === 'approved') return this.approvedPage;
+        if (tab === 'scheduled') return this.scheduledPage;
+        if (tab === 'inprogress') return this.inProgressPage;
         return this.completedPage;
     }
 
-    goToPage(tab: 'pending' | 'approved' | 'completed', page: number) {
+    goToPage(tab: 'pending' | 'scheduled' | 'inprogress' | 'completed', page: number) {
         const totalPages = this.getTotalPages(tab);
         if (page < 1) page = 1;
         if (page > totalPages) page = totalPages;
         if (tab === 'pending') this.pendingPage = page;
-        else if (tab === 'approved') this.approvedPage = page;
+        else if (tab === 'scheduled') this.scheduledPage = page;
+        else if (tab === 'inprogress') this.inProgressPage = page;
         else if (tab === 'completed') this.completedPage = page;
     }
 
     onRowsPerPageChange(event: any) {
         this.rowsPerPage = +event.target.value;
         this.pendingPage = 1;
-        this.approvedPage = 1;
+        this.scheduledPage = 1;
+        this.inProgressPage = 1;
         this.completedPage = 1;
     }
 
-    getPageStart(tab: 'pending' | 'approved' | 'completed'): number {
+    getPageStart(tab: 'pending' | 'scheduled' | 'inprogress' | 'completed'): number {
         const page = this.getCurrentPage(tab);
         let total = 0;
         if (tab === 'pending') total = this.filteredPendingItems.length;
-        else if (tab === 'approved') total = this.filteredApprovedItems.length;
+        else if (tab === 'scheduled') total = this.filteredScheduledItems.length;
+        else if (tab === 'inprogress') total = this.filteredInProgressItems.length;
         else if (tab === 'completed') total = this.filteredCompletedItems.length;
         if (total === 0) return 0;
         return (page - 1) * this.rowsPerPage + 1;
     }
 
-    getPageEnd(tab: 'pending' | 'approved' | 'completed'): number {
+    getPageEnd(tab: 'pending' | 'scheduled' | 'inprogress' | 'completed'): number {
         const page = this.getCurrentPage(tab);
         let total = 0;
         if (tab === 'pending') total = this.filteredPendingItems.length;
-        else if (tab === 'approved') total = this.filteredApprovedItems.length;
+        else if (tab === 'scheduled') total = this.filteredScheduledItems.length;
+        else if (tab === 'inprogress') total = this.filteredInProgressItems.length;
         else if (tab === 'completed') total = this.filteredCompletedItems.length;
         return Math.min(page * this.rowsPerPage, total);
     }
 
-    getTotalItems(tab: 'pending' | 'approved' | 'completed'): number {
+    getTotalItems(tab: 'pending' | 'scheduled' | 'inprogress' | 'completed'): number {
         if (tab === 'pending') return this.filteredPendingItems.length;
-        if (tab === 'approved') return this.filteredApprovedItems.length;
+        if (tab === 'scheduled') return this.filteredScheduledItems.length;
+        if (tab === 'inprogress') return this.filteredInProgressItems.length;
         return this.filteredCompletedItems.length;
     }
 
@@ -985,8 +1082,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
         if (tab === 'pending') {
             items = this.filteredPendingItems;
-        } else if (tab === 'approved') {
-            items = this.filteredApprovedItems;
+        } else if (tab === 'scheduled') {
+            items = this.filteredScheduledItems;
+        } else if (tab === 'inprogress') {
+            items = this.filteredInProgressItems;
         } else if (tab === 'completed') {
             items = this.filteredCompletedItems;
         }
@@ -1014,7 +1113,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     isAllSelected(tab: string): boolean {
         let items: any[] = [];
         if (tab === 'pending') items = this.filteredPendingItems;
-        else if (tab === 'approved') items = this.filteredApprovedItems;
+        else if (tab === 'scheduled') items = this.filteredScheduledItems;
+        else if (tab === 'inprogress') items = this.filteredInProgressItems;
         else if (tab === 'completed') items = this.filteredCompletedItems;
         return items.length > 0 && items.every((item) => this.isSelected(item));
     }
@@ -1275,7 +1375,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                     const getStatusBadge = (status: string) => {
                         if (status?.toLowerCase().includes('completed')) return 'background: #dcfce7; color: #166534;';
                         if (status?.toLowerCase().includes('pending')) return 'background: #fef08a; color: #92400e;';
-                        if (status?.toLowerCase().includes('approved')) return 'background: #dbeafe; color: #1e40af;';
+                        if (status?.toLowerCase().includes('scheduled')) return 'background: #dbeafe; color: #1e40af;';
                         return 'background: #e2e8f0; color: #475569;';
                     };
                     const html = `
@@ -1520,7 +1620,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
             maintenanceRequest: this.selectedItem.maintenanceRequest?.requestId || this.selectedItem.requestId,
             reason: this.confirmFormData.reason.trim(),
             scheduledAt: this.selectedItem.scheduledAt || new Date(),
-            isApproved: true,
+            status: 'COMPLETED',
             isCompleted: true,
             actionTaken: this.confirmFormData.actionTaken.trim(),
             observations: this.confirmFormData.observations.trim(),
@@ -1537,10 +1637,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 });
                 this.confirmModalVisible = false;
 
-                // Remove from approved items
-                const index = this.approvedItems.findIndex((item) => item.maintenanceApprovalId === this.selectedItem.maintenanceApprovalId);
+                // Remove from scheduled items
+                const index = this.scheduledItems.findIndex((item) => item.maintenanceApprovalId === this.selectedItem.maintenanceApprovalId);
                 if (index > -1) {
-                    this.approvedItems.splice(index, 1);
+                    this.scheduledItems.splice(index, 1);
                 }
 
                 this.loadItems();

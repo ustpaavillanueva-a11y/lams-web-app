@@ -180,7 +180,7 @@ export class MaintenanceTableComponent implements OnChanges {
         if (!user) return false;
 
         const status = approval.maintenanceRequest?.maintenanceStatus?.requestStatusName || '';
-        const isAssigned = approval.assignedTechnician?.userId === user.userId;
+        const isAssigned = approval.assignedTechnician?.userId === user.user_id;
         const availableActions = MaintenanceConstants.getAvailableActions(status, user.role, isAssigned);
 
         return availableActions.includes(action);
