@@ -150,6 +150,30 @@ export class MaintenanceService {
         return this.http.get<any[]>(url);
     }
 
+    // Get Pending Maintenance Approvals
+    getPendingApprovals(): Observable<any[]> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/pending`;
+        return this.http.get<any[]>(url);
+    }
+
+    // Get Scheduled Maintenance Approvals
+    getScheduledApprovals(): Observable<any[]> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/scheduled`;
+        return this.http.get<any[]>(url);
+    }
+
+    // Get In-Progress Maintenance Approvals
+    getInProgressApprovals(): Observable<any[]> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/in-progress`;
+        return this.http.get<any[]>(url);
+    }
+
+    // Get Completed Maintenance Approvals
+    getCompletedApprovals(): Observable<any[]> {
+        const url = `${this.baseApiUrl}/maintenance-approvals/completed`;
+        return this.http.get<any[]>(url);
+    }
+
     // Get Maintenance Approval Details by ID
     getMaintenanceApprovalDetails(id: string): Observable<any> {
         const url = `${this.baseApiUrl}/maintenance-approvals/${id}`;

@@ -473,7 +473,7 @@ import Swal from 'sweetalert2';
                                     </td>
                                     <td *ngIf="isLabTech()">
                                         <div class="actions">
-                                            <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Confirm" (onClick)="confirm(row)" />
+                                            <p-button icon="pi pi-play" severity="success" [rounded]="true" [text]="true" pTooltip="Start Maintenance" (onClick)="startMaintenanceWork(row)" />
                                         </div>
                                     </td>
                                 </tr>
@@ -795,34 +795,64 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
 
     loadApprovals() {
         console.log('=== LOADING MAINTENANCE APPROVALS ===');
-        this.maintenanceService.getMaintenanceApprovals().subscribe({
+        
+        // Clear existing approval data to avoid duplicates
+        this.completedItems = [];
+        
+        // Load Pending approvals (if any exist as approvals vs requests)
+        this.maintenanceService.getPendingApprovals().subscribe({
             next: (data: any[]) => {
-                console.log('Raw approvals data:', data);
-                console.log('Total approvals fetched:', data?.length || 0);
-
-                const allApprovals = data || [];
-
-                // Categorize by actual status field from API
-                this.scheduledItems = allApprovals.filter((item) => item.status?.toUpperCase() === 'SCHEDULED' || item.status?.toUpperCase() === 'APPROVED');
-                this.inProgressItems = allApprovals.filter((item) => item.status?.toUpperCase() === 'IN_PROGRESS');
-                // Filter completed items from approvals
-                const completedApprovals = allApprovals.filter((item) => item.status?.toUpperCase() === 'COMPLETED');
-                // Merge with existing completedItems
-                this.completedItems = [...this.completedItems, ...completedApprovals];
-
+                // Pending approvals might exist, log them but they're shown in requests tab
+                console.log('Pending approvals:', data?.length || 0);
+                if (data && data.length > 0) {
+                    console.table(data);
+                }
+            },
+            error: (error: any) => {
+                console.error('Error loading pending approvals:', error);
+            }
+        });
+        
+        // Load Scheduled approvals
+        this.maintenanceService.getScheduledApprovals().subscribe({
+            next: (data: any[]) => {
+                this.scheduledItems = data || [];
                 console.log('--- SCHEDULED TAB DATA ---');
                 console.log('Scheduled items:', this.scheduledItems.length);
                 console.table(this.scheduledItems);
+            },
+            error: (error: any) => {
+                console.error('Error loading scheduled approvals:', error);
+                this.scheduledItems = [];
+            }
+        });
+
+        // Load In-Progress approvals
+        this.maintenanceService.getInProgressApprovals().subscribe({
+            next: (data: any[]) => {
+                this.inProgressItems = data || [];
                 console.log('--- IN PROGRESS TAB DATA ---');
                 console.log('In Progress items:', this.inProgressItems.length);
                 console.table(this.inProgressItems);
+            },
+            error: (error: any) => {
+                console.error('Error loading in-progress approvals:', error);
+                this.inProgressItems = [];
+            }
+        });
+
+        // Load Completed approvals
+        this.maintenanceService.getCompletedApprovals().subscribe({
+            next: (data: any[]) => {
+                const completedApprovals = data || [];
+                // Merge with existing completedItems from maintenance requests
+                this.completedItems = [...this.completedItems, ...completedApprovals];
                 console.log('--- COMPLETED TAB DATA ---');
                 console.log('Completed items:', this.completedItems.length);
                 console.log('==========================');
             },
             error: (error: any) => {
-                console.error('Error loading maintenance approvals:', error);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load maintenance approvals' });
+                console.error('Error loading completed approvals:', error);
             }
         });
     }
@@ -830,15 +860,17 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     categorizeItems() {
         console.log('=== CATEGORIZING ITEMS ===');
         this.pendingItems = this.items.filter((item) => item.maintenanceStatus?.requestStatusName?.toLowerCase() === 'pending');
-        this.completedItems = this.items.filter((item) => item.maintenanceStatus?.requestStatusName?.toLowerCase() === 'completed');
+        
+        // Don't overwrite completedItems from approvals - only add from requests if needed
+        const completedRequests = this.items.filter((item) => item.maintenanceStatus?.requestStatusName?.toLowerCase() === 'completed');
 
         console.log('--- PENDING TAB DATA ---');
         console.log('Pending items:', this.pendingItems.length);
         console.table(this.pendingItems);
 
-        console.log('--- COMPLETED TAB DATA ---');
-        console.log('Completed items:', this.completedItems.length);
-        console.table(this.completedItems);
+        console.log('--- COMPLETED REQUESTS DATA ---');
+        console.log('Completed requests:', completedRequests.length);
+        console.table(completedRequests);
         console.log('========================');
     }
 
@@ -1213,7 +1245,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                     icon: 'success'
                 });
                 this.approveModalVisible = false;
+                // Reload both pending items and approvals to show in Scheduled tab
                 this.loadItems();
+                this.loadApprovals();
             },
             error: (error) => {
                 Swal.fire({
@@ -1261,6 +1295,57 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                             icon: 'error',
                             title: 'Oops...',
                             text: 'Failed to decline maintenance request: ' + (error.error?.message || error.message)
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    startMaintenanceWork(item: any) {
+        Swal.fire({
+            title: 'Start Maintenance Work',
+            html: `
+                <p style="margin-bottom: 1rem;">Start maintenance for: <strong>${item.maintenanceRequest?.maintenanceName}</strong></p>
+                <p style="margin-bottom: 0.5rem; color: #f59e0b;">⚠️ The asset will be marked as "Unserviceable" when you start this maintenance.</p>
+                <textarea id="startNotes" class="swal2-textarea" placeholder="Add any notes about starting the work (optional)..."></textarea>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Start Work',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#10b981',
+            preConfirm: () => {
+                const notes = (document.getElementById('startNotes') as HTMLTextAreaElement)?.value?.trim() || '';
+                return notes;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const notes = result.value;
+                const payload = notes ? { notes } : {};
+
+                this.maintenanceService.startMaintenance(item.maintenanceApprovalId, payload).subscribe({
+                    next: (response) => {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Maintenance work started successfully. Asset is now marked as Unserviceable.',
+                            icon: 'success'
+                        });
+
+                        // Remove from scheduled items
+                        const index = this.scheduledItems.findIndex((i) => i.maintenanceApprovalId === item.maintenanceApprovalId);
+                        if (index > -1) {
+                            this.scheduledItems.splice(index, 1);
+                        }
+
+                        // Reload approvals to show in In Progress tab
+                        this.loadApprovals();
+                    },
+                    error: (error) => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Failed to start maintenance: ' + (error.error?.message || error.message)
                         });
                     }
                 });
@@ -1607,28 +1692,23 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
     }
 
     confirmCompletion() {
-        if (!this.confirmFormData.reason.trim()) {
+        if (!this.confirmFormData.actionTaken?.trim()) {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: 'Reason is required'
+                text: 'Action Taken is required'
             });
             return;
         }
 
         const completionPayload = {
-            maintenanceRequest: this.selectedItem.maintenanceRequest?.requestId || this.selectedItem.requestId,
-            reason: this.confirmFormData.reason.trim(),
-            scheduledAt: this.selectedItem.scheduledAt || new Date(),
-            status: 'COMPLETED',
-            isCompleted: true,
             actionTaken: this.confirmFormData.actionTaken.trim(),
-            observations: this.confirmFormData.observations.trim(),
-            expectedReading: this.confirmFormData.expectedReading.trim(),
-            actualReading: this.confirmFormData.actualReading.trim()
+            observations: this.confirmFormData.observations?.trim() || '',
+            expectedReading: this.confirmFormData.expectedReading?.trim() || '',
+            actualReading: this.confirmFormData.actualReading?.trim() || ''
         };
 
-        this.maintenanceService.completeMaintenanceApproval(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
+        this.maintenanceService.completeMaintenance(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
             next: (response: any) => {
                 Swal.fire({
                     title: 'Good job!',
@@ -1637,13 +1717,18 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit {
                 });
                 this.confirmModalVisible = false;
 
-                // Remove from scheduled items
-                const index = this.scheduledItems.findIndex((item) => item.maintenanceApprovalId === this.selectedItem.maintenanceApprovalId);
-                if (index > -1) {
-                    this.scheduledItems.splice(index, 1);
+                // Remove from in-progress items (not scheduled)
+                const scheduledIndex = this.scheduledItems.findIndex((item) => item.maintenanceApprovalId === this.selectedItem.maintenanceApprovalId);
+                if (scheduledIndex > -1) {
+                    this.scheduledItems.splice(scheduledIndex, 1);
+                }
+                const inProgressIndex = this.inProgressItems.findIndex((item) => item.maintenanceApprovalId === this.selectedItem.maintenanceApprovalId);
+                if (inProgressIndex > -1) {
+                    this.inProgressItems.splice(inProgressIndex, 1);
                 }
 
-                this.loadItems();
+                // Reload to show in Completed tab
+                this.loadApprovals();
             },
             error: (error: any) => {
                 console.error('Error completing maintenance request:', error);
