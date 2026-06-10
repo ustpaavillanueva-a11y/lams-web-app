@@ -158,7 +158,7 @@ export class CampusesComponent extends BaseComponent implements OnInit {
                 },
                 error: (error) => {
                     this.loadingState = LoadingState.ERROR;
-                    this.errorHandler.handleError(error, 'loading campuses');
+                    this.errorHandler.handleErrorSilent(error, 'loading campuses');
                 }
             });
     }

@@ -74,6 +74,7 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
                             leaveToClass="hidden"
                             leaveActiveClass="animate-fadeout"
                             [hideOnOutsideClick]="true"
+                            (click)="closeErrorModal()"
                         >
                             <div *ngIf="!currentUser?.profilePicture" class="topbar-avatar-custom">
                                 <i class="pi pi-user"></i>
@@ -598,5 +599,9 @@ export class AppTopbar {
                 });
             }
         });
+    }
+
+    closeErrorModal() {
+        Swal.close();
     }
 }

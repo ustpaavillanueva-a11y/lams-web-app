@@ -51,7 +51,12 @@ export class ErrorHandlerService {
                     errorMessage = 'Unauthorized. Please login again.';
                     break;
                 case 403:
-                    errorMessage = 'Access denied. You do not have permission.';
+                    // Check for role-based permission errors
+                    if (error.error?.message && error.error.message.includes('Required roles:')) {
+                        errorMessage = 'You do not have the required permissions to access this resource. Please contact your system administrator if you believe this is incorrect.';
+                    } else {
+                        errorMessage = 'Access denied. You do not have permission.';
+                    }
                     break;
                 case 404:
                     errorMessage = 'Resource not found.';
@@ -148,6 +153,20 @@ export class ErrorHandlerService {
         }
 
         return 'An unexpected error occurred.';
+    }
+
+    /**
+     * Handles errors silently without showing a dialog
+     * Useful for non-critical operations like loading reference data
+     * @param error - The error object
+     * @param context - Optional context for logging
+     */
+    handleErrorSilent(error: any, context?: string): void {
+        if (context) {
+            console.warn(`⚠️ ${context}:`, error?.error?.message || error?.message || error);
+        } else {
+            console.warn('⚠️ Error:', error?.error?.message || error?.message || error);
+        }
     }
 
     /**

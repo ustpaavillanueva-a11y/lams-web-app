@@ -355,7 +355,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
                     this.campuses = Array.isArray(response) ? response : response.data || [];
                 },
                 error: (error) => {
-                    this.errorHandler.handleError(error, 'Loading campuses');
+                    this.errorHandler.handleErrorSilent(error, 'Loading campuses');
                 }
             });
     }
