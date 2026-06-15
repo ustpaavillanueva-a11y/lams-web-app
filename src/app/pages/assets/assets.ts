@@ -1388,7 +1388,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.maintenanceService.createMaintenanceRequest(payload).subscribe({
             next: () => {
                 Swal.fire({
-                    title: 'Good job!',
+                    title: 'Success!',
                     text: 'Maintenance request submitted successfully!',
                     icon: 'success'
                 });

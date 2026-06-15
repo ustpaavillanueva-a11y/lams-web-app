@@ -711,7 +711,7 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         this.http.post<any>(scheduleUrl, payload).subscribe({
             next: (response: any) => {
                 Swal.fire({
-                    title: 'Good job!',
+                    title: 'Success!',
                     text: 'Lab schedule created successfully!',
                     icon: 'success'
                 });

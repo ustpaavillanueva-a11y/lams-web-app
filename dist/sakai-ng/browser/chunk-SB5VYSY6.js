@@ -13299,7 +13299,7 @@ var AssetsComponent = class _AssetsComponent {
     this.maintenanceService.createMaintenanceRequest(payload).subscribe({
       next: () => {
         import_sweetalert22.default.fire({
-          title: "Good job!",
+          title: "Success!",
           text: "Maintenance request submitted successfully!",
           icon: "success"
         });
@@ -16432,7 +16432,7 @@ var RequestmaintenanceComponent = class _RequestmaintenanceComponent {
       next: (response) => {
         const technicianName = this.technicians.find((t) => t.userId === this.approveFormData.technicianId)?.firstName;
         import_sweetalert23.default.fire({
-          title: "Good job!",
+          title: "Success!",
           text: `Maintenance assigned to ${technicianName} successfully!`,
           icon: "success"
         });
@@ -16474,7 +16474,7 @@ var RequestmaintenanceComponent = class _RequestmaintenanceComponent {
         this.maintenanceService.declineMaintenanceRequest(item.requestId, reason).subscribe({
           next: (response) => {
             import_sweetalert23.default.fire({
-              title: "Good job!",
+              title: "Success!",
               text: "Maintenance request declined successfully",
               icon: "success"
             });
@@ -16558,7 +16558,7 @@ var RequestmaintenanceComponent = class _RequestmaintenanceComponent {
             this.items.push(created);
             this.categorizeItems();
             import_sweetalert23.default.fire({
-              title: "Good job!",
+              title: "Success!",
               text: "Maintenance request created successfully!",
               icon: "success"
             });
@@ -16723,7 +16723,7 @@ var RequestmaintenanceComponent = class _RequestmaintenanceComponent {
             this.maintenanceService.updateMaintenanceRequest(requestId, result.value).subscribe({
               next: () => {
                 import_sweetalert23.default.fire({
-                  title: "Good job!",
+                  title: "Success!",
                   text: "Maintenance request updated successfully",
                   icon: "success"
                 });
@@ -16879,7 +16879,7 @@ var RequestmaintenanceComponent = class _RequestmaintenanceComponent {
     this.maintenanceService.completeMaintenance(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
       next: (response) => {
         import_sweetalert23.default.fire({
-          title: "Good job!",
+          title: "Success!",
           text: "Maintenance request marked as completed successfully.",
           icon: "success"
         });

@@ -26758,7 +26758,7 @@ var BrandComponent = class _BrandComponent {
             this.items.push(created);
             this.filteredItems = [...this.items];
             import_sweetalert24.default.fire({
-              title: "Good job!",
+              title: "Success!",
               text: "Brand created successfully!",
               icon: "success"
             });
@@ -27151,7 +27151,7 @@ var ColorComponent = class _ColorComponent {
             this.items.push(created);
             this.filteredItems = [...this.items];
             import_sweetalert25.default.fire({
-              title: "Good job!",
+              title: "Success!",
               text: "Brand created successfully!",
               icon: "success"
             });
@@ -27948,7 +27948,7 @@ var ProgramComponent = class _ProgramComponent {
             this.items.push(created);
             this.filteredItems = [...this.items];
             import_sweetalert27.default.fire({
-              title: "Good job!",
+              title: "Success!",
               text: "Brand created successfully!",
               icon: "success"
             });
@@ -31620,7 +31620,7 @@ var LabScheduleComponent = class _LabScheduleComponent {
     this.http.post(scheduleUrl, payload).subscribe({
       next: (response) => {
         import_sweetalert213.default.fire({
-          title: "Good job!",
+          title: "Success!",
           text: "Lab schedule created successfully!",
           icon: "success"
         });
@@ -33395,7 +33395,7 @@ var LaboratoriesComponent = class _LaboratoriesComponent {
     this.http.post(this.apiUrl, payload).subscribe({
       next: (response) => {
         import_sweetalert214.default.fire({
-          title: "Good job!",
+          title: "Success!",
           text: "Laboratory created successfully!",
           icon: "success"
         });
