@@ -1412,7 +1412,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 const technicianName = this.technicians.find((t) => t.userId === this.approveFormData.technicianId)?.firstName;
 
                 Swal.fire({
-                    title: 'Good job!',
+                    title: 'Success!',
                     text: `Maintenance assigned to ${technicianName} successfully!`,
                     icon: 'success'
                 });
@@ -1456,7 +1456,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 this.maintenanceService.declineMaintenanceRequest(item.requestId, reason).subscribe({
                     next: (response) => {
                         Swal.fire({
-                            title: 'Good job!',
+                            title: 'Success!',
                             text: 'Maintenance request declined successfully',
                             icon: 'success'
                         });
@@ -1547,7 +1547,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         this.items.push(created);
                         this.categorizeItems();
                         Swal.fire({
-                            title: 'Good job!',
+                            title: 'Success!',
                             text: 'Maintenance request created successfully!',
                             icon: 'success'
                         });
@@ -1715,7 +1715,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         this.maintenanceService.updateMaintenanceRequest(requestId, result.value).subscribe({
                             next: () => {
                                 Swal.fire({
-                                    title: 'Good job!',
+                                    title: 'Success!',
                                     text: 'Maintenance request updated successfully',
                                     icon: 'success'
                                 });
@@ -1883,7 +1883,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.maintenanceService.completeMaintenance(this.selectedItem.maintenanceApprovalId, completionPayload).subscribe({
             next: (response: any) => {
                 Swal.fire({
-                    title: 'Good job!',
+                    title: 'Success!',
                     text: 'Maintenance request marked as completed successfully.',
                     icon: 'success'
                 });
