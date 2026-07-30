@@ -29,6 +29,9 @@ import { LayoutService } from '../service/layout.service';
             >
                 <i [ngClass]="item.icon" class="layout-menuitem-icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
+                <span class="layout-menuitem-badges" *ngIf="item['statusBadges']?.length && !layoutService.isMenuCollapsed()">
+                    <span *ngFor="let badge of item['statusBadges']" class="menu-status-badge" [ngClass]="badge.styleClass" [pTooltip]="badge.label + ': ' + badge.count" tooltipPosition="top">{{ badge.count }}</span>
+                </span>
                 <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
             <a
@@ -53,6 +56,9 @@ import { LayoutService } from '../service/layout.service';
             >
                 <i [ngClass]="item.icon" class="layout-menuitem-icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
+                <span class="layout-menuitem-badges" *ngIf="item['statusBadges']?.length && !layoutService.isMenuCollapsed()">
+                    <span *ngFor="let badge of item['statusBadges']" class="menu-status-badge" [ngClass]="badge.styleClass" [pTooltip]="badge.label + ': ' + badge.count" tooltipPosition="top">{{ badge.count }}</span>
+                </span>
                 <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
 
