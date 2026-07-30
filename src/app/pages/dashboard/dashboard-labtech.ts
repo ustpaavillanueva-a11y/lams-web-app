@@ -639,73 +639,42 @@ export class DashboardLabTech implements OnInit {
     }
 
     loadScheduleCharts() {
-        console.log('=== LOADING SCHEDULE CHARTS DATA ===');
-
-        // First, fetch all laboratories
+        // Fetch the labtech's laboratories, then fetch ALL schedules in a single call
+        // (previously this issued one extra HTTP request per laboratory, which was slow)
         const laboratoriesUrl = `${environment.apiUrl}/laboratories`;
 
         this.http.get<any[]>(laboratoriesUrl).subscribe({
             next: (labs) => {
-                console.log('Laboratories fetched:', labs?.length || 0);
-
                 if (!labs || labs.length === 0) {
-                    console.log('No laboratories found');
                     this.initEmptyScheduleCharts();
                     return;
                 }
 
-                // Fetch schedules for all laboratories
-                const scheduleRequests = labs.map((lab) => this.http.get<any[]>(`${environment.apiUrl}/laboratories/${lab.laboratoryId}/schedules`));
+                const labNameById = new Map<string, string>(labs.map((lab) => [lab.laboratoryId, lab.laboratoryName]));
 
-                // Wait for all schedule requests to complete
-                const allSchedules: any[] = [];
-                let completedRequests = 0;
+                this.http.get<any[]>(`${environment.apiUrl}/schedules`).subscribe({
+                    next: (allSchedules) => {
+                        const schedules = (allSchedules || [])
+                            .filter((schedule) => labNameById.has(schedule.laboratoryId))
+                            .map((schedule) => ({
+                                ...schedule,
+                                laboratory: schedule.laboratory || { laboratoryId: schedule.laboratoryId, laboratoryName: labNameById.get(schedule.laboratoryId) }
+                            }));
 
-                scheduleRequests.forEach((request, index) => {
-                    request.subscribe({
-                        next: (schedules) => {
-                            if (schedules && schedules.length > 0) {
-                                allSchedules.push(...schedules);
-                            }
-                            completedRequests++;
+                        if (schedules.length > 0) {
+                            const dayCount = this.countSchedulesByDay(schedules);
+                            this.populateScheduleByDayChart(dayCount);
 
-                            // When all requests are done, process the data
-                            if (completedRequests === scheduleRequests.length) {
-                                console.log('Total schedules fetched:', allSchedules.length);
-                                console.log('Sample schedule:', allSchedules[0]);
-
-                                if (allSchedules.length > 0) {
-                                    const dayCount = this.countSchedulesByDay(allSchedules);
-                                    this.populateScheduleByDayChart(dayCount);
-
-                                    const labCount = this.countSchedulesByLaboratory(allSchedules);
-                                    this.populateScheduleByLabChart(labCount);
-                                } else {
-                                    this.initEmptyScheduleCharts();
-                                }
-
-                                console.log('===================================');
-                            }
-                        },
-                        error: (error) => {
-                            console.error(`Error loading schedules for lab ${index}:`, error);
-                            completedRequests++;
-
-                            if (completedRequests === scheduleRequests.length) {
-                                console.log('Total schedules fetched:', allSchedules.length);
-                                if (allSchedules.length > 0) {
-                                    const dayCount = this.countSchedulesByDay(allSchedules);
-                                    this.populateScheduleByDayChart(dayCount);
-
-                                    const labCount = this.countSchedulesByLaboratory(allSchedules);
-                                    this.populateScheduleByLabChart(labCount);
-                                } else {
-                                    this.initEmptyScheduleCharts();
-                                }
-                                console.log('===================================');
-                            }
+                            const labCount = this.countSchedulesByLaboratory(schedules);
+                            this.populateScheduleByLabChart(labCount);
+                        } else {
+                            this.initEmptyScheduleCharts();
                         }
-                    });
+                    },
+                    error: (error) => {
+                        console.error('Error loading schedules:', error);
+                        this.initEmptyScheduleCharts();
+                    }
                 });
             },
             error: (error) => {
