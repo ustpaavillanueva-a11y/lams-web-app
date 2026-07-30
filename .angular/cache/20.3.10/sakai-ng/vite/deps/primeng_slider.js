@@ -1,10 +1,10 @@
 import {
+  AutoFocus
+} from "./chunk-7QHXTJMK.js";
+import {
   BaseEditableHolder
 } from "./chunk-A7H3FXNJ.js";
 import "./chunk-XXGW2ZKJ.js";
-import {
-  AutoFocus
-} from "./chunk-7QHXTJMK.js";
 import "./chunk-P6SMTJBG.js";
 import {
   Bind,

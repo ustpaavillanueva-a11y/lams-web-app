@@ -1,11 +1,11 @@
 import {
-  BaseEditableHolder
-} from "./chunk-A7H3FXNJ.js";
-import "./chunk-XXGW2ZKJ.js";
-import {
   AutoFocus,
   AutoFocusModule
 } from "./chunk-7QHXTJMK.js";
+import {
+  BaseEditableHolder
+} from "./chunk-A7H3FXNJ.js";
+import "./chunk-XXGW2ZKJ.js";
 import {
   ConnectedOverlayScrollHandler,
   DomHandler
@@ -33,6 +33,9 @@ import {
   I,
   Yt
 } from "./chunk-U4LT4ZJN.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-SLWC4WYB.js";
 import "./chunk-GAL5RSMX.js";
 import {
   animate,
@@ -40,9 +43,6 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-SLWC4WYB.js";
 import {
   CommonModule,
   NgIf,

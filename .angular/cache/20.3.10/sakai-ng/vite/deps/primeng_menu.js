@@ -3,19 +3,19 @@ import {
   TooltipModule
 } from "./chunk-BIFJ4FDJ.js";
 import {
-  ConnectedOverlayScrollHandler,
-  DomHandler
-} from "./chunk-P6SMTJBG.js";
-import {
   Badge,
   BadgeModule
 } from "./chunk-GIUYGYUT.js";
 import {
-  zindexutils
-} from "./chunk-OLJED6AA.js";
+  ConnectedOverlayScrollHandler,
+  DomHandler
+} from "./chunk-P6SMTJBG.js";
 import {
   Ripple
 } from "./chunk-7V5GWXVN.js";
+import {
+  zindexutils
+} from "./chunk-OLJED6AA.js";
 import {
   Bind,
   BindModule
