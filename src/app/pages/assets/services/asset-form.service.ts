@@ -29,12 +29,6 @@ export class AssetFormService {
             .map((s) => s.trim()) // Trim whitespace
             .filter((s) => s.length > 0); // Remove empty values
 
-        console.log('📝 Parsing serials:', {
-            raw: rawInput,
-            tokens: rawTokens,
-            count: rawTokens.length
-        });
-
         // Check for duplicates (case-insensitive)
         const seen = new Map<string, string>();
         const duplicates: string[] = [];
@@ -191,19 +185,16 @@ export class AssetFormService {
         // Extract program ID (backend expects ID, not name)
         if (assetToSend.program && typeof assetToSend.program === 'object') {
             assetToSend.program = assetToSend.program.programId || '';
-            console.log('✅ Extracted program ID:', assetToSend.program);
         }
 
         // Extract brand ID (backend expects ID, not name)
         if (assetToSend.inventoryCustodianSlip.brand && typeof assetToSend.inventoryCustodianSlip.brand === 'object') {
             assetToSend.inventoryCustodianSlip.brand = assetToSend.inventoryCustodianSlip.brand.brandId || '';
-            console.log('✅ Extracted brand ID:', assetToSend.inventoryCustodianSlip.brand);
         }
 
         // Extract color ID (backend expects ID, not name)
         if (assetToSend.inventoryCustodianSlip.color && typeof assetToSend.inventoryCustodianSlip.color === 'object') {
             assetToSend.inventoryCustodianSlip.color = assetToSend.inventoryCustodianSlip.color.colorId || '';
-            console.log('✅ Extracted color ID:', assetToSend.inventoryCustodianSlip.color);
         }
 
         // Remove null/undefined values to prevent backend issues
@@ -218,8 +209,6 @@ export class AssetFormService {
                 assetToSend.inventoryCustodianSlip[key] = typeof assetToSend.inventoryCustodianSlip[key] === 'number' ? 0 : '';
             }
         });
-
-        console.log('📤 Prepared asset for submission:', assetToSend);
 
         return assetToSend;
     }

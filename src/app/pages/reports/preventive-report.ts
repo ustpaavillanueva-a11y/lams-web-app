@@ -196,7 +196,7 @@ interface Laboratory {
                         <!-- Header -->
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
                             <div>
-                                <img [src]="headerImageBase64 || 'public/header.png'" style="max-width: 200px; height: auto; max-height: 60px;" />
+                                <img [src]="headerImageBase64 || '/header.png'" style="max-width: 200px; height: auto; max-height: 60px;" />
                             </div>
                         </div>
 
@@ -367,13 +367,11 @@ export class PreventiveReportComponent implements OnInit {
     }
 
     loadHeaderImage(): void {
-        // Try to load from assets folder
-        this.http.get('assets/header.png.png', { responseType: 'blob' }).subscribe({
+        this.http.get(`${window.location.origin}/header.png`, { responseType: 'blob' }).subscribe({
             next: (blob) => {
                 this.convertBlobToBase64(blob);
             },
-            error: (error) => {
-                console.warn('⚠️ Could not load header image from assets/', error);
+            error: () => {
                 // Silently fail - proceed without image
                 this.headerImageBase64 = '';
             }
@@ -413,9 +411,7 @@ export class PreventiveReportComponent implements OnInit {
             next: (data) => {
                 this.laboratories = data;
             },
-            error: (error) => {
-                console.error('❌ Error loading laboratories:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -426,9 +422,7 @@ export class PreventiveReportComponent implements OnInit {
                 // Add "Others" option at the end
                 this.usersWithOthers = [...data, { userId: 'others', firstName: 'Others', lastName: '(Manual Input)', isOthers: true }];
             },
-            error: (error) => {
-                console.error('❌ Error loading users:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -456,7 +450,6 @@ export class PreventiveReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate daily report';
                     this.isLoading = false;
-                    console.error('❌ Error loading daily report:', error);
                 }
             });
         } else if (this.reportType === 'monthly') {
@@ -468,7 +461,6 @@ export class PreventiveReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate monthly report';
                     this.isLoading = false;
-                    console.error('❌ Error loading monthly report:', error);
                 }
             });
         } else {
@@ -480,7 +472,6 @@ export class PreventiveReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate yearly report';
                     this.isLoading = false;
-                    console.error('❌ Error loading yearly report:', error);
                 }
             });
         }

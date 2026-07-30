@@ -25,9 +25,7 @@ export class MaintenanceWebSocketService implements OnDestroy {
             // Subscribe to maintenance updates
             this.webSocketService.emit(this.namespace, 'subscribe-maintenance-updates');
             this.isConnected = true;
-        } catch (error) {
-            console.error('Failed to connect to maintenance WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**

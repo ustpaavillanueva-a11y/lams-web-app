@@ -329,7 +329,7 @@ export class CalibrationReportComponent implements OnInit {
     loadLaboratories(): void {
         this.http.get<Laboratory[]>(this.apiUrl).subscribe({
             next: (data) => (this.laboratories = data),
-            error: (err) => console.error('❌ Failed to load laboratories:', err)
+            error: (err) => {}
         });
     }
 
@@ -356,12 +356,10 @@ export class CalibrationReportComponent implements OnInit {
             const dateStr = this.formatDateToString(this.selectedDate);
             this.reportService.getDailyCalibrationReport(dateStr, this.selectedLaboratoryId).subscribe({
                 next: (data) => {
-                    console.log('✅ Daily report data:', data);
                     this.reportData = data;
                     this.isLoading = false;
                 },
                 error: (err) => {
-                    console.error('❌ Daily report error:', err);
                     this.errorMessage = err.error?.message || 'Failed to generate daily calibration report';
                     this.isLoading = false;
                 }
@@ -369,12 +367,10 @@ export class CalibrationReportComponent implements OnInit {
         } else if (this.reportType === 'monthly') {
             this.reportService.getMonthlyCalibrationReport(this.selectedMonth, this.selectedYear, this.selectedLaboratoryId).subscribe({
                 next: (data) => {
-                    console.log('✅ Monthly report data:', data);
                     this.reportData = data;
                     this.isLoading = false;
                 },
                 error: (err) => {
-                    console.error('❌ Monthly report error:', err);
                     this.errorMessage = err.error?.message || 'Failed to generate monthly calibration report';
                     this.isLoading = false;
                 }
@@ -383,12 +379,10 @@ export class CalibrationReportComponent implements OnInit {
             // Yearly endpoint
             this.reportService.getYearlyCalibrationReport(this.selectedYear, this.selectedLaboratoryId).subscribe({
                 next: (data) => {
-                    console.log('✅ Yearly report data:', data);
                     this.reportData = data;
                     this.isLoading = false;
                 },
                 error: (err) => {
-                    console.error('❌ Yearly report error:', err);
                     this.errorMessage = err.error?.message || 'Failed to generate yearly calibration report';
                     this.isLoading = false;
                 }
@@ -440,12 +434,12 @@ export class CalibrationReportComponent implements OnInit {
     }
 
     loadHeaderImage(): void {
-        const imagePath = 'assets/header.png.png';
+        const imagePath = `${window.location.origin}/header.png`;
         this.http.get(imagePath, { responseType: 'blob' }).subscribe({
             next: (blob) => {
                 this.convertBlobToBase64(blob);
             },
-            error: (err) => console.error('Error loading header image:', err)
+            error: (err) => {}
         });
     }
 
@@ -463,9 +457,7 @@ export class CalibrationReportComponent implements OnInit {
                 this.users = data;
                 this.usersWithOthers = [...data, { userId: 'others', firstName: 'Others', lastName: '(Manual Input)', isOthers: true }];
             },
-            error: (error) => {
-                console.error('❌ Error loading users:', error);
-            }
+            error: (error) => {}
         });
     }
 

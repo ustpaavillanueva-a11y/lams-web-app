@@ -148,22 +148,16 @@ export class ReportService {
     // Corrective Maintenance Reports
     getDailyCorrectiveReport(date: string, laboratoryId: string): Observable<any> {
         const url = `${this.baseApiUrl}/reports/corrective-maintenance/daily?date=${date}&laboratoryId=${laboratoryId}`;
-        console.log('🔹 Daily Corrective URL:', url);
-        console.log('🔹 Daily Corrective Filter:', { date, laboratoryId });
         return this.http.get<any>(url);
     }
 
     getMonthlyCorrectiveReport(month: number, year: number, laboratoryId: string): Observable<any> {
         const url = `${this.baseApiUrl}/reports/corrective-maintenance/monthly?month=${month}&year=${year}&laboratoryId=${laboratoryId}`;
-        console.log('🔹 Monthly Corrective URL:', url);
-        console.log('🔹 Monthly Corrective Filter:', { month, year, laboratoryId });
         return this.http.get<any>(url);
     }
 
     getYearlyCorrectiveReport(year: number, laboratoryId: string): Observable<any> {
         const url = `${this.baseApiUrl}/reports/corrective-maintenance/yearly?year=${year}&laboratoryId=${laboratoryId}`;
-        console.log('🔹 Yearly Corrective URL:', url);
-        console.log('🔹 Yearly Corrective Filter:', { year, laboratoryId });
         return this.http.get<any>(url);
     }
 

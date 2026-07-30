@@ -674,12 +674,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
 
         try {
             this.assetsWebSocketService.connect();
-            console.log('✅ Connected to assets WebSocket');
 
             // Listen for asset creation
             this.assetsWebSocketService.onAssetCreated().subscribe({
                 next: (event) => {
-                    console.log('🆕 Asset created:', event.data);
                     if (event.success) {
                         // Reload assets to get the latest data
                         this.loadAssets();
@@ -691,15 +689,12 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving asset-created event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for asset updates
             this.assetsWebSocketService.onAssetUpdated().subscribe({
                 next: (event) => {
-                    console.log('✏️ Asset updated:', event.data);
                     if (event.success) {
                         // Find and update the asset in the list
                         const index = this.assets.findIndex((a) => a.assetId === event.data.assetId);
@@ -719,15 +714,12 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving asset-updated event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for asset status changes
             this.assetsWebSocketService.onAssetStatusChanged().subscribe({
                 next: (event) => {
-                    console.log('🔄 Asset status changed:', event.data);
                     if (event.success) {
                         // Find and update the asset status
                         const asset = this.assets.find((a) => a.assetId === event.data.assetId);
@@ -744,15 +736,12 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving asset-status-changed event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for asset deletions
             this.assetsWebSocketService.onAssetDeleted().subscribe({
                 next: (event) => {
-                    console.log('🗑️ Asset deleted:', event.data);
                     if (event.success) {
                         // Remove the asset from the list
                         this.assets = this.assets.filter((a) => a.assetId !== event.data.assetId);
@@ -766,13 +755,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving asset-deleted event:', error);
-                }
+                error: (error) => {}
             });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -780,24 +765,14 @@ export class AssetsComponent implements OnInit, OnDestroy {
      */
     ngOnDestroy() {
         this.assetsWebSocketService.disconnect();
-        console.log('🔌 Disconnected from assets WebSocket');
     }
 
     checkUserRole() {
         const currentUser = this.authService.getCurrentUser();
-        console.log('=== CHECK USER ROLE (Assets Page) ===');
-        console.log('Current User:', currentUser);
-        console.log('User Role:', currentUser?.role);
 
         this.isLabTech = currentUser?.role === 'LabTech';
         this.isSuperAdmin = currentUser?.role === 'SuperAdmin';
         this.isFaculty = currentUser?.role === 'Faculty';
-
-        console.log('isLabTech:', this.isLabTech);
-        console.log('isSuperAdmin:', this.isSuperAdmin);
-        console.log('isFaculty:', this.isFaculty);
-        console.log('isCampusAdmin:', this.isCampusAdmin());
-        console.log('===================================');
     }
 
     isCampusAdmin(): boolean {
@@ -806,8 +781,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     loadReferenceData() {
-        console.log('🔄 Starting to load reference data...');
-
         // Load all reference data in parallel using forkJoin
         // Each observable has error handling to return empty array if it fails
         forkJoin({
@@ -837,27 +810,16 @@ export class AssetsComponent implements OnInit, OnDestroy {
             )
         }).subscribe({
             next: (data) => {
-                console.log('✅ forkJoin completed successfully!');
-                console.log('Raw data received:', data);
-
                 // Store all reference data
                 this.programs = data.programs || [];
                 this.statuses = data.statuses || [];
                 this.colors = data.colors || [];
                 this.brands = data.brands || [];
 
-                console.log('=== REFERENCE DATA LOADED ===');
-                console.log('Programs:', this.programs.length, this.programs);
-                console.log('Brands:', this.brands.length, this.brands);
-                console.log('Colors:', this.colors.length, this.colors);
-                console.log('Statuses:', this.statuses.length);
-                console.log('============================');
-
                 // Now that reference data is loaded, load and enrich assets
                 this.loadAssets();
             },
             error: (error) => {
-                console.error('❌ ERROR loading reference data:', error);
                 // Still try to load assets even if reference data fails
                 this.loadAssets();
             }
@@ -871,15 +833,17 @@ export class AssetsComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.userService.getCampuses().subscribe({
-            next: (data) => {
-                this.campuses = data || [];
-            },
-            error: (err) => {
-                console.warn('⚠️ Campuses API failed (403 Forbidden - check LabTech permissions):', err.message);
-                this.campuses = [];
-            }
-        });
+        // Only SuperAdmin has permission to list campuses (used for the campus filter dropdown)
+        if (this.isSuperAdmin) {
+            this.userService.getCampuses().subscribe({
+                next: (data) => {
+                    this.campuses = data || [];
+                },
+                error: () => {
+                    this.campuses = [];
+                }
+            });
+        }
 
         this.assetService.getUsers().subscribe({
             next: (data) => {
@@ -915,10 +879,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.assetService.getAssets().subscribe({
             next: (data) => {
-                console.log('=== ASSETS DATA FETCHED ===');
-                console.log('Raw data from API:', data);
-                console.log('Number of assets:', data?.length || 0);
-
                 // Use utility to expand assets with multiple serial numbers
                 this.assets = AssetUtils.expandAssetsForDisplay(data);
 
@@ -927,14 +887,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
 
                 this.filteredAssets = [...this.assets];
 
-                console.log('Expanded assets for display:', this.assets.length);
-                console.log('Assets after enrichment (sample):', this.assets[0]);
-                console.log('=========================');
-
                 this.loading = false;
             },
             error: (error) => {
-                console.error('Error loading assets:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -950,14 +905,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
      * Backend returns only IDs, so we need to populate names from our cached arrays
      */
     enrichAssetsWithNames() {
-        console.log('=== ENRICHING ASSETS ===');
-        console.log('Available brands:', this.brands.length);
-        console.log('Available colors:', this.colors.length);
-        console.log('Available programs:', this.programs.length);
-        console.log('Sample brand:', this.brands[0]);
-        console.log('Sample color:', this.colors[0]);
-        console.log('Sample program:', this.programs[0]);
-
         let brandEnriched = 0;
         let colorEnriched = 0;
         let programEnriched = 0;
@@ -967,7 +914,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
             if (asset.inventoryCustodianSlip?.brand) {
                 const brandData = asset.inventoryCustodianSlip.brand;
                 if (index === 0) {
-                    console.log('First asset brand data (before):', brandData);
                 }
 
                 if (typeof brandData === 'object' && brandData.brandId && !brandData.brandName) {
@@ -976,7 +922,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         asset.inventoryCustodianSlip.brand = foundBrand;
                         brandEnriched++;
                         if (index === 0) {
-                            console.log('Found brand by ID (object):', foundBrand);
                         }
                     }
                 } else if (typeof brandData === 'string') {
@@ -985,10 +930,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         asset.inventoryCustodianSlip.brand = foundBrand;
                         brandEnriched++;
                         if (index === 0) {
-                            console.log('Found brand by ID (string):', foundBrand);
                         }
                     } else if (index === 0) {
-                        console.log('Brand NOT found for ID:', brandData);
                     }
                 }
             }
@@ -1029,12 +972,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 }
             }
         });
-
-        console.log('Enrichment complete:');
-        console.log('- Brands enriched:', brandEnriched);
-        console.log('- Colors enriched:', colorEnriched);
-        console.log('- Programs enriched:', programEnriched);
-        console.log('========================');
     }
 
     filter() {
@@ -1168,9 +1105,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 if (decodedQR) {
                     this.newAsset.qrCode = decodedQR;
                 }
-            } catch (error) {
-                console.error('QR code decoding error:', error);
-            }
+            } catch (error) {}
         }
     }
 
@@ -1256,13 +1191,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
         // Check and create Brand if it's a custom string
         if (this.newAsset.inventoryCustodianSlip.brand && typeof this.newAsset.inventoryCustodianSlip.brand === 'string') {
             const brandName = this.newAsset.inventoryCustodianSlip.brand.trim();
-            console.log('🔨 Creating new brand:', brandName);
 
             const brandPromise = this.assetService
                 .createBrand({ brandName })
                 .toPromise()
                 .then((createdBrand) => {
-                    console.log('✅ Brand created:', createdBrand);
                     if (createdBrand) {
                         // Replace string with the created brand object
                         this.newAsset.inventoryCustodianSlip.brand = createdBrand;
@@ -1271,7 +1204,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     }
                 })
                 .catch((error) => {
-                    console.error('❌ Failed to create brand:', error);
                     // Set to empty to avoid error
                     this.newAsset.inventoryCustodianSlip.brand = '';
                 });
@@ -1281,13 +1213,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
         // Check and create Color if it's a custom string
         if (this.newAsset.inventoryCustodianSlip.color && typeof this.newAsset.inventoryCustodianSlip.color === 'string') {
             const colorName = this.newAsset.inventoryCustodianSlip.color.trim();
-            console.log('🔨 Creating new color:', colorName);
 
             const colorPromise = this.assetService
                 .createColor({ colorName })
                 .toPromise()
                 .then((createdColor) => {
-                    console.log('✅ Color created:', createdColor);
                     if (createdColor) {
                         // Replace string with the created color object
                         this.newAsset.inventoryCustodianSlip.color = createdColor;
@@ -1296,7 +1226,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     }
                 })
                 .catch((error) => {
-                    console.error('❌ Failed to create color:', error);
                     // Set to empty to avoid error
                     this.newAsset.inventoryCustodianSlip.color = '';
                 });
@@ -1306,13 +1235,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
         // Check and create Program if it's a custom string
         if (this.newAsset.program && typeof this.newAsset.program === 'string') {
             const programName = this.newAsset.program.trim();
-            console.log('🔨 Creating new program:', programName);
 
             const programPromise = this.assetService
                 .createProgram({ programName })
                 .toPromise()
                 .then((createdProgram) => {
-                    console.log('✅ Program created:', createdProgram);
                     if (createdProgram) {
                         // Replace string with the created program object
                         this.newAsset.program = createdProgram;
@@ -1321,7 +1248,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     }
                 })
                 .catch((error) => {
-                    console.error('❌ Failed to create program:', error);
                     // Set to empty to avoid error
                     this.newAsset.program = '';
                 });
@@ -1332,7 +1258,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         await Promise.all(promises);
 
         if (promises.length > 0) {
-            console.log('🎉 All reference data created successfully!');
         }
     }
 
@@ -1405,8 +1330,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     saveNewAsset() {
-        console.log('🔵 Save Asset button clicked');
-
         // Prevent multiple submissions
         if (this.isSubmitting) {
             console.warn('⚠️ Already submitting, ignoring duplicate click');
@@ -1414,14 +1337,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         }
 
         // Log current form state
-        console.log('📝 Current form data:', {
-            assetName: this.newAsset.assetName,
-            propertyNumber: this.newAsset.propertyNumber,
-            category: this.newAsset.category,
-            quantity: this.newAsset.inventoryCustodianSlip.quantity,
-            qrCodeImage: this.newAsset.qrCodeImage ? 'Present' : 'Missing',
-            serialNumbers: this.serialNumbersParsed
-        });
 
         // Basic field validation
         if (!this.newAsset.assetName?.trim()) {
@@ -1476,10 +1391,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
             return;
         }
 
-        console.log(`✅ All validations passed!`);
-        console.log(`🔍 Creating ${this.serialNumbersParsed.length} separate assets SEQUENTIALLY (one per serial number)...`);
-        console.log('⚠️ Sequential creation prevents duplicate ICS ID race condition');
-
         // Check and create missing reference data (brands, colors, programs)
         this.ensureReferenceDataExists()
             .then(() => {
@@ -1505,7 +1416,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
             })
             .catch((error) => {
                 this.isSubmitting = false;
-                console.error('❌ Failed to create reference data:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -1526,8 +1436,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
             this.isSubmitting = false;
             const createdCount = createdAssets.length;
 
-            console.log(`🎉 Successfully created ${createdCount} assets sequentially!`);
-
             // Clear loading toast
             this.messageService.clear();
 
@@ -1540,7 +1448,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
             if (firstAssetId && qrCodeFile) {
                 this.assetService.uploadQrCode(firstAssetId, qrCodeFile).subscribe({
                     next: () => {
-                        console.log(`✅ QR code uploaded to first asset: ${firstAssetId}`);
                         this.showSuccessMessage(createdCount, assetIds);
                         this.resetFormAndRefresh();
                     },
@@ -1568,16 +1475,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
         let assetToSend;
         try {
             assetToSend = this.assetFormService.prepareAssetForSubmission(asset, serialNumber);
-            console.log(`📦 Creating asset ${index + 1}/${serials.length}:`, {
-                serialNumber: serialNumber,
-                quantity: 1,
-                assetName: assetToSend.assetName,
-                payload: assetToSend
-            });
         } catch (prepError) {
             this.isSubmitting = false;
             this.messageService.clear();
-            console.error('❌ Asset preparation failed:', prepError);
             this.messageService.add({
                 severity: 'error',
                 summary: 'Preparation Error',
@@ -1589,11 +1489,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
         }
 
         // Create this asset and wait for completion
-        console.log(`🚀 Sending API request for asset ${index + 1}...`);
         this.assetService.createAsset(assetToSend).subscribe({
             next: (response: any) => {
                 const assetId = String(response.assetId || response.id);
-                console.log(`✅ Created asset ${index + 1}: ${assetId} (Serial: ${serialNumber})`);
 
                 createdAssets.push(response);
 
@@ -1603,10 +1501,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
             error: (error: any) => {
                 this.isSubmitting = false;
                 this.messageService.clear(); // Clear loading toast
-                console.error(`❌ Failed to create asset ${index + 1} (Serial: ${serialNumber}):`, error);
-                console.error('Full error object:', JSON.stringify(error, null, 2));
-                console.error('Error response:', error?.error);
-                console.error('Status:', error?.status);
 
                 // Parse error details
                 const errorMessage = error?.error?.message || error?.message || 'Unknown error';
@@ -1688,7 +1582,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     closeAndRefresh() {
-        console.log('🔄 Closing dialog and refreshing asset list...');
         this.assetDialog = false;
         this.resetFormAndRefresh();
     }
@@ -1965,7 +1858,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 });
             },
             error: (error) => {
-                console.error('Error fetching asset details:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -2068,7 +1960,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 this.currentStep = 0;
             },
             error: (error) => {
-                console.error('Error fetching asset details:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -2136,7 +2027,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 this.loadAssets();
             },
             error: (error) => {
-                console.error('Error updating asset:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -2196,20 +2086,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     requestMaintenance(item: Asset) {
-        console.log('=== REQUEST MAINTENANCE ===');
-        console.log('Asset:', item);
-        console.log('Asset ID:', item?.assetId);
-        console.log('User Role - isFaculty:', this.isFaculty);
-        console.log('User Role - isLabTech:', this.isLabTech);
-        console.log('User Role - isSuperAdmin:', this.isSuperAdmin);
-
         if (!item?.assetId) {
             this.messageService.add({ severity: 'warn', summary: 'Missing ID', detail: 'Asset ID is required to request maintenance' });
-            console.log('ERROR: Missing asset ID');
             return;
         }
 
-        console.log('Opening maintenance request dialog');
         this.openRequestDialog(item);
     }
 

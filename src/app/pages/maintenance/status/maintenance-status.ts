@@ -105,7 +105,6 @@ export class MaintenanceStatusComponent implements OnInit {
                 this.loading = false;
             },
             error: (err) => {
-                console.error('Error loading request statuses', err);
                 this.loading = false;
             }
         });

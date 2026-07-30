@@ -201,7 +201,6 @@ export class ProfileComponent implements OnInit {
                 }
             },
             error: (error) => {
-                console.error('Error loading background image:', error);
                 // Keep default gradient on error
                 this.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             }
@@ -253,7 +252,6 @@ export class ProfileComponent implements OnInit {
             // Upload to backend
             this.storageService.uploadProfilePicture(file).subscribe({
                 next: (response) => {
-
                     // Update currentUser with new profile picture URL
                     if (response.url || response.imageUrl || response.data?.url) {
                         const imageUrl = response.url || response.imageUrl || response.data?.url;
@@ -271,7 +269,6 @@ export class ProfileComponent implements OnInit {
                     });
                 },
                 error: (error) => {
-                    console.error('Error uploading profile picture:', error);
                     Swal.fire({
                         title: 'Upload Failed',
                         text: 'Failed to upload profile picture: ' + (error.error?.message || error.message),
@@ -297,7 +294,6 @@ export class ProfileComponent implements OnInit {
                     }
                 },
                 error: (error) => {
-                    console.error('Error loading user:', error);
                     // Fallback user data
                     this.currentUser = {
                         user_id: 'UID2025-10-15-123456',
@@ -391,7 +387,6 @@ export class ProfileComponent implements OnInit {
                         });
                     },
                     error: (error) => {
-                        console.error('Error uploading cover photo:', error);
                         Swal.fire({
                             title: 'Upload Failed',
                             text: 'Failed to upload cover photo: ' + (error.error?.message || error.message),
@@ -564,7 +559,6 @@ export class ProfileComponent implements OnInit {
                 // Call backend API to update user
                 this.userService.updateUser(userId, updatePayload).subscribe({
                     next: (response) => {
-
                         // Update fetchedUserData with response
                         this.fetchedUserData = {
                             ...this.fetchedUserData,
@@ -595,7 +589,6 @@ export class ProfileComponent implements OnInit {
                         });
                     },
                     error: (error) => {
-                        console.error('Error updating user:', error);
                         Swal.fire({
                             title: 'Error',
                             text: 'Failed to save changes: ' + (error.error?.message || error.message),
@@ -634,8 +627,7 @@ export class ProfileComponent implements OnInit {
      * This will log whenever userId changes
      */
     subscribeToUserIdChanges() {
-        this.userContextService.userId$.subscribe((userId) => {
-        });
+        this.userContextService.userId$.subscribe((userId) => {});
     }
 
     /**
@@ -643,7 +635,6 @@ export class ProfileComponent implements OnInit {
      * Demonstrates how to use UserService getUserProfile method
      */
     fetchUserDataByUserId() {
-
         this.userService.getUserProfile().subscribe({
             next: (userData) => {
                 this.fetchedUserData = userData; // Store in component
@@ -658,7 +649,6 @@ export class ProfileComponent implements OnInit {
                 });
             },
             error: (error) => {
-                console.error('Error fetching user profile:', error);
                 Swal.fire({
                     title: 'Error',
                     text: 'Failed to fetch user profile: ' + (error.error?.message || error.message),
@@ -672,17 +662,12 @@ export class ProfileComponent implements OnInit {
      * Automatically fetch user profile on page load (no popups)
      */
     private fetchUserDataByUserIdAuto() {
-
         this.userService.getUserProfile().subscribe({
             next: (userData) => {
                 this.fetchedUserData = userData; // Store in component
                 this.buildProfileInfoItems(); // Rebuild info items with new data
             },
             error: (error) => {
-                console.error('✗ Error auto-fetching user profile:', error);
-                console.error('Status:', error.status);
-                console.error('Message:', error.message);
-                console.error('Error Object:', error.error);
                 // Fail silently for auto-fetch
             }
         });

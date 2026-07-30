@@ -171,7 +171,6 @@ export class ProgramComponent extends AssetCategoryBase {
                 this.loading = false;
             },
             error: (error) => {
-                console.error('Error loading programs:', error);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load programs' });
                 this.loading = false;
             }
@@ -361,7 +360,6 @@ export class SupplierComponent extends AssetCategoryBase {
                 this.loading = false;
             },
             error: (error) => {
-                console.error('Error loading suppliers:', error);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load suppliers' });
                 this.loading = false;
             }
@@ -575,7 +573,6 @@ export class LocationComponent extends AssetCategoryBase {
                 this.loading = false;
             },
             error: (error) => {
-                console.error('Error loading locations:', error);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load locations' });
                 this.loading = false;
             }

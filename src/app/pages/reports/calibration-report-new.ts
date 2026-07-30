@@ -250,7 +250,6 @@ export class CalibrationReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate daily calibration report';
                     this.isLoading = false;
-                    console.error('❌ Error loading daily calibration report:', error);
                 }
             });
         } else {
@@ -262,7 +261,6 @@ export class CalibrationReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate monthly calibration report';
                     this.isLoading = false;
-                    console.error('❌ Error loading monthly calibration report:', error);
                 }
             });
         }

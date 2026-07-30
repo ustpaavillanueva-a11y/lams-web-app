@@ -52,9 +52,7 @@ export class RecentSalesWidget implements OnInit {
             next: (data: any[]) => {
                 this.assets = data.slice(0, 10);
             },
-            error: (err: any) => {
-                console.error('❌ Error loading assets:', err);
-            }
+            error: (err: any) => {}
         });
     }
 }

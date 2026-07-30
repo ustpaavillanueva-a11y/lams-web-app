@@ -303,7 +303,6 @@ export class BrandComponent extends BaseComponent implements OnInit {
                     },
                     error: (error) => {
                         failedCount++;
-                        console.error(`Failed to delete brand ${item.brandId}:`, error);
                         this.checkBulkDeleteComplete(deletedCount, failedCount, totalCount);
                     }
                 });

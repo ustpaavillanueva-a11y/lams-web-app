@@ -430,7 +430,6 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
 
         try {
             this.laboratoriesWebSocketService.connect();
-            console.log('✅ Connected to laboratories WebSocket');
 
             // Listen for laboratory creation
             this.laboratoriesWebSocketService
@@ -438,7 +437,6 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('🆕 Laboratory created:', event.data);
                         if (event.success) {
                             this.loadLaboratories();
                             this.messageService.add({
@@ -449,9 +447,7 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving laboratory-created event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for laboratory updates
@@ -460,7 +456,6 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('✏️ Laboratory updated:', event.data);
                         if (event.success) {
                             const index = this.laboratories.findIndex((l) => l.laboratoryId === event.data.laboratoryId);
                             if (index !== -1) {
@@ -475,9 +470,7 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving laboratory-updated event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for laboratory deletions
@@ -486,7 +479,6 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('🗑️ Laboratory deleted:', event.data);
                         if (event.success) {
                             this.laboratories = this.laboratories.filter((l) => l.laboratoryId !== event.data.laboratoryId);
                             this.filter();
@@ -498,13 +490,9 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving laboratory-deleted event:', error);
-                    }
+                    error: (error) => {}
                 });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -512,7 +500,6 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
      */
     override ngOnDestroy(): void {
         this.laboratoriesWebSocketService.disconnect();
-        console.log('🔌 Disconnected from laboratories WebSocket');
         super.ngOnDestroy();
     }
 
@@ -714,7 +701,6 @@ export class LaboratoriesComponent extends BaseComponent implements OnInit {
                     },
                     error: (error) => {
                         failedCount++;
-                        console.error(`Failed to delete laboratory ${lab.laboratoryId}:`, error);
                         this.checkBulkDeleteComplete(deletedCount, failedCount, totalCount);
                     }
                 });

@@ -139,7 +139,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
 
         try {
             this.departmentsWebSocketService.connect();
-            console.log('✅ Connected to departments WebSocket');
 
             // Listen for department creation
             this.departmentsWebSocketService
@@ -147,7 +146,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('🆕 Department created:', event.data);
                         if (event.success) {
                             this.loadDepartments();
                             this.messageService.add({
@@ -158,9 +156,7 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving department-created event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for department updates
@@ -169,7 +165,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('✏️ Department updated:', event.data);
                         if (event.success) {
                             const index = this.departments.findIndex((d) => d.departmentId === event.data.departmentId);
                             if (index !== -1) {
@@ -184,9 +179,7 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving department-updated event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for department deletions
@@ -195,7 +188,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('🗑️ Department deleted:', event.data);
                         if (event.success) {
                             this.departments = this.departments.filter((d) => d.departmentId !== event.data.departmentId);
                             this.filterDepartments();
@@ -207,13 +199,9 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving department-deleted event:', error);
-                    }
+                    error: (error) => {}
                 });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -221,7 +209,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
      */
     override ngOnDestroy(): void {
         this.departmentsWebSocketService.disconnect();
-        console.log('🔌 Disconnected from departments WebSocket');
         super.ngOnDestroy();
     }
 
@@ -235,7 +222,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                 const user = JSON.parse(currentUser);
                 this.isSuperAdmin = user.role === 'SuperAdmin';
             } catch (error) {
-                console.error('Error parsing user data:', error);
                 this.isSuperAdmin = false;
             }
         }
@@ -300,9 +286,7 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                 next: (response: any) => {
                     this.campuses = Array.isArray(response) ? response : response.data || [];
                 },
-                error: (error) => {
-                    console.error('Error loading campuses:', error);
-                }
+                error: (error) => {}
             });
     }
 
@@ -481,7 +465,6 @@ export class DepartmentsComponent extends BaseComponent implements OnInit {
                     },
                     error: (error) => {
                         failedCount++;
-                        console.error(`Failed to delete department ${department.departmentId}:`, error);
                         this.checkBulkDeleteComplete(deletedCount, failedCount, totalCount);
                     }
                 });

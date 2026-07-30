@@ -109,7 +109,6 @@ export class MaintenanceServicesComponent implements OnInit {
                 this.loading = false;
             },
             error: (err) => {
-                console.error('Error loading service maintenances', err);
                 this.loading = false;
             }
         });

@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { UIChart } from 'primeng/chart';
 import { FullCalendarModule } from '@fullcalendar/angular';
@@ -105,19 +107,6 @@ export function createEventId() {
                     </full-calendar>
                 </div>
             </div>
-
-            <!-- Bottom charts row -->
-            <!-- <div class="flex flex-col md:flex-row gap-6 mt-6">
-                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
-                    <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Supplier</h3>
-                    <p-chart type="bar" [data]="assetsBySupplierChartData" [options]="barChartOptions"></p-chart>
-                </div>
-
-                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
-                    <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Brand</h3>
-                    <p-chart type="bar" [data]="assetsByBrandChartData" [options]="horizontalChartOptions"></p-chart>
-                </div>
-            </div> -->
 
             <!-- Lab schedule charts row -->
             <div class="flex flex-col md:flex-row gap-6 mt-6">
@@ -242,8 +231,6 @@ export class DashboardLabTech implements OnInit {
     serviceTypeChartData: any;
     donutChartOptions: any;
     lineChartOptions: any;
-    assetsBySupplierChartData: any;
-    assetsByBrandChartData: any;
     barChartOptions: any;
     horizontalChartOptions: any;
     scheduleByDayChartData: any;
@@ -315,8 +302,6 @@ export class DashboardLabTech implements OnInit {
         this.loadServiceTypeData();
         this.loadCalendarEvents();
         this.initDonutOptions();
-        this.loadAssetsBySupplier();
-        this.loadAssetsByBrand();
         this.initBarOptions();
         this.initHorizontalBarOptions();
         this.loadScheduleCharts(); // Changed from initMockScheduleCharts
@@ -330,9 +315,7 @@ export class DashboardLabTech implements OnInit {
             next: (count) => {
                 this.overdueApprovalsCount = count;
             },
-            error: (error) => {
-                console.error('Error loading overdue approvals count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -342,9 +325,7 @@ export class DashboardLabTech implements OnInit {
             next: (count) => {
                 this.requestsForApprovalCount = count;
             },
-            error: (error) => {
-                console.error('Error loading requests for approval count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -354,9 +335,7 @@ export class DashboardLabTech implements OnInit {
             next: (approvals) => {
                 this.inProgressCount = approvals.filter((a) => a.maintenanceRequest?.maintenanceStatus?.requestStatusName === 'In Progress').length;
             },
-            error: (error) => {
-                console.error('Error loading in progress count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -366,9 +345,7 @@ export class DashboardLabTech implements OnInit {
             next: (approvals) => {
                 this.onHoldCount = approvals.filter((a) => a.maintenanceRequest?.maintenanceStatus?.requestStatusName === 'On Hold').length;
             },
-            error: (error) => {
-                console.error('Error loading on hold count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -377,10 +354,6 @@ export class DashboardLabTech implements OnInit {
         const apiUrl = `${environment.apiUrl}/maintenance-approvals`;
         this.http.get<any[]>(apiUrl).subscribe({
             next: (approvals) => {
-                console.log('=== MAINTENANCE APPROVALS DATA ===');
-                console.log('Total approvals:', approvals.length);
-                console.log('Sample approval:', approvals[0]);
-
                 const currentYear = new Date().getFullYear();
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -393,10 +366,6 @@ export class DashboardLabTech implements OnInit {
 
                     // Log first 3 approvals to debug
                     if (index < 3) {
-                        console.log(`Approval ${index}:`, {
-                            maintenanceType: approval.maintenanceRequest?.maintenanceType,
-                            resolvedType: serviceType
-                        });
                     }
 
                     // Use requestDate from maintenanceRequest
@@ -413,8 +382,6 @@ export class DashboardLabTech implements OnInit {
                         monthlyCounts[monthIndex]++;
                     }
                 });
-
-                console.log('Service type map:', Array.from(serviceTypeMap.entries()));
 
                 // Generate colors for each service type
                 const colorPalette = [
@@ -444,66 +411,11 @@ export class DashboardLabTech implements OnInit {
                 };
             },
             error: (error) => {
-                console.error('Error loading service type monthly data:', error);
                 // Initialize with empty data
                 this.serviceTypeChartData = {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: []
                 };
-            }
-        });
-    }
-
-    loadAssetsBySupplier() {
-        const apiUrl = `${environment.apiUrl}/assets/by-supplier`;
-        this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.supplierName || item.supplier || 'Unknown');
-                const counts = data.map((item) => item.count || item.assetCount || 0);
-                const colors = this.generateColors(labels.length);
-
-                this.assetsBySupplierChartData = {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Assets',
-                            data: counts,
-                            backgroundColor: colors.map((c) => c.bg),
-                            borderColor: colors.map((c) => c.border),
-                            borderWidth: 1
-                        }
-                    ]
-                };
-            },
-            error: (error) => {
-                console.error('Error loading assets by supplier:', error);
-            }
-        });
-    }
-
-    loadAssetsByBrand() {
-        const apiUrl = `${environment.apiUrl}/assets/by-brand`;
-        this.http.get<any[]>(apiUrl).subscribe({
-            next: (data) => {
-                const labels = data.map((item) => item.brandName || item.brand || 'Unknown');
-                const counts = data.map((item) => item.count || item.assetCount || 0);
-                const colors = this.generateColors(labels.length);
-
-                this.assetsByBrandChartData = {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Assets',
-                            data: counts,
-                            backgroundColor: colors.map((c) => c.bg),
-                            borderColor: colors.map((c) => c.border),
-                            borderWidth: 1
-                        }
-                    ]
-                };
-            },
-            error: (error) => {
-                console.error('Error loading assets by brand:', error);
             }
         });
     }
@@ -639,77 +551,43 @@ export class DashboardLabTech implements OnInit {
     }
 
     loadScheduleCharts() {
-        console.log('=== LOADING SCHEDULE CHARTS DATA ===');
-
-        // First, fetch all laboratories
+        // Fetch the labtech's laboratories, then fetch each one's schedules in parallel
+        // (the backend has no bulk "/schedules" endpoint, only per-laboratory)
         const laboratoriesUrl = `${environment.apiUrl}/laboratories`;
 
         this.http.get<any[]>(laboratoriesUrl).subscribe({
             next: (labs) => {
-                console.log('Laboratories fetched:', labs?.length || 0);
-
                 if (!labs || labs.length === 0) {
-                    console.log('No laboratories found');
                     this.initEmptyScheduleCharts();
                     return;
                 }
 
-                // Fetch schedules for all laboratories
-                const scheduleRequests = labs.map((lab) => this.http.get<any[]>(`${environment.apiUrl}/laboratories/${lab.laboratoryId}/schedules`));
+                const scheduleRequests = labs.map((lab) =>
+                    this.http
+                        .get<any[]>(`${environment.apiUrl}/laboratories/${lab.laboratoryId}/schedules`)
+                        .pipe(map((labSchedules) => (labSchedules || []).map((schedule) => ({ ...schedule, laboratory: schedule.laboratory || { laboratoryId: lab.laboratoryId, laboratoryName: lab.laboratoryName } }))))
+                );
 
-                // Wait for all schedule requests to complete
-                const allSchedules: any[] = [];
-                let completedRequests = 0;
+                forkJoin(scheduleRequests).subscribe({
+                    next: (schedulesPerLab) => {
+                        const schedules = schedulesPerLab.flat();
 
-                scheduleRequests.forEach((request, index) => {
-                    request.subscribe({
-                        next: (schedules) => {
-                            if (schedules && schedules.length > 0) {
-                                allSchedules.push(...schedules);
-                            }
-                            completedRequests++;
+                        if (schedules.length > 0) {
+                            const dayCount = this.countSchedulesByDay(schedules);
+                            this.populateScheduleByDayChart(dayCount);
 
-                            // When all requests are done, process the data
-                            if (completedRequests === scheduleRequests.length) {
-                                console.log('Total schedules fetched:', allSchedules.length);
-                                console.log('Sample schedule:', allSchedules[0]);
-
-                                if (allSchedules.length > 0) {
-                                    const dayCount = this.countSchedulesByDay(allSchedules);
-                                    this.populateScheduleByDayChart(dayCount);
-
-                                    const labCount = this.countSchedulesByLaboratory(allSchedules);
-                                    this.populateScheduleByLabChart(labCount);
-                                } else {
-                                    this.initEmptyScheduleCharts();
-                                }
-
-                                console.log('===================================');
-                            }
-                        },
-                        error: (error) => {
-                            console.error(`Error loading schedules for lab ${index}:`, error);
-                            completedRequests++;
-
-                            if (completedRequests === scheduleRequests.length) {
-                                console.log('Total schedules fetched:', allSchedules.length);
-                                if (allSchedules.length > 0) {
-                                    const dayCount = this.countSchedulesByDay(allSchedules);
-                                    this.populateScheduleByDayChart(dayCount);
-
-                                    const labCount = this.countSchedulesByLaboratory(allSchedules);
-                                    this.populateScheduleByLabChart(labCount);
-                                } else {
-                                    this.initEmptyScheduleCharts();
-                                }
-                                console.log('===================================');
-                            }
+                            const labCount = this.countSchedulesByLaboratory(schedules);
+                            this.populateScheduleByLabChart(labCount);
+                        } else {
+                            this.initEmptyScheduleCharts();
                         }
-                    });
+                    },
+                    error: (error) => {
+                        this.initEmptyScheduleCharts();
+                    }
                 });
             },
             error: (error) => {
-                console.error('Error loading laboratories for schedule charts:', error);
                 this.initEmptyScheduleCharts();
             }
         });
@@ -731,7 +609,6 @@ export class DashboardLabTech implements OnInit {
             }
         });
 
-        console.log('Schedule count by day:', Object.fromEntries(dayCount));
         return dayCount;
     }
 
@@ -746,7 +623,6 @@ export class DashboardLabTech implements OnInit {
             labCount.set(labName, currentCount + 1);
         });
 
-        console.log('Schedule count by laboratory:', Object.fromEntries(labCount));
         return labCount;
     }
 
@@ -862,15 +738,11 @@ export class DashboardLabTech implements OnInit {
     }
 
     loadAssetsByLaboratory() {
-        console.log('=== LOADING ASSETS BY LABORATORY DATA ===');
         const apiUrl = `${environment.apiUrl}/assets`;
 
         this.http.get<any[]>(apiUrl).subscribe({
             next: (assets) => {
-                console.log('Assets fetched:', assets?.length || 0);
-
                 if (!assets || assets.length === 0) {
-                    console.log('No assets found');
                     this.initEmptyAssetsByLabChart();
                     return;
                 }
@@ -882,8 +754,6 @@ export class DashboardLabTech implements OnInit {
                     const currentCount = labCount.get(labName) || 0;
                     labCount.set(labName, currentCount + 1);
                 });
-
-                console.log('Asset count by laboratory:', Object.fromEntries(labCount));
 
                 // Convert to arrays and sort by count (descending)
                 const labEntries = Array.from(labCount.entries())
@@ -906,26 +776,19 @@ export class DashboardLabTech implements OnInit {
                         }
                     ]
                 };
-
-                console.log('=========================================');
             },
             error: (error) => {
-                console.error('Error loading assets by laboratory:', error);
                 this.initEmptyAssetsByLabChart();
             }
         });
     }
 
     loadMaintenanceByLaboratory() {
-        console.log('=== LOADING MAINTENANCE REQUESTS BY LABORATORY DATA ===');
         const apiUrl = `${environment.apiUrl}/maintenance-requests`;
 
         this.http.get<any[]>(apiUrl).subscribe({
             next: (requests) => {
-                console.log('Maintenance requests fetched:', requests?.length || 0);
-
                 if (!requests || requests.length === 0) {
-                    console.log('No maintenance requests found');
                     this.initEmptyMaintenanceByLabChart();
                     return;
                 }
@@ -938,8 +801,6 @@ export class DashboardLabTech implements OnInit {
                     const currentCount = labCount.get(labName) || 0;
                     labCount.set(labName, currentCount + 1);
                 });
-
-                console.log('Maintenance request count by laboratory:', Object.fromEntries(labCount));
 
                 // Convert to arrays and sort by count (descending)
                 const labEntries = Array.from(labCount.entries())
@@ -962,11 +823,8 @@ export class DashboardLabTech implements OnInit {
                         }
                     ]
                 };
-
-                console.log('========================================================');
             },
             error: (error) => {
-                console.error('Error loading maintenance requests by laboratory:', error);
                 this.initEmptyMaintenanceByLabChart();
             }
         });
@@ -1041,9 +899,7 @@ export class DashboardLabTech implements OnInit {
                 }));
                 this.changeDetector.detectChanges();
             },
-            error: (error) => {
-                console.error('Error loading calendar events:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -1053,9 +909,6 @@ export class DashboardLabTech implements OnInit {
         calendarApi.unselect();
 
         // Log the selected date
-        console.log('Selected Date:', selectInfo.start);
-        console.log('Selected Date (ISO):', selectInfo.start.toISOString());
-        console.log('Selected Date (Locale):', selectInfo.start.toLocaleString());
 
         Swal.fire({
             title: 'Add New Event',
@@ -1111,7 +964,6 @@ export class DashboardLabTech implements OnInit {
                             });
                         },
                         error: (error) => {
-                            console.error('Error saving event:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',

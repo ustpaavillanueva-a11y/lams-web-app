@@ -34,7 +34,6 @@ export class AssetUtils {
             if (serialNumber && serialNumber.includes(',')) {
                 // Split by comma and create one row per serial
                 const serials = serialNumber.split(',').map((s: string) => s.trim());
-                console.log(`📦 Expanding asset ${asset.assetId}: ${serials.length} serials`);
 
                 serials.forEach((serial: string, index: number) => {
                     // Create a copy of the asset for each serial

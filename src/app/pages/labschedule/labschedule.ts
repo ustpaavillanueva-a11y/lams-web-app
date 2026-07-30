@@ -21,6 +21,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../service/auth.service';
 import { CalendarWebSocketService } from '../service/calendar-websocket.service';
+import { LabSchedulePdfService } from '../service/labschedule-pdf.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -311,7 +312,8 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         private messageService: MessageService,
         private http: HttpClient,
         private authService: AuthService,
-        private calendarWebSocketService: CalendarWebSocketService
+        private calendarWebSocketService: CalendarWebSocketService,
+        private labSchedulePdfService: LabSchedulePdfService
     ) {}
 
     ngOnInit() {
@@ -343,12 +345,10 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
 
         try {
             this.calendarWebSocketService.connect();
-            console.log('✅ Connected to calendar WebSocket');
 
             // Listen for schedule creation
             this.calendarWebSocketService.onScheduleCreated().subscribe({
                 next: (event) => {
-                    console.log('🆕 Schedule created:', event.data);
                     if (event.success) {
                         // Reload schedules to get the latest data
                         if (this.selectedLaboratory || this.isFaculty) {
@@ -362,15 +362,12 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-created event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for schedule updates
             this.calendarWebSocketService.onScheduleUpdated().subscribe({
                 next: (event) => {
-                    console.log('✏️ Schedule updated:', event.data);
                     if (event.success) {
                         // Reload schedules to reflect the changes
                         if (this.selectedLaboratory || this.isFaculty) {
@@ -384,15 +381,12 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-updated event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for schedule deletions
             this.calendarWebSocketService.onScheduleDeleted().subscribe({
                 next: (event) => {
-                    console.log('🗑️ Schedule deleted:', event.data);
                     if (event.success) {
                         // Remove the schedule from the list
                         this.schedules = this.schedules.filter((s) => s.scheduleId !== event.data.scheduleId);
@@ -404,26 +398,19 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-deleted event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for generic schedule changes
             this.calendarWebSocketService.onScheduleChanged().subscribe({
                 next: (event) => {
-                    console.log('🔄 Schedule changed:', event.data);
                     if (event.success && (this.selectedLaboratory || this.isFaculty)) {
                         this.loadSchedules();
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-changed event:', error);
-                }
+                error: (error) => {}
             });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -431,7 +418,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
      */
     ngOnDestroy(): void {
         this.calendarWebSocketService.disconnect();
-        console.log('🔌 Disconnected from calendar WebSocket');
     }
 
     checkUserRole() {
@@ -491,10 +477,18 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
     }
 
     loadCampuses() {
+        // Only SuperAdmin has permission to list campuses (used for the campus filter dropdown)
+        if (!this.isSuperAdmin) {
+            return;
+        }
+
         const campusesUrl = `${environment.apiUrl}/campuses`;
         this.http.get<any[]>(campusesUrl).subscribe({
             next: (data: any[]) => {
                 this.campuses = data || [];
+            },
+            error: () => {
+                this.campuses = [];
             }
         });
     }
@@ -543,7 +537,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         this.http.get<any[]>(subjectsUrl).subscribe({
             next: (data: any[]) => {
                 if (data && data.length > 0) {
-                    console.table(data);
                 }
 
                 this.subjects = data || [];
@@ -588,11 +581,9 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     this.schedules = data || [];
 
                     if (this.schedules.length > 0) {
-                        console.table(this.schedules);
                     }
                 },
                 error: (error: any) => {
-                    console.error('Error loading faculty schedules:', error);
                     this.schedules = [];
                 }
             });
@@ -608,7 +599,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             this.http.get<any[]>(scheduleUrl).subscribe({
                 next: (data: any[]) => {
                     if (data && data.length > 0) {
-                        console.table(data);
                     }
 
                     this.schedules = data || [];
@@ -676,8 +666,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                 });
             },
             error: (error: any) => {
-                console.error('❌ Error creating subject:', error);
-
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -697,6 +685,24 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (!this.isWithinAllowedHours(this.newSchedule.time)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'Schedule cannot start at 9:30 PM or later'
+            });
+            return;
+        }
+
+        if (this.timeToMinutes(this.newSchedule.endTime) <= this.timeToMinutes(this.newSchedule.time)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'End Time must be later than Start Time'
+            });
+            return;
+        }
+
         // Build the payload for the API
         const payload = {
             faculty: this.newSchedule.instructor || '',
@@ -710,25 +716,28 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
 
         this.http.post<any>(scheduleUrl, payload).subscribe({
             next: (response: any) => {
+                this.closeDialog();
+                this.loadSchedules();
+
                 Swal.fire({
                     title: 'Success!',
                     text: 'Lab schedule created successfully!',
-                    icon: 'success'
+                    icon: 'success',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container') as HTMLElement;
+                        if (container) container.style.zIndex = '9999';
+                    }
                 });
-
-                this.closeDialog();
-                this.loadSchedules();
             },
             error: (error: any) => {
-                console.error('❌ Error creating schedule:', error);
-                console.error('Error status:', error?.status);
-                console.error('Error message:', error?.message);
-                console.error('Error details:', error?.error);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to create schedule: ' + (error?.error?.message || error?.message)
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to create schedule: ' + (error?.error?.message || error?.message),
+                    icon: 'error',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container') as HTMLElement;
+                        if (container) container.style.zIndex = '9999';
+                    }
                 });
             }
         });
@@ -760,6 +769,12 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         if (!timeString) return 0;
         const [hours, minutes] = timeString.split(':').map(Number);
         return hours * 60 + minutes;
+    }
+
+    // Lab schedules may not start at or after 9:30 PM
+    isWithinAllowedHours(startTime: string): boolean {
+        const LATEST_START_MINUTES = 21 * 60 + 30; // 9:30 PM
+        return this.timeToMinutes(startTime) < LATEST_START_MINUTES;
     }
 
     // Convert 24-hour time (HH:MM) to 12-hour AM/PM format
@@ -911,6 +926,24 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (!this.isWithinAllowedHours(this.editingSchedule.startTime)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'Schedule cannot start at 9:30 PM or later'
+            });
+            return;
+        }
+
+        if (this.timeToMinutes(this.editingSchedule.endTime) <= this.timeToMinutes(this.editingSchedule.startTime)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'End Time must be later than Start Time'
+            });
+            return;
+        }
+
         const updateData = {
             dayOfWeek: this.editingSchedule.day,
             startTime: this.editingSchedule.startTime,
@@ -932,11 +965,14 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                 this.loadSchedules();
             },
             error: (error: any) => {
-                console.error('❌ Error updating schedule:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to update schedule: ' + (error?.error?.message || error?.message)
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to update schedule: ' + (error?.error?.message || error?.message),
+                    icon: 'error',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container') as HTMLElement;
+                        if (container) container.style.zIndex = '9999';
+                    }
                 });
             }
         });
@@ -973,7 +1009,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     this.loadSchedules();
                 },
                 error: (error: any) => {
-                    console.error('❌ Error deleting schedule:', error);
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
@@ -984,350 +1019,48 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         }
     }
 
-    getColorFromClass(colorClass: string): string {
-        const colorMap: { [key: string]: string } = {
-            'bg-green-500': '#10b981',
-            'bg-pink-500': '#ec4899',
-            'bg-gray-700': '#374151',
-            'bg-blue-600': '#2563eb',
-            'bg-cyan-500': '#06b6d4',
-            'bg-yellow-500': '#eab308',
-            'bg-indigo-600': '#4f46e5'
-        };
-        return colorMap[colorClass] || '#2563eb';
+    private getExportHeaderTitle(): string {
+        if (this.selectedLaboratory) {
+            return `${this.selectedLaboratory.laboratoryName} - Schedule`;
+        } else if (this.selectedCampus) {
+            return `${this.selectedCampus.campusName} - All Laboratories Schedule`;
+        } else if (this.isFaculty) {
+            return 'My Teaching Schedule';
+        }
+        return 'Laboratory Schedule';
     }
 
     viewAsPDF() {
-        // Build the laboratory/campus name for header
-        let headerTitle = 'Laboratory Schedule';
-        if (this.selectedLaboratory) {
-            headerTitle = `${this.selectedLaboratory.laboratoryName} - Schedule`;
-        } else if (this.selectedCampus) {
-            headerTitle = `${this.selectedCampus.campusName} - All Laboratories Schedule`;
-        } else if (this.isFaculty) {
-            headerTitle = 'My Teaching Schedule';
-        }
-
-        const pdfHTML = this.generateScheduleHTML(headerTitle);
-
-        // Open in new window without triggering print
-        const pdfWindow = window.open('', '_blank', 'width=1200,height=800');
-        if (pdfWindow) {
-            pdfWindow.document.write(pdfHTML);
-            pdfWindow.document.close();
-            pdfWindow.focus();
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Unable to open PDF preview. Please check your browser settings and allow pop-ups.'
+        this.labSchedulePdfService
+            .preview({
+                headerTitle: this.getExportHeaderTitle(),
+                schedules: this.schedules,
+                timeSlots: this.timeSlots,
+                daysOfWeek: this.daysOfWeek
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to open PDF preview. Please check your browser settings and allow pop-ups.'
+                });
             });
-        }
-    }
-
-    generateScheduleHTML(headerTitle: string): string {
-        let html = `
-            <html>
-            <head>
-                <title>${headerTitle}</title>
-                <style>
-                    @media print {
-                        @page {
-                            size: A4 portrait;
-                            margin: 8mm 6mm;
-                        }
-                        body {
-                            margin: 0;
-                            padding: 0;
-                            padding-bottom: 80px;
-                        }
-                        .no-print {
-                            display: none;
-                        }
-                        .print-footer-img {
-                            position: fixed;
-                            bottom: 0;
-                            left: 0;
-                            width: 100%;
-                            text-align: center;
-                            padding: 0 6mm;
-                            box-sizing: border-box;
-                        }
-                    }
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        margin: 0;
-                        padding: 10px;
-                        background: #f3f4f6;
-                    }
-                    .no-print {
-                        position: fixed;
-                        top: 10px;
-                        right: 10px;
-                        z-index: 1000;
-                        display: flex;
-                        gap: 10px;
-                    }
-                    .btn {
-                        padding: 8px 16px;
-                        background: #2563eb;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        font-weight: 600;
-                        display: flex;
-                        align-items: center;
-                        gap: 6px;
-                    }
-                    .btn:hover {
-                        background: #1d4ed8;
-                    }
-                    .btn-secondary {
-                        background: #6b7280;
-                    }
-                    .btn-secondary:hover {
-                        background: #4b5563;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 8px;
-                        padding: 8px;
-                        background: white;
-                        border-radius: 4px;
-                    }
-                    .header h1 {
-                        margin: 0;
-                        font-size: 16px;
-                        font-weight: 700;
-                        color: #1f2937;
-                    }
-                    .header p {
-                        margin: 4px 0 0 0;
-                        font-size: 10px;
-                        color: #6b7280;
-                    }
-                    .schedule-container {
-                        background: white;
-                        border-radius: 4px;
-                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                        overflow: visible;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        display: grid;
-                        grid-template-columns: 70px repeat(7, 1fr);
-                        grid-auto-rows: 8mm;
-                        gap: 0;
-                        overflow: visible;
-                    }
-                    thead {
-                        display: contents;
-                    }
-                    thead tr {
-                        display: contents;
-                    }
-                    th {
-                        background-color: #2563eb;
-                        color: white;
-                        padding: 4px 2px;
-                        text-align: center;
-                        font-weight: 600;
-                        font-size: 7px;
-                        border: 1px solid #e5e7eb;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    tbody {
-                        display: contents;
-                    }
-                    tbody tr {
-                        display: contents;
-                    }
-                    td {
-                        padding: 0;
-                        border: 1px solid #e5e7eb;
-                        vertical-align: top;
-                        background-color: #fafafa;
-                        overflow: visible;
-                    }
-                    .time-cell {
-                        background-color: #f9fafb;
-                        font-weight: 600;
-                        font-size: 6px;
-                        color: #374151;
-                        border-right: 2px solid #d1d5db;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: 8mm;
-                    }
-                    .schedule-cell {
-                        padding: 2px;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: flex-start;
-                        gap: 2px;
-                        position: relative;
-                        z-index: 1;
-                        overflow: visible;
-                        min-height: 8mm;
-                    }
-                    .schedule-block {
-                        width: calc(100% - 6px);
-                        padding: 3px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        align-items: center;
-                        text-align: center;
-                        font-size: 6px;
-                        font-weight: 600;
-                        color: white;
-                        border: 2px solid rgba(0, 0, 0, 0.2);
-                        border-radius: 3px;
-                        box-sizing: border-box;
-                        margin: 0;
-                        position: absolute;
-                        top: 2px;
-                        left: 3px;
-                        z-index: 10;
-                    }
-                    .schedule-block:hover {
-                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-                    }
-                    .schedule-block.yellow {
-                        color: #1f2937;
-                    }
-                    .subject-code {
-                        font-weight: 700;
-                        margin-bottom: 2px;
-                        font-size: 7px;
-                    }
-                    .faculty-name {
-                        font-size: 5px;
-                        opacity: 0.95;
-                    }
-                    .time-range {
-                        font-size: 5px;
-                        margin-top: 2px;
-                        font-weight: 600;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="no-print">
-                    <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
-                    <button class="btn btn-secondary" onclick="window.close()">✕ Close</button>
-                </div>
-                <div style="text-align: center; margin-bottom: 8px;">
-                    <img src="${window.location.origin}/header.png" style="width: 100%; max-height: 100px; object-fit: contain;" />
-                </div>
-                <div class="header">
-                    <h1>${headerTitle}</h1>
-                    <p>Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-                <div class="schedule-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Sun</th>
-                                <th>Mon</th>
-                                <th>Tue</th>
-                                <th>Wed</th>
-                                <th>Thu</th>
-                                <th>Fri</th>
-                                <th>Sat</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-        `;
-
-        // Build table rows
-        this.timeSlots.forEach((timeSlot, timeIndex) => {
-            html += '<tr>';
-            html += `<td class="time-cell">${timeSlot}</td>`;
-
-            this.daysOfWeek.forEach((day) => {
-                const schedulesAtSlot = this.getSchedulesStartingAtSlot(timeIndex, day);
-
-                if (schedulesAtSlot.length > 0) {
-                    html += '<td class="schedule-cell">';
-                    schedulesAtSlot.forEach((schedule) => {
-                        const subjectCode = schedule.subject?.subjectCode || 'N/A';
-                        const facultyName = schedule.faculty ? `${schedule.faculty.firstName} ${schedule.faculty.lastName}` : 'No Instructor';
-                        const timeRange = `${schedule.startTime} - ${schedule.endTime}`;
-                        const colorClass = this.getScheduleColor(schedule);
-                        const bgColor = this.getColorFromClass(colorClass);
-                        const isYellow = colorClass === 'bg-yellow-500';
-                        const rowSpan = this.getRowSpan(schedule);
-                        const blockHeight = rowSpan * 8 - 4; // 8mm per row, minus padding
-
-                        html += `
-                            <div class="schedule-block ${isYellow ? 'yellow' : ''}" style="background-color: ${bgColor}; height: ${blockHeight}mm;">
-                                <div class="subject-code">${subjectCode}</div>
-                                <div class="faculty-name">${facultyName}</div>
-                                <div class="time-range">${timeRange}</div>
-                            </div>
-                        `;
-                    });
-                    html += '</td>';
-                } else {
-                    html += '<td class="schedule-cell"></td>';
-                }
-            });
-            html += '</tr>';
-        });
-
-        html += `
-                        </tbody>
-                    </table>
-                </div>
-                <div class="print-footer-img" style="text-align: center; margin-top: 8px;">
-                    <img src="${window.location.origin}/footer.png" style="width: 100%; max-height: 60px; object-fit: contain;" />
-                </div>
-            </body>
-            </html>
-        `;
-
-        return html;
     }
 
     printSchedule() {
-        // Build the laboratory/campus name for header
-        let headerTitle = 'Laboratory Schedule';
-        if (this.selectedLaboratory) {
-            headerTitle = `${this.selectedLaboratory.laboratoryName} - Schedule`;
-        } else if (this.selectedCampus) {
-            headerTitle = `${this.selectedCampus.campusName} - All Laboratories Schedule`;
-        } else if (this.isFaculty) {
-            headerTitle = 'My Teaching Schedule';
-        }
-
-        const printHTML = this.generateScheduleHTML(headerTitle);
-
-        // Open print window
-        const printWindow = window.open('', '', 'width=1200,height=800');
-        if (printWindow) {
-            printWindow.document.write(printHTML);
-            printWindow.document.close();
-            printWindow.focus();
-
-            // Wait for content to load then print
-            setTimeout(() => {
-                printWindow.print();
-            }, 250);
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Print Error',
-                text: 'Unable to open print window. Please check your browser settings.'
+        this.labSchedulePdfService
+            .print({
+                headerTitle: this.getExportHeaderTitle(),
+                schedules: this.schedules,
+                timeSlots: this.timeSlots,
+                daysOfWeek: this.daysOfWeek
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Print Error',
+                    text: 'Unable to open print window. Please check your browser settings.'
+                });
             });
-        }
     }
 }

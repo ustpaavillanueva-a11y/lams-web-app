@@ -105,7 +105,6 @@ export class MaintenancePriorityLevelComponent implements OnInit {
                 this.loading = false;
             },
             error: (err) => {
-                console.error('Error loading priority levels', err);
                 this.loading = false;
             }
         });

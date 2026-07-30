@@ -37,9 +37,7 @@ export class RevenueStreamWidget implements OnInit {
                 this.processChartData(data);
                 this.initChart();
             },
-            error: (err: any) => {
-                console.error('❌ Error loading maintenance data:', err);
-            }
+            error: (err: any) => {}
         });
     }
 

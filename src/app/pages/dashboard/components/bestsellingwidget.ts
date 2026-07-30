@@ -76,11 +76,8 @@ export class BestSellingWidget implements OnInit {
                         percentage: Math.round(((count as number) / total) * 100),
                         color: colors[index % colors.length]
                     }));
-
             },
-            error: (err: any) => {
-                console.error('❌ Error loading maintenance requests:', err);
-            }
+            error: (err: any) => {}
         });
     }
 }

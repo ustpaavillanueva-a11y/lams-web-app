@@ -179,12 +179,10 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
 
         try {
             this.activitiesWebSocketService.connect();
-            console.log('✅ Connected to activities WebSocket');
 
             // Listen for new activity logs
             this.activitiesWebSocketService.onActivityLogged().subscribe({
                 next: (event) => {
-                    console.log('📝 Activity logged:', event.data);
                     if (event.success) {
                         // Add the new activity to the appropriate list
                         const currentUser = localStorage.getItem('currentUser');
@@ -209,13 +207,9 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving activity-logged event:', error);
-                }
+                error: (error) => {}
             });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -223,7 +217,6 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
      */
     ngOnDestroy(): void {
         this.activitiesWebSocketService.disconnect();
-        console.log('🔌 Disconnected from activities WebSocket');
     }
 
     checkUserRole(): void {
@@ -233,7 +226,6 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
                 const user = JSON.parse(currentUser);
                 this.isSuperAdmin = user.role === 'SuperAdmin';
             } catch (error) {
-                console.error('Error parsing user data:', error);
                 this.isSuperAdmin = false;
             }
         }
@@ -247,7 +239,6 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
                 this.isLoadingMyLogs = false;
             },
             error: (error) => {
-                console.error('Error loading my logs:', error);
                 this.isLoadingMyLogs = false;
             }
         });
@@ -261,7 +252,6 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
                 this.isLoadingSystemLogs = false;
             },
             error: (error) => {
-                console.error('Error loading system logs:', error);
                 this.isLoadingSystemLogs = false;
             }
         });

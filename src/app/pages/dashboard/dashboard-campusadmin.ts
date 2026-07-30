@@ -460,9 +460,7 @@ export class DashboardCampusAdmin implements OnInit {
             next: (data) => {
                 this.departmentCount = data;
             },
-            error: (error) => {
-                console.error('Error loading department count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -472,9 +470,7 @@ export class DashboardCampusAdmin implements OnInit {
             next: (data) => {
                 this.userCount = data;
             },
-            error: (error) => {
-                console.error('Error loading user count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -484,9 +480,7 @@ export class DashboardCampusAdmin implements OnInit {
             next: (data) => {
                 this.laboratoryCount = data;
             },
-            error: (error) => {
-                console.error('Error loading laboratory count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -496,9 +490,7 @@ export class DashboardCampusAdmin implements OnInit {
             next: (data) => {
                 this.assetCount = data;
             },
-            error: (error) => {
-                console.error('Error loading asset count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -509,22 +501,16 @@ export class DashboardCampusAdmin implements OnInit {
                 this.facultyCount = users.filter((u) => u.role === 'Faculty').length;
                 this.labTechCount = users.filter((u) => u.role === 'LabTech').length;
             },
-            error: (error) => {
-                console.error('Error loading user role counts:', error);
-            }
+            error: (error) => {}
         });
     }
 
     loadAssetsByLaboratory() {
-        console.log('=== LOADING ASSETS BY LABORATORY DATA ===');
         const apiUrl = `${environment.apiUrl}/assets`;
 
         this.http.get<any[]>(apiUrl).subscribe({
             next: (assets) => {
-                console.log('Assets fetched:', assets?.length || 0);
-
                 if (!assets || assets.length === 0) {
-                    console.log('No assets found');
                     this.initEmptyAssetsByLabChart();
                     return;
                 }
@@ -536,8 +522,6 @@ export class DashboardCampusAdmin implements OnInit {
                     const currentCount = labCount.get(labName) || 0;
                     labCount.set(labName, currentCount + 1);
                 });
-
-                console.log('Asset count by laboratory:', Object.fromEntries(labCount));
 
                 // Convert to arrays and sort by count (descending)
                 const labEntries = Array.from(labCount.entries())
@@ -560,11 +544,8 @@ export class DashboardCampusAdmin implements OnInit {
                         }
                     ]
                 };
-
-                console.log('=========================================');
             },
             error: (error) => {
-                console.error('Error loading assets by laboratory:', error);
                 this.initEmptyAssetsByLabChart();
             }
         });
@@ -647,36 +628,25 @@ export class DashboardCampusAdmin implements OnInit {
     }
 
     loadMaintenanceRequestsByLaboratory() {
-        console.log('=== LOADING MAINTENANCE REQUESTS BY LABORATORY DATA ===');
-
         // First, fetch all laboratories to get the mapping
         const laboratoriesUrl = `${environment.apiUrl}/laboratories`;
 
         this.http.get<any[]>(laboratoriesUrl).subscribe({
             next: (laboratories) => {
-                console.log('Laboratories fetched:', laboratories?.length || 0);
-                console.log('Sample laboratory:', laboratories?.[0]);
-
                 // Create a map of laboratoryId -> laboratoryName
                 const labMap = new Map<string, string>();
                 laboratories.forEach((lab) => {
                     const labId = lab.laboratoryId;
                     const labName = lab.laboratoryName || lab.labName || 'Unknown Lab';
                     labMap.set(labId, labName);
-                    console.log(`Mapping ${labId} -> ${labName}`);
                 });
-
-                console.log('Laboratory map:', Object.fromEntries(labMap));
 
                 // Now fetch maintenance requests
                 const requestsUrl = `${environment.apiUrl}/maintenance-requests`;
 
                 this.http.get<any[]>(requestsUrl).subscribe({
                     next: (requests) => {
-                        console.log('Maintenance requests fetched:', requests?.length || 0);
-
                         if (!requests || requests.length === 0) {
-                            console.log('No maintenance requests found');
                             this.initEmptyMaintenanceByLabChart();
                             return;
                         }
@@ -698,21 +668,12 @@ export class DashboardCampusAdmin implements OnInit {
 
                                 // Log first few items to debug
                                 if (index < 3) {
-                                    console.log(`Request ${index}:`, {
-                                        requestId: request.requestId,
-                                        extractedLabCode: labCode,
-                                        foundInMap: !!foundName,
-                                        labName: labName,
-                                        mapHasKey: labMap.has(labCode)
-                                    });
                                 }
                             }
 
                             const currentCount = labCount.get(labName) || 0;
                             labCount.set(labName, currentCount + 1);
                         });
-
-                        console.log('Maintenance request count by laboratory:', Object.fromEntries(labCount));
 
                         // Convert to arrays and sort by count (descending)
                         const labEntries = Array.from(labCount.entries())
@@ -735,17 +696,13 @@ export class DashboardCampusAdmin implements OnInit {
                                 }
                             ]
                         };
-
-                        console.log('========================================================');
                     },
                     error: (error) => {
-                        console.error('Error loading maintenance requests:', error);
                         this.initEmptyMaintenanceByLabChart();
                     }
                 });
             },
             error: (error) => {
-                console.error('Error loading laboratories:', error);
                 this.initEmptyMaintenanceByLabChart();
             }
         });
@@ -808,19 +765,11 @@ export class DashboardCampusAdmin implements OnInit {
     }
 
     loadMaintenanceStatus() {
-        console.log('=== LOADING MAINTENANCE STATUS DATA ===');
         const apiUrl = `${environment.apiUrl}/maintenance-requests`;
 
         this.http.get<any[]>(apiUrl).subscribe({
             next: (requests) => {
-                console.log('=== MAINTENANCE REQUESTS BY STATUS DEBUG ===');
-                console.log('Maintenance requests fetched:', requests?.length || 0);
-                console.log('Sample request object (first):', requests?.[0]);
-                console.log('Sample request.maintenanceApproval:', requests?.[0]?.maintenanceApproval);
-                console.log('Sample request.status:', requests?.[0]?.status);
-
                 if (!requests || requests.length === 0) {
-                    console.log('No maintenance requests found');
                     this.initEmptyMaintenanceStatusChart();
                     return;
                 }
@@ -833,18 +782,11 @@ export class DashboardCampusAdmin implements OnInit {
 
                     // Log first few items to debug
                     if (index < 3) {
-                        console.log(`Request ${index}:`, {
-                            requestId: request.requestId,
-                            status: status,
-                            maintenanceStatus: request.maintenanceStatus
-                        });
                     }
 
                     const currentCount = statusCount.get(status) || 0;
                     statusCount.set(status, currentCount + 1);
                 });
-
-                console.log('Maintenance request count by status:', Object.fromEntries(statusCount));
 
                 const labels = Array.from(statusCount.keys());
                 const counts = Array.from(statusCount.values());
@@ -887,11 +829,8 @@ export class DashboardCampusAdmin implements OnInit {
                         }
                     ]
                 };
-
-                console.log('===========================================');
             },
             error: (error) => {
-                console.error('Error loading maintenance status:', error);
                 this.initEmptyMaintenanceStatusChart();
             }
         });
@@ -959,9 +898,7 @@ export class DashboardCampusAdmin implements OnInit {
                 }));
                 this.changeDetector.detectChanges();
             },
-            error: (error) => {
-                console.error('Error loading calendar events:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -971,9 +908,6 @@ export class DashboardCampusAdmin implements OnInit {
         calendarApi.unselect();
 
         // Log the selected date
-        console.log('Selected Date:', selectInfo.start);
-        console.log('Selected Date (ISO):', selectInfo.start.toISOString());
-        console.log('Selected Date (Locale):', selectInfo.start.toLocaleString());
 
         Swal.fire({
             title: 'Add New Event',
@@ -1029,7 +963,6 @@ export class DashboardCampusAdmin implements OnInit {
                             });
                         },
                         error: (error) => {
-                            console.error('Error saving event:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',

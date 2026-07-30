@@ -396,9 +396,7 @@ export class DashboardSuperAdmin implements OnInit {
             next: (data) => {
                 this.campusCount = data;
             },
-            error: (error) => {
-                console.error('Error loading campus count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -408,9 +406,7 @@ export class DashboardSuperAdmin implements OnInit {
             next: (data) => {
                 this.userCount = data;
             },
-            error: (error) => {
-                console.error('Error loading user count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -420,9 +416,7 @@ export class DashboardSuperAdmin implements OnInit {
             next: (data) => {
                 this.assetCount = data;
             },
-            error: (error) => {
-                console.error('Error loading asset count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -432,9 +426,7 @@ export class DashboardSuperAdmin implements OnInit {
             next: (data) => {
                 this.laboratoryCount = data;
             },
-            error: (error) => {
-                console.error('Error loading laboratory count:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -459,9 +451,7 @@ export class DashboardSuperAdmin implements OnInit {
                     ]
                 };
             },
-            error: (error) => {
-                console.error('Error loading assets by campus:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -486,9 +476,7 @@ export class DashboardSuperAdmin implements OnInit {
                     ]
                 };
             },
-            error: (error) => {
-                console.error('Error loading maintenance requests by campus:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -502,9 +490,7 @@ export class DashboardSuperAdmin implements OnInit {
                 // Sort by timestamp descending (newest first)
                 this.activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             },
-            error: (error) => {
-                console.error('Error loading activities:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -516,7 +502,6 @@ export class DashboardSuperAdmin implements OnInit {
                 this.isLoadingSystemLogs = false;
             },
             error: (error) => {
-                console.error('Error loading system logs:', error);
                 this.isLoadingSystemLogs = false;
             }
         });
@@ -681,9 +666,7 @@ export class DashboardSuperAdmin implements OnInit {
                 // Apply campus filter
                 this.filterAndDisplayEvents();
             },
-            error: (error) => {
-                console.error('Error loading calendar events:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -724,9 +707,7 @@ export class DashboardSuperAdmin implements OnInit {
             next: (data) => {
                 this.campuses = data || [];
             },
-            error: (error) => {
-                console.error('Error loading campuses:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -748,9 +729,6 @@ export class DashboardSuperAdmin implements OnInit {
         calendarApi.unselect();
 
         // Log the selected date
-        console.log('Selected Date:', selectInfo.start);
-        console.log('Selected Date (ISO):', selectInfo.start.toISOString());
-        console.log('Selected Date (Locale):', selectInfo.start.toLocaleString());
 
         Swal.fire({
             title: 'Add New Event',
@@ -806,7 +784,6 @@ export class DashboardSuperAdmin implements OnInit {
                             });
                         },
                         error: (error) => {
-                            console.error('Error saving event:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',

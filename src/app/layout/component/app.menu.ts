@@ -48,20 +48,19 @@ export class AppMenu implements OnInit {
 
     ngOnInit() {
         this.loadUserProfile();
-        this.loadLaboratories();
     }
 
+    // Laboratories are only needed for the LabTech menu's "Locations" submenu
     loadLaboratories() {
         const apiUrl = `${environment.apiUrl}/laboratories`;
 
         this.http.get<any[]>(apiUrl).subscribe({
             next: (data: any[]) => {
                 this.laboratories = data || [];
-                // Reload menu items to include laboratories
-                this.loadUserProfile();
+                this.loadMenuItems();
             },
             error: (error: any) => {
-                console.error('❌ Error loading laboratories:', error);
+                this.loadMenuItems();
             }
         });
     }
@@ -70,17 +69,24 @@ export class AppMenu implements OnInit {
         this.userService.getUserProfile().subscribe({
             next: (userData) => {
                 this.currentUser = userData;
-                this.loadMenuItems();
+                this.loadMenuForCurrentUser();
             },
             error: (error) => {
-                console.error('Error loading user profile:', error);
                 const storedUser = localStorage.getItem('currentUser');
                 if (storedUser) {
                     this.currentUser = JSON.parse(storedUser);
-                    this.loadMenuItems();
+                    this.loadMenuForCurrentUser();
                 }
             }
         });
+    }
+
+    private loadMenuForCurrentUser() {
+        if (this.currentUser?.role?.toLowerCase() === 'labtech') {
+            this.loadLaboratories();
+        } else {
+            this.loadMenuItems();
+        }
     }
 
     getInitials(): string {
@@ -88,6 +94,17 @@ export class AppMenu implements OnInit {
         const firstName = this.currentUser.firstName || '';
         const lastName = this.currentUser.lastName || '';
         return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    }
+
+    // TODO: replace with real counts once the backend exposes a maintenance-request status-summary endpoint
+    getMaintenanceStatusBadges() {
+        const counts = { pending: 5, scheduled: 2, inProgress: 3 };
+
+        return [
+            { count: counts.pending, styleClass: 'menu-badge-pending', label: 'Pending' },
+            { count: counts.scheduled, styleClass: 'menu-badge-scheduled', label: 'Scheduled' },
+            { count: counts.inProgress, styleClass: 'menu-badge-inprogress', label: 'In Progress' }
+        ].filter((badge) => badge.count > 0);
     }
 
     loadMenuItems() {
@@ -135,7 +152,8 @@ export class AppMenu implements OnInit {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
                         routerLink: ['/app/requestmaintenance'],
-                        queryParams: { tab: 'pending' }
+                        queryParams: { tab: 'pending' },
+                        statusBadges: this.getMaintenanceStatusBadges()
                     },
                     {
                         label: 'Campuses',
@@ -181,7 +199,8 @@ export class AppMenu implements OnInit {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
                         routerLink: ['/app/requestmaintenance'],
-                        queryParams: { tab: 'pending' }
+                        queryParams: { tab: 'pending' },
+                        statusBadges: this.getMaintenanceStatusBadges()
                     },
 
                     {
@@ -218,7 +237,8 @@ export class AppMenu implements OnInit {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
                         routerLink: ['/app/requestmaintenance'],
-                        queryParams: { tab: 'pending' }
+                        queryParams: { tab: 'pending' },
+                        statusBadges: this.getMaintenanceStatusBadges()
                     },
                     {
                         label: 'Lab Schedule',
@@ -249,7 +269,8 @@ export class AppMenu implements OnInit {
                         label: 'Request Maintenance',
                         icon: 'pi pi-fw pi-wrench',
                         routerLink: ['/app/requestmaintenance'],
-                        queryParams: { tab: 'pending' }
+                        queryParams: { tab: 'pending' },
+                        statusBadges: this.getMaintenanceStatusBadges()
                     },
                     {
                         label: 'Laboratories',

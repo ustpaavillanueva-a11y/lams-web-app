@@ -62,9 +62,7 @@ export class AssetSummaryWidget implements OnInit {
                 this.activeAssets = data.filter((a: any) => a.Status_id === '1').length;
                 this.assetCategories = new Set(data.map((a: any) => a.category || a.Category)).size;
             },
-            error: (err: any) => {
-                console.error('❌ Error loading assets:', err);
-            }
+            error: (err: any) => {}
         });
     }
 }

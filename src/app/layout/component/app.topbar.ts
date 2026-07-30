@@ -86,21 +86,33 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
                             </div>
                         </button>
                         <div class="profile-dropdown hidden">
+                            <div class="profile-dropdown-header">
+                                <div *ngIf="!currentUser?.profilePicture" class="profile-dropdown-avatar">
+                                    <i class="pi pi-user"></i>
+                                </div>
+                                <img *ngIf="currentUser?.profilePicture" [src]="currentUser.profilePicture" alt="Profile" class="profile-dropdown-avatar-img" />
+                                <div class="profile-dropdown-header-info">
+                                    <span class="profile-dropdown-name">{{ currentUser?.firstName || currentUser?.FirstName }} {{ currentUser?.lastName || currentUser?.LastName }}</span>
+                                    <span class="profile-dropdown-email" *ngIf="currentUser?.email">{{ currentUser?.email }}</span>
+                                    <span class="profile-dropdown-role-badge" [ngClass]="'role-' + (currentUser?.role || 'user').toLowerCase()">{{ currentUser?.role || 'User' }}</span>
+                                </div>
+                            </div>
+                            <div class="profile-dropdown-divider"></div>
                             <a class="profile-dropdown-item" (click)="navigateToProfile()">
-                                <i class="pi pi-user"></i>
+                                <span class="profile-dropdown-item-icon"><i class="pi pi-user"></i></span>
                                 <span>My Profile</span>
                             </a>
                             <a class="profile-dropdown-item" (click)="navigateToAccount()">
-                                <i class="pi pi-cog"></i>
+                                <span class="profile-dropdown-item-icon"><i class="pi pi-cog"></i></span>
                                 <span>Account Settings</span>
                             </a>
                             <a class="profile-dropdown-item" (click)="navigateToActivities()">
-                                <i class="pi pi-history"></i>
+                                <span class="profile-dropdown-item-icon"><i class="pi pi-history"></i></span>
                                 <span>Activity Logs</span>
                             </a>
                             <div class="profile-dropdown-divider"></div>
                             <a class="profile-dropdown-item sign-out" (click)="logout()">
-                                <i class="pi pi-sign-out"></i>
+                                <span class="profile-dropdown-item-icon"><i class="pi pi-sign-out"></i></span>
                                 <span>Sign Out</span>
                             </a>
                         </div>
@@ -213,20 +225,119 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
                 position: absolute;
                 top: calc(100% + 0.5rem);
                 right: 0;
-                min-width: 220px;
+                min-width: 260px;
                 background: var(--surface-overlay);
                 border-radius: 12px;
                 box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
                 border: 1px solid var(--surface-border);
                 padding: 0.5rem;
                 z-index: 1000;
+                transform-origin: top right;
+            }
+
+            .profile-dropdown-header {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem 0.85rem 1rem;
+            }
+
+            .profile-dropdown-avatar,
+            .profile-dropdown-avatar-img {
+                width: 3rem;
+                height: 3rem;
+                min-width: 3rem;
+                min-height: 3rem;
+                border-radius: 50%;
+            }
+
+            .profile-dropdown-avatar {
+                background-color: var(--primary-color);
+                color: var(--primary-contrast-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .profile-dropdown-avatar i {
+                font-size: 1.35rem;
+                color: var(--primary-contrast-color);
+            }
+
+            .profile-dropdown-avatar-img {
+                object-fit: cover;
+                border: 2px solid var(--primary-color);
+                aspect-ratio: 1 / 1;
+                clip-path: circle(50%);
+            }
+
+            .profile-dropdown-header-info {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+                min-width: 0;
+            }
+
+            .profile-dropdown-name {
+                font-weight: 700;
+                font-size: 0.95rem;
+                color: var(--text-color);
+                line-height: 1.2;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 160px;
+            }
+
+            .profile-dropdown-email {
+                font-size: 0.78rem;
+                color: var(--text-color-secondary);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 160px;
+            }
+
+            .profile-dropdown-role-badge {
+                margin-top: 0.15rem;
+                display: inline-flex;
+                align-items: center;
+                padding: 0.15rem 0.55rem;
+                border-radius: 999px;
+                font-size: 0.68rem;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+                text-transform: uppercase;
+                background: var(--primary-color);
+                color: var(--primary-contrast-color);
+            }
+
+            .profile-dropdown-role-badge.role-superadmin {
+                background: #8b5cf6;
+                color: #ffffff;
+            }
+
+            .profile-dropdown-role-badge.role-campusadmin {
+                background: #3b82f6;
+                color: #ffffff;
+            }
+
+            .profile-dropdown-role-badge.role-labtech {
+                background: #10b981;
+                color: #ffffff;
+            }
+
+            .profile-dropdown-role-badge.role-faculty {
+                background: #f59e0b;
+                color: #ffffff;
             }
 
             .profile-dropdown-item {
                 display: flex;
                 align-items: center;
                 gap: 0.75rem;
-                padding: 0.75rem 1rem;
+                padding: 0.6rem 0.85rem;
                 border-radius: 8px;
                 cursor: pointer;
                 transition: all 0.2s ease;
@@ -236,11 +347,25 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
             .profile-dropdown-item:hover {
                 background: var(--surface-hover);
+                transform: translateX(2px);
+            }
+
+            .profile-dropdown-item-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 1.85rem;
+                height: 1.85rem;
+                min-width: 1.85rem;
+                border-radius: 8px;
+                background: var(--surface-hover);
+                transition: background 0.2s ease;
             }
 
             .profile-dropdown-item i {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 color: var(--text-color-secondary);
+                transition: color 0.2s ease;
             }
 
             .profile-dropdown-item span {
@@ -256,6 +381,10 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
             .profile-dropdown-item.sign-out:hover {
                 background: rgba(239, 68, 68, 0.1);
+            }
+
+            .profile-dropdown-item.sign-out:hover .profile-dropdown-item-icon {
+                background: rgba(239, 68, 68, 0.15);
             }
 
             .profile-dropdown-item.sign-out:hover i,
@@ -346,7 +475,6 @@ export class AppTopbar {
                 }
             }, 100);
         } catch (error) {
-            console.error('Camera access denied:', error);
             this.hasPermission = false;
             this.errorMessage = 'Camera access denied. Please allow camera permissions and try again.';
         }
@@ -373,11 +501,9 @@ export class AppTopbar {
                     }
                 }
                 if (err && !(err instanceof NotFoundException)) {
-                    console.error('QR scanning error:', err);
                 }
             });
         } catch (err) {
-            console.error('Failed to start QR scanning:', err);
             this.errorMessage = 'Failed to start QR code scanning. Please try again.';
         }
     }
@@ -538,7 +664,6 @@ export class AppTopbar {
                 localStorage.setItem('currentUser', JSON.stringify(userData));
             },
             error: (error) => {
-                console.error('Error fetching user profile:', error);
                 // Fallback to localStorage
                 const userStr = localStorage.getItem('currentUser');
                 if (userStr) {
