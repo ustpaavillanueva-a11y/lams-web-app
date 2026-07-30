@@ -48,20 +48,20 @@ export class AppMenu implements OnInit {
 
     ngOnInit() {
         this.loadUserProfile();
-        this.loadLaboratories();
     }
 
+    // Laboratories are only needed for the LabTech menu's "Locations" submenu
     loadLaboratories() {
         const apiUrl = `${environment.apiUrl}/laboratories`;
 
         this.http.get<any[]>(apiUrl).subscribe({
             next: (data: any[]) => {
                 this.laboratories = data || [];
-                // Reload menu items to include laboratories
-                this.loadUserProfile();
+                this.loadMenuItems();
             },
             error: (error: any) => {
                 console.error('❌ Error loading laboratories:', error);
+                this.loadMenuItems();
             }
         });
     }
@@ -70,17 +70,25 @@ export class AppMenu implements OnInit {
         this.userService.getUserProfile().subscribe({
             next: (userData) => {
                 this.currentUser = userData;
-                this.loadMenuItems();
+                this.loadMenuForCurrentUser();
             },
             error: (error) => {
                 console.error('Error loading user profile:', error);
                 const storedUser = localStorage.getItem('currentUser');
                 if (storedUser) {
                     this.currentUser = JSON.parse(storedUser);
-                    this.loadMenuItems();
+                    this.loadMenuForCurrentUser();
                 }
             }
         });
+    }
+
+    private loadMenuForCurrentUser() {
+        if (this.currentUser?.role?.toLowerCase() === 'labtech') {
+            this.loadLaboratories();
+        } else {
+            this.loadMenuItems();
+        }
     }
 
     getInitials(): string {
