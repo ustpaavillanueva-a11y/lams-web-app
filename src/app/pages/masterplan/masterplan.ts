@@ -587,9 +587,6 @@ export class MasterPlanComponent implements OnInit {
                 }
             })
             .subscribe((data) => {
-                console.log('=== MASTER PLAN DATA ===');
-                console.log('Raw data:', data);
-
                 let allEquipment = data.equipmentMaintenances || [];
 
                 // Split equipment with multiple serial numbers for display
@@ -602,7 +599,6 @@ export class MasterPlanComponent implements OnInit {
                     if (serialNumber && serialNumber.includes(',')) {
                         // Split by comma and create one row per serial
                         const serials = serialNumber.split(',').map((s: string) => s.trim());
-                        console.log(`📦 Expanding equipment ${item.equipment?.assetId}: ${serials.length} serials`);
 
                         serials.forEach((serial: string, index: number) => {
                             // Create a copy of the equipment for each serial
@@ -622,9 +618,6 @@ export class MasterPlanComponent implements OnInit {
                         expandedEquipment.push(item);
                     }
                 });
-
-                console.log('Expanded equipment for display:', expandedEquipment.length);
-                console.log('========================');
 
                 // Apply category filter to expanded list
                 this.equipmentList = this.selectedCategory ? expandedEquipment.filter((x: any) => x.equipment?.category === this.selectedCategory) : expandedEquipment;
@@ -695,7 +688,7 @@ export class MasterPlanComponent implements OnInit {
                 const inv = month.maintenance?.inventory;
                 const created = month.maintenance?.inventoryCreated;
                 const updated = month.maintenance?.inventoryUpdated;
-                dateStr = (inv && inv !== '') ? inv : (created && created !== '') ? created : (updated && updated !== '') ? updated : null;
+                dateStr = inv && inv !== '' ? inv : created && created !== '' ? created : updated && updated !== '' ? updated : null;
             } else {
                 dateStr = month.maintenance?.[maintenanceType];
                 if (dateStr === '') dateStr = null;
@@ -713,12 +706,6 @@ export class MasterPlanComponent implements OnInit {
             const recordId = month.maintenance?.id || month.id || null;
 
             // Log each month's maintenance data and ID
-            console.log(`${month.monthName}:`, {
-                monthObject: month,
-                maintenance: month.maintenance,
-                recordId: recordId,
-                hasId: !!recordId
-            });
 
             return {
                 month: month.month,
@@ -789,7 +776,6 @@ export class MasterPlanComponent implements OnInit {
                 this.fetchMasterPlanData(); // Refresh data
             })
             .catch((error) => {
-                console.error('Error updating maintenance schedule:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -944,12 +930,7 @@ export class MasterPlanComponent implements OnInit {
             ];
 
             if (this.showSchedule) {
-                base.push(
-                    this.getScheduleText(item, 'inventory'),
-                    this.getScheduleText(item, 'preventive'),
-                    this.getScheduleText(item, 'corrective'),
-                    this.getScheduleText(item, 'calibration')
-                );
+                base.push(this.getScheduleText(item, 'inventory'), this.getScheduleText(item, 'preventive'), this.getScheduleText(item, 'corrective'), this.getScheduleText(item, 'calibration'));
             }
 
             return base;

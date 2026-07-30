@@ -177,7 +177,6 @@ export class MaintenanceReportComponent implements OnInit {
                 this.filteredRequests = data;
             },
             error: (err) => {
-                console.error('❌ Error loading maintenance requests:', err);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load maintenance requests' });
             }
         });
@@ -275,7 +274,9 @@ export class MaintenanceReportComponent implements OnInit {
     }
 
     printReport() {
-        const rows = this.filteredRequests.map((r) => `
+        const rows = this.filteredRequests
+            .map(
+                (r) => `
             <tr>
                 <td>${r.maintenanceName || 'N/A'}</td>
                 <td>${r.maintenanceTypeName || 'N/A'}</td>
@@ -284,7 +285,9 @@ export class MaintenanceReportComponent implements OnInit {
                 <td>${r.serviceMaintenanceName || 'N/A'}</td>
                 <td>${this.formatDate(r.createdDate)}</td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
 
         const printContent = `
             <!DOCTYPE html>

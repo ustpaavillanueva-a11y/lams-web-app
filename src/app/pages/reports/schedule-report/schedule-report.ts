@@ -171,9 +171,7 @@ export class ScheduleReportComponent implements OnInit {
             next: (data) => {
                 this.laboratories = data;
             },
-            error: (err) => {
-                console.error('❌ Error loading laboratories:', err);
-            }
+            error: (err) => {}
         });
     }
 
@@ -184,7 +182,6 @@ export class ScheduleReportComponent implements OnInit {
                 this.filteredSchedules = data;
             },
             error: (err) => {
-                console.error('❌ Error loading schedules:', err);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load schedules' });
             }
         });
@@ -258,7 +255,9 @@ export class ScheduleReportComponent implements OnInit {
     }
 
     printReport() {
-        const rows = this.filteredSchedules.map((s) => `
+        const rows = this.filteredSchedules
+            .map(
+                (s) => `
             <tr>
                 <td>${s.laboratoryName || 'N/A'}</td>
                 <td>${this.formatDay(s.dayOfWeek)}</td>
@@ -267,7 +266,9 @@ export class ScheduleReportComponent implements OnInit {
                 <td>${s.instructorName || 'N/A'}</td>
                 <td>${s.subjectName || 'N/A'}</td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
 
         const printContent = `
             <!DOCTYPE html>

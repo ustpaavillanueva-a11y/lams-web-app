@@ -49,13 +49,11 @@ export class CalendarService {
         return forkJoin({
             calendarEvents: this.http.get<any>(`${this.baseApiUrl}/calendar/events`).pipe(
                 catchError((error) => {
-                    console.error('Error loading calendar events:', error);
                     return of({ data: { schedules: [], maintenance: [] } });
                 })
             ),
             postedEvents: this.http.get<any>(`${this.baseApiUrl}/calendar/events/posts`).pipe(
                 catchError((error) => {
-                    console.error('Error loading posted events:', error);
                     return of({ data: [] });
                 })
             )
@@ -84,11 +82,9 @@ export class CalendarService {
                     });
                 }
 
-                console.log('Calendar events loaded:', events.length, 'events');
                 return events;
             }),
             catchError((error) => {
-                console.error('Error loading all calendar events:', error);
                 return of([]);
             })
         );

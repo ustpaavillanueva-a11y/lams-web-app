@@ -46,8 +46,6 @@ export class WebSocketService implements OnDestroy {
             throw new Error('Authentication required for WebSocket connection');
         }
 
-        console.log(`🔌 Attempting to connect to ${namespace} with authentication...`);
-
         // Create new socket connection
         const socket = io(`${this.baseUrl}${namespace}`, {
             auth: {
@@ -61,12 +59,9 @@ export class WebSocketService implements OnDestroy {
         });
 
         // Setup connection handlers
-        socket.on('connect', () => {
-            console.log(`✅ Connected to ${namespace} namespace`);
-        });
+        socket.on('connect', () => {});
 
         socket.on('connect_error', (error: any) => {
-            console.error(`❌ Connection error on ${namespace}:`, error.message);
             // If auth error, try to refresh token
             if (error.message.includes('Authentication') || error.message.includes('Unauthorized')) {
                 console.warn(`🔐 Authentication failed for ${namespace} - token may be expired`);
@@ -74,16 +69,13 @@ export class WebSocketService implements OnDestroy {
         });
 
         socket.on('disconnect', (reason: any) => {
-            console.log(`🔌 Disconnected from ${namespace}:`, reason);
             if (reason === 'io server disconnect') {
                 // Server disconnected, probably due to auth issues
                 console.warn(`⚠️ Server disconnected ${namespace} - possibly due to authentication`);
             }
         });
 
-        socket.on('exception', (error: any) => {
-            console.error(`⚠️ Server exception on ${namespace}:`, error);
-        });
+        socket.on('exception', (error: any) => {});
 
         // Store socket
         this.sockets.set(namespace, socket);
@@ -100,7 +92,6 @@ export class WebSocketService implements OnDestroy {
             socket.removeAllListeners();
             socket.close();
             this.sockets.delete(namespace);
-            console.log(`Disconnected from ${namespace}`);
         }
     }
 
@@ -111,7 +102,6 @@ export class WebSocketService implements OnDestroy {
         this.sockets.forEach((socket, namespace) => {
             socket.removeAllListeners();
             socket.close();
-            console.log(`Disconnected from ${namespace}`);
         });
         this.sockets.clear();
     }
@@ -127,7 +117,6 @@ export class WebSocketService implements OnDestroy {
 
         const socket = this.sockets.get(namespace);
         if (!socket) {
-            console.error(`No socket connection found for ${namespace}`);
             subject.error(new Error(`Not connected to ${namespace}`));
             return subject.asObservable();
         }
@@ -148,7 +137,6 @@ export class WebSocketService implements OnDestroy {
     emit(namespace: string, eventName: string, data?: any): void {
         const socket = this.sockets.get(namespace);
         if (!socket) {
-            console.error(`No socket connection found for ${namespace}`);
             return;
         }
 

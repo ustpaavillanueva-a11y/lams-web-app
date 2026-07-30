@@ -50,9 +50,7 @@ export class AuthService {
                 const user = JSON.parse(storedUser);
                 this.currentUser = user;
                 this.userContextService.setUserId(user.userId);
-            } catch (error) {
-                console.error('Error initializing user context:', error);
-            }
+            } catch (error) {}
         }
     }
 

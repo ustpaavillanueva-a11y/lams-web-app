@@ -23,9 +23,7 @@ export class ActivitiesWebSocketService implements OnDestroy {
         try {
             this.webSocketService.connect(this.namespace);
             this.isConnected = true;
-        } catch (error) {
-            console.error('Failed to connect to activities WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**

@@ -329,7 +329,7 @@ export class CorrectiveReportComponent implements OnInit {
             next: (data) => {
                 this.laboratories = data;
             },
-            error: (err) => console.error('Error loading laboratories:', err)
+            error: (err) => {}
         });
     }
 
@@ -356,40 +356,34 @@ export class CorrectiveReportComponent implements OnInit {
             const dateStr = this.formatDateToString(this.selectedDate);
             this.reportService.getDailyCorrectiveReport(dateStr, this.selectedLaboratoryId).subscribe({
                 next: (data) => {
-                    console.log('Filtered Daily Report:', data);
                     this.reportData = data;
                     this.isLoading = false;
                 },
                 error: (err) => {
                     this.errorMessage = err.error?.message || 'Failed to generate daily report';
                     this.isLoading = false;
-                    console.error('Error loading daily report:', err);
                 }
             });
         } else if (this.reportType === 'monthly') {
             this.reportService.getMonthlyCorrectiveReport(this.selectedMonth, this.selectedYear, this.selectedLaboratoryId).subscribe({
                 next: (data) => {
-                    console.log('Filtered Monthly Report:', data);
                     this.reportData = data;
                     this.isLoading = false;
                 },
                 error: (err) => {
                     this.errorMessage = err.error?.message || 'Failed to generate monthly report';
                     this.isLoading = false;
-                    console.error('Error loading monthly report:', err);
                 }
             });
         } else if (this.reportType === 'yearly') {
             this.reportService.getYearlyCorrectiveReport(this.selectedYear, this.selectedLaboratoryId).subscribe({
                 next: (data) => {
-                    console.log('Filtered Yearly Report:', data);
                     this.reportData = data;
                     this.isLoading = false;
                 },
                 error: (err) => {
                     this.errorMessage = err.error?.message || 'Failed to generate yearly report';
                     this.isLoading = false;
-                    console.error('Error loading yearly report:', err);
                 }
             });
         }
@@ -444,7 +438,7 @@ export class CorrectiveReportComponent implements OnInit {
             next: (blob) => {
                 this.convertBlobToBase64(blob);
             },
-            error: (err) => console.error('Error loading header image:', err)
+            error: (err) => {}
         });
     }
 
@@ -462,9 +456,7 @@ export class CorrectiveReportComponent implements OnInit {
                 this.users = data;
                 this.usersWithOthers = [...data, { userId: 'others', firstName: 'Others', lastName: '(Manual Input)', isOthers: true }];
             },
-            error: (error) => {
-                console.error('❌ Error loading users:', error);
-            }
+            error: (error) => {}
         });
     }
 

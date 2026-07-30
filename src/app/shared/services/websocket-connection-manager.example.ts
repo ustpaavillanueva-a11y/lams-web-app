@@ -34,11 +34,8 @@ export class WebSocketConnectionManager implements OnInit, OnDestroy {
         const user = this.authService.getCurrentUser();
 
         if (!user) {
-            console.log('No user logged in, skipping WebSocket initialization');
             return;
         }
-
-        console.log('Initializing WebSocket connections for user:', user.email);
 
         // Connect to namespaces based on user role
         switch (user.role) {
@@ -73,10 +70,7 @@ export class WebSocketConnectionManager implements OnInit, OnDestroy {
             try {
                 this.webSocketService.connect(namespace);
                 this.connectedNamespaces.add(namespace);
-                console.log(`Connected to ${namespace}`);
-            } catch (error) {
-                console.error(`Failed to connect to ${namespace}:`, error);
-            }
+            } catch (error) {}
         });
     }
 
@@ -90,9 +84,7 @@ export class WebSocketConnectionManager implements OnInit, OnDestroy {
             try {
                 this.webSocketService.connect(namespace);
                 this.connectedNamespaces.add(namespace);
-            } catch (error) {
-                console.error(`Failed to connect to ${namespace}:`, error);
-            }
+            } catch (error) {}
         });
     }
 
@@ -106,9 +98,7 @@ export class WebSocketConnectionManager implements OnInit, OnDestroy {
             try {
                 this.webSocketService.connect(namespace);
                 this.connectedNamespaces.add(namespace);
-            } catch (error) {
-                console.error(`Failed to connect to ${namespace}:`, error);
-            }
+            } catch (error) {}
         });
     }
 
@@ -124,9 +114,7 @@ export class WebSocketConnectionManager implements OnInit, OnDestroy {
             try {
                 this.webSocketService.connect('/assets');
                 this.connectedNamespaces.add('/assets');
-            } catch (error) {
-                console.error('Failed to connect to assets:', error);
-            }
+            } catch (error) {}
         }
 
         // Add similar logic for other routes as needed
@@ -147,7 +135,6 @@ export class WebSocketConnectionManager implements OnInit, OnDestroy {
     disconnectAll(): void {
         this.webSocketService.disconnectAll();
         this.connectedNamespaces.clear();
-        console.log('Disconnected from all WebSocket namespaces');
     }
 
     /**

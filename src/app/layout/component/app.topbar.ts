@@ -346,7 +346,6 @@ export class AppTopbar {
                 }
             }, 100);
         } catch (error) {
-            console.error('Camera access denied:', error);
             this.hasPermission = false;
             this.errorMessage = 'Camera access denied. Please allow camera permissions and try again.';
         }
@@ -373,11 +372,9 @@ export class AppTopbar {
                     }
                 }
                 if (err && !(err instanceof NotFoundException)) {
-                    console.error('QR scanning error:', err);
                 }
             });
         } catch (err) {
-            console.error('Failed to start QR scanning:', err);
             this.errorMessage = 'Failed to start QR code scanning. Please try again.';
         }
     }
@@ -538,7 +535,6 @@ export class AppTopbar {
                 localStorage.setItem('currentUser', JSON.stringify(userData));
             },
             error: (error) => {
-                console.error('Error fetching user profile:', error);
                 // Fallback to localStorage
                 const userStr = localStorage.getItem('currentUser');
                 if (userStr) {

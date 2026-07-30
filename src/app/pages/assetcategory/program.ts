@@ -303,7 +303,6 @@ export class ProgramComponent extends BaseComponent implements OnInit {
                     },
                     error: (error) => {
                         failedCount++;
-                        console.error(`Failed to delete program ${item.programId}:`, error);
                         this.checkBulkDeleteComplete(deletedCount, failedCount, totalCount);
                     }
                 });

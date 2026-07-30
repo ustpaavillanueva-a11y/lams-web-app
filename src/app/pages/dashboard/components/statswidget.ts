@@ -99,7 +99,7 @@ export class StatsWidget implements OnInit {
                 this.activeAssets = data.filter((a: any) => a.Status_id === '1').length;
                 this.assetCategories = new Set(data.map((a: any) => a.category || a.Category)).size;
             },
-            error: (err: any) => console.error('Error loading assets:', err)
+            error: (err: any) => {}
         });
     }
 
@@ -110,7 +110,7 @@ export class StatsWidget implements OnInit {
                 this.pendingMaintenance = data.filter((r: any) => (r.requestStatusName || 'Pending') === 'Pending').length;
                 this.completedMaintenance = data.filter((r: any) => r.requestStatusName === 'Completed').length;
             },
-            error: (err: any) => console.error('Error loading maintenance:', err)
+            error: (err: any) => {}
         });
     }
 
@@ -120,7 +120,7 @@ export class StatsWidget implements OnInit {
                 this.totalSchedules = data.length;
                 this.labCount = new Set(data.map((s: any) => s.laboratoryId)).size;
             },
-            error: (err: any) => console.error('Error loading schedules:', err)
+            error: (err: any) => {}
         });
     }
 }

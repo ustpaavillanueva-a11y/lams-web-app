@@ -150,7 +150,6 @@ export class AssetReportComponent implements OnInit {
                 this.extractCategories();
             },
             error: (err) => {
-                console.error('❌ Error loading assets:', err);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load assets' });
             }
         });

@@ -345,12 +345,10 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
 
         try {
             this.calendarWebSocketService.connect();
-            console.log('✅ Connected to calendar WebSocket');
 
             // Listen for schedule creation
             this.calendarWebSocketService.onScheduleCreated().subscribe({
                 next: (event) => {
-                    console.log('🆕 Schedule created:', event.data);
                     if (event.success) {
                         // Reload schedules to get the latest data
                         if (this.selectedLaboratory || this.isFaculty) {
@@ -364,15 +362,12 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-created event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for schedule updates
             this.calendarWebSocketService.onScheduleUpdated().subscribe({
                 next: (event) => {
-                    console.log('✏️ Schedule updated:', event.data);
                     if (event.success) {
                         // Reload schedules to reflect the changes
                         if (this.selectedLaboratory || this.isFaculty) {
@@ -386,15 +381,12 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-updated event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for schedule deletions
             this.calendarWebSocketService.onScheduleDeleted().subscribe({
                 next: (event) => {
-                    console.log('🗑️ Schedule deleted:', event.data);
                     if (event.success) {
                         // Remove the schedule from the list
                         this.schedules = this.schedules.filter((s) => s.scheduleId !== event.data.scheduleId);
@@ -406,26 +398,19 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-deleted event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for generic schedule changes
             this.calendarWebSocketService.onScheduleChanged().subscribe({
                 next: (event) => {
-                    console.log('🔄 Schedule changed:', event.data);
                     if (event.success && (this.selectedLaboratory || this.isFaculty)) {
                         this.loadSchedules();
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving schedule-changed event:', error);
-                }
+                error: (error) => {}
             });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -433,7 +418,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
      */
     ngOnDestroy(): void {
         this.calendarWebSocketService.disconnect();
-        console.log('🔌 Disconnected from calendar WebSocket');
     }
 
     checkUserRole() {
@@ -594,7 +578,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     }
                 },
                 error: (error: any) => {
-                    console.error('Error loading faculty schedules:', error);
                     this.schedules = [];
                 }
             });
@@ -678,8 +661,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                 });
             },
             error: (error: any) => {
-                console.error('❌ Error creating subject:', error);
-
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -744,11 +725,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                 });
             },
             error: (error: any) => {
-                console.error('❌ Error creating schedule:', error);
-                console.error('Error status:', error?.status);
-                console.error('Error message:', error?.message);
-                console.error('Error details:', error?.error);
-
                 Swal.fire({
                     title: 'Error',
                     text: 'Failed to create schedule: ' + (error?.error?.message || error?.message),
@@ -984,7 +960,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                 this.loadSchedules();
             },
             error: (error: any) => {
-                console.error('❌ Error updating schedule:', error);
                 Swal.fire({
                     title: 'Error',
                     text: 'Failed to update schedule: ' + (error?.error?.message || error?.message),
@@ -1029,7 +1004,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     this.loadSchedules();
                 },
                 error: (error: any) => {
-                    console.error('❌ Error deleting schedule:', error);
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',

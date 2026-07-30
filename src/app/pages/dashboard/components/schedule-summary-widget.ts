@@ -63,9 +63,7 @@ export class ScheduleSummaryWidget implements OnInit {
                 this.labCount = new Set(data.map((s: any) => s.laboratoryId)).size;
                 this.instructorCount = new Set(data.map((s: any) => s.instructorId)).size;
             },
-            error: (err: any) => {
-                console.error('❌ Error loading schedules:', err);
-            }
+            error: (err: any) => {}
         });
     }
 }

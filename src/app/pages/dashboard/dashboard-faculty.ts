@@ -285,7 +285,7 @@ export class DashboardFaculty implements OnInit {
         const apiUrl = 'http://localhost:3000/api/maintenance-requests/count-total-submitted';
         this.http.get<number>(apiUrl).subscribe({
             next: (count) => (this.totalSubmitted = count || 0),
-            error: (error) => console.error('Error loading total submitted:', error)
+            error: (error) => {}
         });
     }
 
@@ -293,7 +293,7 @@ export class DashboardFaculty implements OnInit {
         const apiUrl = 'http://localhost:3000/api/maintenance-requests/count-pending';
         this.http.get<number>(apiUrl).subscribe({
             next: (count) => (this.pendingCount = count || 0),
-            error: (error) => console.error('Error loading pending count:', error)
+            error: (error) => {}
         });
     }
 
@@ -302,9 +302,6 @@ export class DashboardFaculty implements OnInit {
         const apiUrl = `${environment.apiUrl}/maintenance-approvals`;
         this.http.get<any[]>(apiUrl).subscribe({
             next: (approvals) => {
-                console.log('=== MAINTENANCE APPROVALS FOR STATUS ===');
-                console.log('Total approvals:', approvals.length);
-
                 const currentYear = new Date().getFullYear();
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -329,8 +326,6 @@ export class DashboardFaculty implements OnInit {
                         monthlyCounts[monthIndex]++;
                     }
                 });
-
-                console.log('Status map:', Array.from(statusMap.entries()));
 
                 // Generate colors for each status
                 const colorPalette = [
@@ -359,7 +354,6 @@ export class DashboardFaculty implements OnInit {
                 };
             },
             error: (error) => {
-                console.error('Error loading status monthly data:', error);
                 // Initialize with empty data
                 this.statusChartData = {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -465,14 +459,10 @@ export class DashboardFaculty implements OnInit {
     }
 
     loadScheduleData() {
-        console.log('=== LOADING FACULTY SCHEDULE DATA ===');
         const scheduleUrl = `${environment.apiUrl}/faculty-schedules`;
 
         this.http.get<any[]>(scheduleUrl).subscribe({
             next: (data: any[]) => {
-                console.log('Faculty schedules fetched:', data);
-                console.log('Total schedules:', data?.length || 0);
-
                 if (data && data.length > 0) {
                     const today = new Date();
                     const todayDayName = this.getDayName(today.getDay());
@@ -487,20 +477,14 @@ export class DashboardFaculty implements OnInit {
                             students: schedule.subject?.numberOfStudents || 0
                         }));
 
-                    console.log("Today's schedules:", this.todaySchedules);
-
                     // Get upcoming schedules (next 7 days)
                     this.upcomingSchedules = this.getUpcomingSchedules(data, today);
-                    console.log('Upcoming schedules:', this.upcomingSchedules);
                 } else {
                     this.todaySchedules = [];
                     this.upcomingSchedules = [];
                 }
-
-                console.log('====================================');
             },
             error: (error: any) => {
-                console.error('Error loading faculty schedules:', error);
                 this.todaySchedules = [];
                 this.upcomingSchedules = [];
             }
@@ -613,9 +597,7 @@ export class DashboardFaculty implements OnInit {
                 }));
                 this.changeDetector.detectChanges();
             },
-            error: (error) => {
-                console.error('Error loading calendar events:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -625,9 +607,6 @@ export class DashboardFaculty implements OnInit {
         calendarApi.unselect();
 
         // Log the selected date
-        console.log('Selected Date:', selectInfo.start);
-        console.log('Selected Date (ISO):', selectInfo.start.toISOString());
-        console.log('Selected Date (Locale):', selectInfo.start.toLocaleString());
 
         Swal.fire({
             title: 'Add New Event',
@@ -683,7 +662,6 @@ export class DashboardFaculty implements OnInit {
                             });
                         },
                         error: (error) => {
-                            console.error('Error saving event:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',

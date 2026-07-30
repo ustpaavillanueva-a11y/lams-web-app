@@ -413,9 +413,7 @@ export class PreventiveReportComponent implements OnInit {
             next: (data) => {
                 this.laboratories = data;
             },
-            error: (error) => {
-                console.error('❌ Error loading laboratories:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -426,9 +424,7 @@ export class PreventiveReportComponent implements OnInit {
                 // Add "Others" option at the end
                 this.usersWithOthers = [...data, { userId: 'others', firstName: 'Others', lastName: '(Manual Input)', isOthers: true }];
             },
-            error: (error) => {
-                console.error('❌ Error loading users:', error);
-            }
+            error: (error) => {}
         });
     }
 
@@ -456,7 +452,6 @@ export class PreventiveReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate daily report';
                     this.isLoading = false;
-                    console.error('❌ Error loading daily report:', error);
                 }
             });
         } else if (this.reportType === 'monthly') {
@@ -468,7 +463,6 @@ export class PreventiveReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate monthly report';
                     this.isLoading = false;
-                    console.error('❌ Error loading monthly report:', error);
                 }
             });
         } else {
@@ -480,7 +474,6 @@ export class PreventiveReportComponent implements OnInit {
                 error: (error) => {
                     this.errorMessage = error.error?.message || 'Failed to generate yearly report';
                     this.isLoading = false;
-                    console.error('❌ Error loading yearly report:', error);
                 }
             });
         }

@@ -90,7 +90,6 @@ export class MaintenanceStateService {
             )
             .subscribe({
                 error: (error) => {
-                    console.error('Error loading approvals:', error);
                     this.loadingSubject.next(false);
                 }
             });
@@ -116,9 +115,7 @@ export class MaintenanceStateService {
                 this.techniciansSubject.next(data.technicians);
                 this.campusesSubject.next(data.campuses);
             },
-            error: (error) => {
-                console.error('Error loading reference data:', error);
-            }
+            error: (error) => {}
         });
     }
 

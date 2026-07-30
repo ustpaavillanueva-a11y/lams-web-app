@@ -251,9 +251,7 @@ export class CustodianComponent extends BaseComponent implements OnInit {
                 next: (data) => {
                     this.colors = data;
                 },
-                error: (error) => {
-                    console.error('Error loading colors:', error);
-                }
+                error: (error) => {}
             });
 
         // Load brands
@@ -264,9 +262,7 @@ export class CustodianComponent extends BaseComponent implements OnInit {
                 next: (data) => {
                     this.brands = data;
                 },
-                error: (error) => {
-                    console.error('Error loading brands:', error);
-                }
+                error: (error) => {}
             });
     }
 
@@ -321,7 +317,6 @@ export class CustodianComponent extends BaseComponent implements OnInit {
                     },
                     error: (error) => {
                         failedCount++;
-                        console.error(`Failed to delete item ${item.inv_custlip_id}:`, error);
                         this.checkBulkDeleteComplete(deletedCount, failedCount, totalCount);
                     }
                 });

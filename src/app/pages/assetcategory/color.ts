@@ -303,7 +303,6 @@ export class ColorComponent extends BaseComponent implements OnInit {
                     },
                     error: (error) => {
                         failedCount++;
-                        console.error(`Failed to delete color ${item.colorId}:`, error);
                         this.checkBulkDeleteComplete(deletedCount, failedCount, totalCount);
                     }
                 });

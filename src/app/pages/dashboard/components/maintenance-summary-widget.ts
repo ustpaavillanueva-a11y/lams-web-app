@@ -62,9 +62,7 @@ export class MaintenanceSummaryWidget implements OnInit {
                 this.pendingRequests = data.filter((r: any) => (r.requestStatusName || 'Pending') === 'Pending').length;
                 this.completedRequests = data.filter((r: any) => r.requestStatusName === 'Completed').length;
             },
-            error: (err: any) => {
-                console.error('❌ Error loading maintenance requests:', err);
-            }
+            error: (err: any) => {}
         });
     }
 }

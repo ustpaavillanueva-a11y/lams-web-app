@@ -60,7 +60,6 @@ export class AppMenu implements OnInit {
                 this.loadMenuItems();
             },
             error: (error: any) => {
-                console.error('❌ Error loading laboratories:', error);
                 this.loadMenuItems();
             }
         });
@@ -73,7 +72,6 @@ export class AppMenu implements OnInit {
                 this.loadMenuForCurrentUser();
             },
             error: (error) => {
-                console.error('Error loading user profile:', error);
                 const storedUser = localStorage.getItem('currentUser');
                 if (storedUser) {
                     this.currentUser = JSON.parse(storedUser);

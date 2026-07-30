@@ -97,7 +97,6 @@ export class MaintenanceTypesComponent implements OnInit {
                 this.loading = false;
             },
             error: (err) => {
-                console.error('Error loading maintenance types', err);
                 this.loading = false;
             }
         });

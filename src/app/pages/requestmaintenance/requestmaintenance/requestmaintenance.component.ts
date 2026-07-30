@@ -739,12 +739,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
         try {
             this.maintenanceWebSocketService.connect();
-            console.log('✅ Connected to maintenance WebSocket');
 
             // Listen for new maintenance requests
             this.maintenanceWebSocketService.onMaintenanceRequestCreated().subscribe({
                 next: (event) => {
-                    console.log('🆕 Maintenance request created:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -755,15 +753,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-request-created event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for maintenance request updates
             this.maintenanceWebSocketService.onMaintenanceRequestUpdated().subscribe({
                 next: (event) => {
-                    console.log('✏️ Maintenance request updated:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -774,15 +769,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-request-updated event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for maintenance approvals
             this.maintenanceWebSocketService.onMaintenanceApproved().subscribe({
                 next: (event) => {
-                    console.log('✅ Maintenance approved:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -793,15 +785,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-approved event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for maintenance disapprovals
             this.maintenanceWebSocketService.onMaintenanceDisapproved().subscribe({
                 next: (event) => {
-                    console.log('❌ Maintenance disapproved:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -812,15 +801,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-disapproved event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for maintenance scheduling
             this.maintenanceWebSocketService.onMaintenanceScheduled().subscribe({
                 next: (event) => {
-                    console.log('📅 Maintenance scheduled:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -831,15 +817,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-scheduled event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for maintenance completion
             this.maintenanceWebSocketService.onMaintenanceCompleted().subscribe({
                 next: (event) => {
-                    console.log('✔️ Maintenance completed:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -850,15 +833,12 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-completed event:', error);
-                }
+                error: (error) => {}
             });
 
             // Listen for maintenance on hold
             this.maintenanceWebSocketService.onMaintenanceOnHold().subscribe({
                 next: (event) => {
-                    console.log('⏸️ Maintenance on hold:', event.data);
                     if (event.success) {
                         this.loadItems();
                         this.messageService.add({
@@ -869,13 +849,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                         });
                     }
                 },
-                error: (error) => {
-                    console.error('Error receiving maintenance-on-hold event:', error);
-                }
+                error: (error) => {}
             });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -883,7 +859,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
      */
     ngOnDestroy(): void {
         this.maintenanceWebSocketService.disconnect();
-        console.log('🔌 Disconnected from maintenance WebSocket');
     }
 
     ngAfterViewInit() {
@@ -938,15 +913,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
     }
 
     loadItems() {
-        console.log('=== LOADING MAINTENANCE REQUESTS ===');
         this.loading = true;
         this.maintenanceService.getMaintenanceRequests?.()?.subscribe({
             next: (data: any[]) => {
-                console.log('Raw maintenance requests data:', data);
-                console.log('Total requests fetched:', data?.length || 0);
-
                 if (data && data.length > 0) {
-                    console.log('Sample request:', data[0]);
                 }
                 this.items = data || [];
                 this.categorizeItems();
@@ -954,7 +924,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 this.loading = false;
             },
             error: (error: any) => {
-                console.error('Error loading maintenance requests:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -966,8 +935,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
     }
 
     loadApprovals() {
-        console.log('=== LOADING MAINTENANCE APPROVALS ===');
-
         // Clear existing approval data to avoid duplicates
         this.completedItems = [];
 
@@ -975,26 +942,20 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.maintenanceService.getPendingApprovals().subscribe({
             next: (data: any[]) => {
                 // Pending approvals might exist, log them but they're shown in requests tab
-                console.log('Pending approvals:', data?.length || 0);
                 if (data && data.length > 0) {
                     console.table(data);
                 }
             },
-            error: (error: any) => {
-                console.error('Error loading pending approvals:', error);
-            }
+            error: (error: any) => {}
         });
 
         // Load Scheduled approvals
         this.maintenanceService.getScheduledApprovals().subscribe({
             next: (data: any[]) => {
                 this.scheduledItems = data || [];
-                console.log('--- SCHEDULED TAB DATA ---');
-                console.log('Scheduled items:', this.scheduledItems.length);
                 console.table(this.scheduledItems);
             },
             error: (error: any) => {
-                console.error('Error loading scheduled approvals:', error);
                 this.scheduledItems = [];
             }
         });
@@ -1003,12 +964,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.maintenanceService.getInProgressApprovals().subscribe({
             next: (data: any[]) => {
                 this.inProgressItems = data || [];
-                console.log('--- IN PROGRESS TAB DATA ---');
-                console.log('In Progress items:', this.inProgressItems.length);
                 console.table(this.inProgressItems);
             },
             error: (error: any) => {
-                console.error('Error loading in-progress approvals:', error);
                 this.inProgressItems = [];
             }
         });
@@ -1019,31 +977,20 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 const completedApprovals = data || [];
                 // Merge with existing completedItems from maintenance requests
                 this.completedItems = [...this.completedItems, ...completedApprovals];
-                console.log('--- COMPLETED TAB DATA ---');
-                console.log('Completed items:', this.completedItems.length);
-                console.log('==========================');
             },
-            error: (error: any) => {
-                console.error('Error loading completed approvals:', error);
-            }
+            error: (error: any) => {}
         });
     }
 
     categorizeItems() {
-        console.log('=== CATEGORIZING ITEMS ===');
         this.pendingItems = this.items.filter((item) => item.maintenanceStatus?.requestStatusName?.toLowerCase() === 'pending');
 
         // Don't overwrite completedItems from approvals - only add from requests if needed
         const completedRequests = this.items.filter((item) => item.maintenanceStatus?.requestStatusName?.toLowerCase() === 'completed');
 
-        console.log('--- PENDING TAB DATA ---');
-        console.log('Pending items:', this.pendingItems.length);
         console.table(this.pendingItems);
 
-        console.log('--- COMPLETED REQUESTS DATA ---');
-        console.log('Completed requests:', completedRequests.length);
         console.table(completedRequests);
-        console.log('========================');
     }
 
     filterByTab() {
@@ -1063,20 +1010,14 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
     onActiveIndexChange(index: number) {
         const tabNames = ['Pending', 'Scheduled', 'In Progress', 'Completed'];
-        console.log(`=== TAB CHANGED TO: ${tabNames[index]} ===`);
-        console.log('Active tab index:', index);
 
         this.activeTabIndex = index;
         this.selectedItems = [];
 
         if (index === 0) {
-            console.log('Showing pending items:', this.pendingItems.length);
         } else if (index === 1) {
-            console.log('Showing scheduled items:', this.scheduledItems.length);
         } else if (index === 2) {
-            console.log('Showing completed items:', this.completedItems.length);
         }
-        console.log('==============================');
     }
 
     filter() {
@@ -1167,7 +1108,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
         // Show all completed items
         items = [...this.completedItems];
-        console.log('items', items);
 
         if (!searchLower) return items;
 
@@ -1565,8 +1505,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
     }
 
     view(item: any) {
-        console.log('Viewing item:', item);
-
         // Check if it's an approval item (has maintenanceApprovalId) or a request item
         if (item.maintenanceApprovalId) {
             // It's a completed approval - show approval details
@@ -1903,7 +1841,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 this.loadApprovals();
             },
             error: (error: any) => {
-                console.error('Error completing maintenance request:', error);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to complete maintenance request: ' + (error.error?.message || error.message) });
             }
         });

@@ -23,9 +23,7 @@ export class LaboratoriesWebSocketService implements OnDestroy {
         try {
             this.webSocketService.connect(this.namespace);
             this.isConnected = true;
-        } catch (error) {
-            console.error('Failed to connect to laboratories WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**

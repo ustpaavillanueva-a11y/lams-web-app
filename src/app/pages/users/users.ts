@@ -177,7 +177,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
 
         try {
             this.usersWebSocketService.connect();
-            console.log('✅ Connected to users WebSocket');
 
             // Listen for user creation
             this.usersWebSocketService
@@ -185,7 +184,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('🆕 User created:', event.data);
                         if (event.success) {
                             this.loadUsers();
                             this.messageService.add({
@@ -196,9 +194,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving user-created event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for user updates
@@ -207,7 +203,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('✏️ User updated:', event.data);
                         if (event.success) {
                             const index = this.users.findIndex((u) => u.userId === event.data.userId);
                             if (index !== -1) {
@@ -222,9 +217,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving user-updated event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for user activations
@@ -233,7 +226,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('✅ User activated:', event.data);
                         if (event.success) {
                             const index = this.users.findIndex((u) => u.userId === event.data.userId);
                             if (index !== -1) {
@@ -248,9 +240,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving user-activated event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for user deactivations
@@ -259,7 +249,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('❌ User deactivated:', event.data);
                         if (event.success) {
                             const index = this.users.findIndex((u) => u.userId === event.data.userId);
                             if (index !== -1) {
@@ -274,9 +263,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving user-deactivated event:', error);
-                    }
+                    error: (error) => {}
                 });
 
             // Listen for user deletions
@@ -285,7 +272,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (event) => {
-                        console.log('🗑️ User deleted:', event.data);
                         if (event.success) {
                             this.users = this.users.filter((u) => u.userId !== event.data.userId);
                             this.filterUsers();
@@ -297,13 +283,9 @@ export class UsersComponent extends BaseComponent implements OnInit {
                             });
                         }
                     },
-                    error: (error) => {
-                        console.error('Error receiving user-deleted event:', error);
-                    }
+                    error: (error) => {}
                 });
-        } catch (error) {
-            console.error('Failed to connect to WebSocket:', error);
-        }
+        } catch (error) {}
     }
 
     /**
@@ -311,7 +293,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
      */
     override ngOnDestroy(): void {
         this.usersWebSocketService.disconnect();
-        console.log('🔌 Disconnected from users WebSocket');
         super.ngOnDestroy();
     }
 
@@ -369,9 +350,7 @@ export class UsersComponent extends BaseComponent implements OnInit {
                 if (this.currentUserRole) {
                     return;
                 }
-            } catch (error) {
-                console.error('Error parsing currentUser:', error);
-            }
+            } catch (error) {}
         }
 
         const userId = this.userContextService.getUserId();
@@ -1201,7 +1180,6 @@ export class UsersComponent extends BaseComponent implements OnInit {
                         },
                         error: (error) => {
                             failedCount++;
-                            console.error(`Failed to delete user ${userId}:`, error);
                             if (deletedCount + failedCount === this.selectedUsers.length) {
                                 this.selectedUsers = [];
                                 this.loadUsers();

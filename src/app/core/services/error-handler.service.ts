@@ -19,13 +19,6 @@ export class ErrorHandlerService {
     handleError(error: any, context?: string, customMessage?: string): void {
         const errorMessage = this.extractErrorMessage(error);
 
-        // Log to console with context
-        if (context) {
-            console.error(`❌ Error in ${context}:`, error);
-        } else {
-            console.error('❌ Error:', error);
-        }
-
         // Show user-friendly message
         this.showErrorDialog(customMessage || errorMessage);
     }
