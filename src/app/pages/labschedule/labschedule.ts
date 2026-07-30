@@ -697,6 +697,24 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (!this.isWithinAllowedHours(this.newSchedule.time)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'Schedule cannot start at 9:30 PM or later'
+            });
+            return;
+        }
+
+        if (this.timeToMinutes(this.newSchedule.endTime) <= this.timeToMinutes(this.newSchedule.time)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'End Time must be later than Start Time'
+            });
+            return;
+        }
+
         // Build the payload for the API
         const payload = {
             faculty: this.newSchedule.instructor || '',
@@ -710,14 +728,18 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
 
         this.http.post<any>(scheduleUrl, payload).subscribe({
             next: (response: any) => {
+                this.closeDialog();
+                this.loadSchedules();
+
                 Swal.fire({
                     title: 'Success!',
                     text: 'Lab schedule created successfully!',
-                    icon: 'success'
+                    icon: 'success',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container') as HTMLElement;
+                        if (container) container.style.zIndex = '9999';
+                    }
                 });
-
-                this.closeDialog();
-                this.loadSchedules();
             },
             error: (error: any) => {
                 console.error('❌ Error creating schedule:', error);
@@ -725,10 +747,14 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                 console.error('Error message:', error?.message);
                 console.error('Error details:', error?.error);
 
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to create schedule: ' + (error?.error?.message || error?.message)
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to create schedule: ' + (error?.error?.message || error?.message),
+                    icon: 'error',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container') as HTMLElement;
+                        if (container) container.style.zIndex = '9999';
+                    }
                 });
             }
         });
@@ -760,6 +786,12 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         if (!timeString) return 0;
         const [hours, minutes] = timeString.split(':').map(Number);
         return hours * 60 + minutes;
+    }
+
+    // Lab schedules may not start at or after 9:30 PM
+    isWithinAllowedHours(startTime: string): boolean {
+        const LATEST_START_MINUTES = 21 * 60 + 30; // 9:30 PM
+        return this.timeToMinutes(startTime) < LATEST_START_MINUTES;
     }
 
     // Convert 24-hour time (HH:MM) to 12-hour AM/PM format
@@ -911,6 +943,24 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (!this.isWithinAllowedHours(this.editingSchedule.startTime)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'Schedule cannot start at 9:30 PM or later'
+            });
+            return;
+        }
+
+        if (this.timeToMinutes(this.editingSchedule.endTime) <= this.timeToMinutes(this.editingSchedule.startTime)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Validation',
+                detail: 'End Time must be later than Start Time'
+            });
+            return;
+        }
+
         const updateData = {
             dayOfWeek: this.editingSchedule.day,
             startTime: this.editingSchedule.startTime,
@@ -933,10 +983,14 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             },
             error: (error: any) => {
                 console.error('❌ Error updating schedule:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to update schedule: ' + (error?.error?.message || error?.message)
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to update schedule: ' + (error?.error?.message || error?.message),
+                    icon: 'error',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container') as HTMLElement;
+                        if (container) container.style.zIndex = '9999';
+                    }
                 });
             }
         });
@@ -1173,12 +1227,10 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         justify-content: flex-start;
                         gap: 2px;
                         position: relative;
-                        z-index: 1;
                         overflow: visible;
                         min-height: 8mm;
                     }
                     .schedule-block {
-                        width: calc(100% - 6px);
                         padding: 3px;
                         display: flex;
                         flex-direction: column;
@@ -1194,8 +1246,8 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         margin: 0;
                         position: absolute;
                         top: 2px;
-                        left: 3px;
                         z-index: 10;
+                        overflow: hidden;
                     }
                     .schedule-block:hover {
                         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
@@ -1258,7 +1310,10 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
 
                 if (schedulesAtSlot.length > 0) {
                     html += '<td class="schedule-cell">';
-                    schedulesAtSlot.forEach((schedule) => {
+                    const concurrentCount = schedulesAtSlot.length;
+                    const widthPercent = 100 / concurrentCount;
+
+                    schedulesAtSlot.forEach((schedule, slotIndex) => {
                         const subjectCode = schedule.subject?.subjectCode || 'N/A';
                         const facultyName = schedule.faculty ? `${schedule.faculty.firstName} ${schedule.faculty.lastName}` : 'No Instructor';
                         const timeRange = `${schedule.startTime} - ${schedule.endTime}`;
@@ -1267,9 +1322,10 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                         const isYellow = colorClass === 'bg-yellow-500';
                         const rowSpan = this.getRowSpan(schedule);
                         const blockHeight = rowSpan * 8 - 4; // 8mm per row, minus padding
+                        const leftPercent = slotIndex * widthPercent;
 
                         html += `
-                            <div class="schedule-block ${isYellow ? 'yellow' : ''}" style="background-color: ${bgColor}; height: ${blockHeight}mm;">
+                            <div class="schedule-block ${isYellow ? 'yellow' : ''}" style="background-color: ${bgColor}; height: ${blockHeight}mm; left: calc(${leftPercent}% + 2px); width: calc(${widthPercent}% - 4px);">
                                 <div class="subject-code">${subjectCode}</div>
                                 <div class="faculty-name">${facultyName}</div>
                                 <div class="time-range">${timeRange}</div>
