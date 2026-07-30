@@ -1,21 +1,21 @@
 import {
-  Tooltip,
-  TooltipModule
-} from "./chunk-BIFJ4FDJ.js";
-import {
-  ConnectedOverlayScrollHandler,
-  DomHandler
-} from "./chunk-P6SMTJBG.js";
-import {
   Badge,
   BadgeModule
 } from "./chunk-GIUYGYUT.js";
 import {
+  Ripple
+} from "./chunk-7V5GWXVN.js";
+import {
+  Tooltip,
+  TooltipModule
+} from "./chunk-ADFDAG55.js";
+import {
   zindexutils
 } from "./chunk-OLJED6AA.js";
 import {
-  Ripple
-} from "./chunk-7V5GWXVN.js";
+  ConnectedOverlayScrollHandler,
+  DomHandler
+} from "./chunk-P6SMTJBG.js";
 import {
   Bind,
   BindModule
@@ -32,6 +32,11 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-HVVMUKCH.js";
+import {
+  RouterLink,
+  RouterLinkActive,
+  RouterModule
+} from "./chunk-UOVNMUXR.js";
 import "./chunk-OTTARZB5.js";
 import {
   D,
@@ -49,11 +54,6 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
-import {
-  RouterLink,
-  RouterLinkActive,
-  RouterModule
-} from "./chunk-UOVNMUXR.js";
 import {
   DomSanitizer
 } from "./chunk-ZLAPKAAG.js";
@@ -135,8 +135,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QFF4CQQI.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-NJ4VOZBH.js";
 
