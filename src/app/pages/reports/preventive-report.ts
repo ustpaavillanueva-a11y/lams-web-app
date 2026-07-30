@@ -196,7 +196,7 @@ interface Laboratory {
                         <!-- Header -->
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
                             <div>
-                                <img [src]="headerImageBase64 || 'public/header.png'" style="max-width: 200px; height: auto; max-height: 60px;" />
+                                <img [src]="headerImageBase64 || '/header.png'" style="max-width: 200px; height: auto; max-height: 60px;" />
                             </div>
                         </div>
 
@@ -367,13 +367,11 @@ export class PreventiveReportComponent implements OnInit {
     }
 
     loadHeaderImage(): void {
-        // Try to load from assets folder
-        this.http.get('assets/header.png.png', { responseType: 'blob' }).subscribe({
+        this.http.get(`${window.location.origin}/header.png`, { responseType: 'blob' }).subscribe({
             next: (blob) => {
                 this.convertBlobToBase64(blob);
             },
-            error: (error) => {
-                console.warn('⚠️ Could not load header image from assets/', error);
+            error: () => {
                 // Silently fail - proceed without image
                 this.headerImageBase64 = '';
             }

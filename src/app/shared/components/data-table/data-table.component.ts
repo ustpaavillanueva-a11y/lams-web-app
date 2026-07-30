@@ -51,7 +51,20 @@ import { SelectModule } from 'primeng/select';
             </ng-template>
 
             <ng-template pTemplate="header">
-                <ng-container *ngTemplateOutlet="headerTemplate || defaultHeader"></ng-container>
+                <ng-container *ngIf="headerTemplate; else defaultHeader">
+                    <ng-container *ngTemplateOutlet="headerTemplate"></ng-container>
+                </ng-container>
+                <ng-template #defaultHeader>
+                    <tr>
+                        <th *ngIf="selectable" style="width:3rem">
+                            <input type="checkbox" [checked]="isAllSelected()" (change)="toggleAllSelection()" class="p-checkbox-box" />
+                        </th>
+                        <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.field : undefined" [style]="col.style">
+                            {{ col.header }}
+                            <p-sortIcon *ngIf="col.sortable" [field]="col.field" />
+                        </th>
+                    </tr>
+                </ng-template>
             </ng-template>
 
             <ng-template pTemplate="body" let-rowData>
@@ -66,18 +79,6 @@ import { SelectModule } from 'primeng/select';
                 </tr>
             </ng-template>
         </p-table>
-
-        <ng-template #defaultHeader>
-            <tr>
-                <th *ngIf="selectable" style="width:3rem">
-                    <input type="checkbox" [checked]="isAllSelected()" (change)="toggleAllSelection()" class="p-checkbox-box" />
-                </th>
-                <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.field : undefined" [style]="col.style">
-                    {{ col.header }}
-                    <p-sortIcon *ngIf="col.sortable" [field]="col.field" />
-                </th>
-            </tr>
-        </ng-template>
     `,
     styles: [
         `

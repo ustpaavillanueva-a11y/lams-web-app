@@ -943,7 +943,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             next: (data: any[]) => {
                 // Pending approvals might exist, log them but they're shown in requests tab
                 if (data && data.length > 0) {
-                    console.table(data);
                 }
             },
             error: (error: any) => {}
@@ -953,7 +952,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.maintenanceService.getScheduledApprovals().subscribe({
             next: (data: any[]) => {
                 this.scheduledItems = data || [];
-                console.table(this.scheduledItems);
             },
             error: (error: any) => {
                 this.scheduledItems = [];
@@ -964,7 +962,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.maintenanceService.getInProgressApprovals().subscribe({
             next: (data: any[]) => {
                 this.inProgressItems = data || [];
-                console.table(this.inProgressItems);
             },
             error: (error: any) => {
                 this.inProgressItems = [];
@@ -987,10 +984,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
         // Don't overwrite completedItems from approvals - only add from requests if needed
         const completedRequests = this.items.filter((item) => item.maintenanceStatus?.requestStatusName?.toLowerCase() === 'completed');
-
-        console.table(this.pendingItems);
-
-        console.table(completedRequests);
     }
 
     filterByTab() {

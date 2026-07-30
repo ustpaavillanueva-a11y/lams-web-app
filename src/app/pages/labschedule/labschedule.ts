@@ -477,10 +477,18 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
     }
 
     loadCampuses() {
+        // Only SuperAdmin has permission to list campuses (used for the campus filter dropdown)
+        if (!this.isSuperAdmin) {
+            return;
+        }
+
         const campusesUrl = `${environment.apiUrl}/campuses`;
         this.http.get<any[]>(campusesUrl).subscribe({
             next: (data: any[]) => {
                 this.campuses = data || [];
+            },
+            error: () => {
+                this.campuses = [];
             }
         });
     }
@@ -529,7 +537,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         this.http.get<any[]>(subjectsUrl).subscribe({
             next: (data: any[]) => {
                 if (data && data.length > 0) {
-                    console.table(data);
                 }
 
                 this.subjects = data || [];
@@ -574,7 +581,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     this.schedules = data || [];
 
                     if (this.schedules.length > 0) {
-                        console.table(this.schedules);
                     }
                 },
                 error: (error: any) => {
@@ -593,7 +599,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
             this.http.get<any[]>(scheduleUrl).subscribe({
                 next: (data: any[]) => {
                     if (data && data.length > 0) {
-                        console.table(data);
                     }
 
                     this.schedules = data || [];

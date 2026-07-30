@@ -833,15 +833,17 @@ export class AssetsComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.userService.getCampuses().subscribe({
-            next: (data) => {
-                this.campuses = data || [];
-            },
-            error: (err) => {
-                console.warn('⚠️ Campuses API failed (403 Forbidden - check LabTech permissions):', err.message);
-                this.campuses = [];
-            }
-        });
+        // Only SuperAdmin has permission to list campuses (used for the campus filter dropdown)
+        if (this.isSuperAdmin) {
+            this.userService.getCampuses().subscribe({
+                next: (data) => {
+                    this.campuses = data || [];
+                },
+                error: () => {
+                    this.campuses = [];
+                }
+            });
+        }
 
         this.assetService.getUsers().subscribe({
             next: (data) => {

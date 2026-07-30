@@ -433,7 +433,7 @@ export class CorrectiveReportComponent implements OnInit {
     }
 
     loadHeaderImage(): void {
-        const imagePath = 'assets/header.png.png';
+        const imagePath = `${window.location.origin}/header.png`;
         this.http.get(imagePath, { responseType: 'blob' }).subscribe({
             next: (blob) => {
                 this.convertBlobToBase64(blob);
