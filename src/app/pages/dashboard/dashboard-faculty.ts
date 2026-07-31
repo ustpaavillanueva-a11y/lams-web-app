@@ -64,7 +64,7 @@ export function createEventId() {
                     <!-- Line Chart for Requests by Status -->
                     <div class="md:col-span-2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                         <h3 class="text-xl font-semibold dark:text-white text-center mb-4">Requests by Status (Monthly)</h3>
-                        <div style="height: 300px;">
+                        <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
                             <p-chart type="line" [data]="statusChartData" [options]="lineChartOptions"></p-chart>
                         </div>
                     </div>
@@ -427,6 +427,7 @@ export class DashboardFaculty implements OnInit {
                         color: textColor,
                         stepSize: 1
                     },
+                    grace: '10%',
                     grid: {
                         color: 'rgba(0, 0, 0, 0.05)',
                         drawBorder: false

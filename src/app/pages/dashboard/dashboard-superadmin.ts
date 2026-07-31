@@ -124,12 +124,16 @@ function createEventId() {
             <div class="flex gap-6 mt-6">
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Campus</h3>
-                    <p-chart type="bar" [data]="assetsByCampusChartData" [options]="chartOptions"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="assetsByCampusChartData" [options]="chartOptions"></p-chart>
+                    </div>
                 </div>
 
                 <div class="bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 flex-1">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Maintenance Requests by Campus</h3>
-                    <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="getHorizontalChartOptions()"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="horizontalChartOptions"></p-chart>
+                    </div>
                 </div>
             </div>
 
@@ -361,6 +365,7 @@ export class DashboardSuperAdmin implements OnInit {
     assetsByCampusChartData: any;
     maintenanceRequestsChartData: any;
     chartOptions: any;
+    horizontalChartOptions: any;
     activities: any[] = [];
     systemLogs: Activity[] = [];
     isLoadingSystemLogs = false;
@@ -388,6 +393,7 @@ export class DashboardSuperAdmin implements OnInit {
         this.loadCampuses();
         this.loadCalendarEvents();
         this.initChartOptions();
+        this.initHorizontalChartOptions();
     }
 
     loadCampusCount() {
@@ -528,13 +534,13 @@ export class DashboardSuperAdmin implements OnInit {
         return colors;
     }
 
-    getHorizontalChartOptions() {
+    initHorizontalChartOptions() {
         const documentStyle = getComputedStyle(document.documentElement);
         const textColor = documentStyle.getPropertyValue('--text-color');
         const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
         const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
-        return {
+        this.horizontalChartOptions = {
             indexAxis: 'y',
             maintainAspectRatio: false,
             aspectRatio: 0.8,
@@ -551,6 +557,7 @@ export class DashboardSuperAdmin implements OnInit {
                             weight: 500
                         }
                     },
+                    grace: '10%',
                     grid: {
                         color: surfaceBorder,
                         drawBorder: false
@@ -600,6 +607,7 @@ export class DashboardSuperAdmin implements OnInit {
                     ticks: {
                         color: textColorSecondary
                     },
+                    grace: '10%',
                     grid: {
                         color: surfaceBorder,
                         drawBorder: false

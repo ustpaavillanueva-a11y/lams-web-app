@@ -144,7 +144,7 @@ function createEventId() {
                 <!-- Assets by Laboratory Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Assets by Laboratory</p>
-                    <div class="relative" style="height: 300px;">
+                    <div class="relative overflow-hidden w-full h-[260px] sm:h-[300px] lg:h-[340px]">
                         <p-chart type="bar" [data]="assetsByLaboratoryChartData" [options]="chartOptions"></p-chart>
                     </div>
                 </div>
@@ -152,15 +152,15 @@ function createEventId() {
                 <!-- Maintenance Requests by Laboratory Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Maintenance Requests by Lab</p>
-                    <div class="relative" style="height: 300px;">
-                        <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="getHorizontalChartOptions()"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="horizontalChartOptions"></p-chart>
                     </div>
                 </div>
 
                 <!-- Maintenance Requests Status Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500 text-center">Maintenance Status</p>
-                    <div class="relative flex items-center justify-center" style="height: 300px;">
+                    <div class="relative overflow-hidden w-full h-[260px] sm:h-[280px] lg:h-[300px]">
                         <p-chart type="doughnut" [data]="maintenanceStatusChartData" [options]="donutChartOptions"></p-chart>
                     </div>
                 </div>
@@ -382,6 +382,7 @@ export class DashboardCampusAdmin implements OnInit {
     maintenanceRequestsChartData: any;
     maintenanceStatusChartData: any;
     chartOptions: any;
+    horizontalChartOptions: any;
     donutChartOptions: any;
 
     // Calendar properties
@@ -451,6 +452,7 @@ export class DashboardCampusAdmin implements OnInit {
         this.loadMaintenanceStatus();
         this.loadCalendarEvents();
         this.initChartOptions();
+        this.initHorizontalChartOptions();
         this.initDonutChartOptions();
     }
 
@@ -618,6 +620,7 @@ export class DashboardCampusAdmin implements OnInit {
                     ticks: {
                         color: textColorSecondary
                     },
+                    grace: '10%',
                     grid: {
                         color: surfaceBorder,
                         drawBorder: false
@@ -723,13 +726,13 @@ export class DashboardCampusAdmin implements OnInit {
         };
     }
 
-    getHorizontalChartOptions() {
+    initHorizontalChartOptions() {
         const documentStyle = getComputedStyle(document.documentElement);
         const textColor = documentStyle.getPropertyValue('--text-color');
         const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
         const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
-        return {
+        this.horizontalChartOptions = {
             indexAxis: 'y',
             maintainAspectRatio: false,
             aspectRatio: 0.8,
@@ -746,6 +749,7 @@ export class DashboardCampusAdmin implements OnInit {
                             weight: 500
                         }
                     },
+                    grace: '10%',
                     grid: {
                         color: surfaceBorder,
                         drawBorder: false
@@ -859,11 +863,11 @@ export class DashboardCampusAdmin implements OnInit {
             aspectRatio: 1,
             plugins: {
                 legend: {
-                    position: 'right',
+                    position: 'bottom',
                     labels: {
                         color: textColor,
                         usePointStyle: true,
-                        padding: 20,
+                        padding: 16,
                         font: {
                             size: 12
                         }

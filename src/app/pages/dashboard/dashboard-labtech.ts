@@ -90,7 +90,7 @@ export function createEventId() {
                     <!-- Line Chart for Requests by Service Type -->
                     <div class="md:col-span-2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                         <h4 class="text-lg font-semibold dark:text-white text-center mb-4">Requests by Service Type (Monthly)</h4>
-                        <div style="height: 300px;">
+                        <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
                             <p-chart type="line" [data]="serviceTypeChartData" [options]="lineChartOptions"></p-chart>
                         </div>
                     </div>
@@ -110,27 +110,35 @@ export function createEventId() {
 
             <!-- Lab schedule charts row -->
             <div class="flex flex-col md:flex-row gap-6 mt-6">
-                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
+                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Schedules by Day</h3>
-                    <p-chart type="bar" [data]="scheduleByDayChartData" [options]="barChartOptions"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="scheduleByDayChartData" [options]="barChartOptions"></p-chart>
+                    </div>
                 </div>
 
-                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
+                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Schedules by Laboratory</h3>
-                    <p-chart type="bar" [data]="scheduleByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="scheduleByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                    </div>
                 </div>
             </div>
 
             <!-- Assets and Maintenance by Laboratory charts row -->
             <div class="flex flex-col md:flex-row gap-6 mt-6">
-                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
+                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Assets by Laboratory</h3>
-                    <p-chart type="bar" [data]="assetsByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="assetsByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                    </div>
                 </div>
 
-                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6 h-96">
+                <div class="w-full md:w-1/2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Maintenance Requests by Laboratory</h3>
-                    <p-chart type="bar" [data]="maintenanceByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+                        <p-chart type="bar" [data]="maintenanceByLabChartData" [options]="horizontalChartOptions"></p-chart>
+                    </div>
                 </div>
             </div>
         </div>
@@ -486,6 +494,7 @@ export class DashboardLabTech implements OnInit {
                         color: textColor,
                         stepSize: 1
                     },
+                    grace: '10%',
                     grid: {
                         color: 'rgba(0, 0, 0, 0.05)',
                         drawBorder: false
@@ -517,6 +526,7 @@ export class DashboardLabTech implements OnInit {
                 },
                 y: {
                     ticks: { color: textColorSecondary },
+                    grace: '10%',
                     grid: { color: surfaceBorder, drawBorder: false }
                 }
             }
@@ -540,6 +550,7 @@ export class DashboardLabTech implements OnInit {
                         color: textColorSecondary,
                         font: { weight: 500 }
                     },
+                    grace: '10%',
                     grid: { color: surfaceBorder, drawBorder: false }
                 },
                 y: {
