@@ -23,6 +23,12 @@ const OVERLAP_COLOR: [number, number, number] = [107, 114, 128];
 
 @Injectable({ providedIn: 'root' })
 export class LabSchedulePdfService {
+    private readonly headerMarginX = 10;
+    private readonly headerY = 5;
+    private readonly headerBoxHeight = 22;
+    private readonly headerBoxWidth = 48;
+    private readonly headerLogoSize = 18;
+
     /**
      * Build and open the schedule PDF in a new tab (preview / save from the browser's PDF viewer)
      */
@@ -57,14 +63,107 @@ export class LabSchedulePdfService {
         });
     }
 
-    private addHeader(doc: jsPDF, headerImg: string): number {
+    private addHeader(doc: jsPDF, logoImg: string): number {
+        const marginX = this.headerMarginX;
+        const y = this.headerY;
+        const boxHeight = this.headerBoxHeight;
+        const boxWidth = this.headerBoxWidth;
+        const logoSize = this.headerLogoSize;
         const pageWidth = doc.internal.pageSize.getWidth();
-        if (headerImg) {
-            const imgHeight = 18;
-            doc.addImage(headerImg, 'PNG', 10, 5, pageWidth - 20, imgHeight);
-            return 5 + imgHeight + 6;
+
+        if (logoImg) {
+            const logoY = y + (boxHeight - logoSize) / 2;
+            doc.addImage(logoImg, 'PNG', marginX, logoY, logoSize, logoSize);
         }
-        return 12;
+
+        const textAreaStart = marginX + logoSize + 5;
+        const textAreaEnd = pageWidth - marginX - boxWidth - 5;
+        const textCenterX = (textAreaStart + textAreaEnd) / 2;
+
+        doc.setTextColor(70, 70, 70);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(12);
+        doc.text('UNIVERSITY OF SCIENCE AND TECHNOLOGY', textCenterX, y + 8, { align: 'center' });
+        doc.text('OF SOUTHERN PHILIPPINES', textCenterX, y + 13, { align: 'center' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(90, 90, 90);
+        doc.text('Alubijid | Balubal | Cagayan de Oro | Claveria | Jasaan | Oroquieta | Panaon | Villanueva', textCenterX, y + 17.5, { align: 'center' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.setTextColor(150, 150, 150);
+        doc.text('LABORATORY MANAGEMENT OFFICE', textCenterX, y + 21.5, { align: 'center' });
+
+        this.drawDocControlBox(doc, pageWidth - marginX - boxWidth, y, boxWidth, boxHeight, '1 of 1');
+
+        return y + boxHeight + 6;
+    }
+
+    // Replicates the LMO document control block (Document Code No. / Rev. No. / Effective Date / Page No.)
+    private drawDocControlBox(doc: jsPDF, x: number, y: number, width: number, height: number, pageLabel: string): void {
+        const navy: [number, number, number] = [26, 35, 65];
+        const rowH = height / 4;
+        const col3 = width / 3;
+
+        doc.setFillColor(...navy);
+        doc.rect(x, y, width, rowH, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.text('Document Code No.', x + width / 2, y + rowH / 2 + 1.1, { align: 'center' });
+
+        doc.setFillColor(255, 255, 255);
+        doc.rect(x, y + rowH, width, rowH, 'F');
+        doc.setTextColor(20, 20, 20);
+        doc.setFontSize(8);
+        doc.text('FM-USTP-LMO-02', x + width / 2, y + rowH * 1.5 + 1.1, { align: 'center' });
+
+        doc.setFillColor(...navy);
+        doc.rect(x, y + rowH * 2, width, rowH, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(5.5);
+        doc.text('Rev. No.', x + col3 / 2, y + rowH * 2.5 + 1.1, { align: 'center' });
+        doc.text('Effective Date', x + col3 + col3 / 2, y + rowH * 2.5 + 1.1, { align: 'center' });
+        doc.text('Page No.', x + col3 * 2 + col3 / 2, y + rowH * 2.5 + 1.1, { align: 'center' });
+
+        doc.setFillColor(255, 255, 255);
+        doc.rect(x, y + rowH * 3, width, rowH, 'F');
+        doc.setTextColor(20, 20, 20);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.text('00', x + col3 / 2, y + rowH * 3.5 + 1.2, { align: 'center' });
+        doc.text('03.16.26', x + col3 + col3 / 2, y + rowH * 3.5 + 1.2, { align: 'center' });
+        doc.text(pageLabel, x + col3 * 2 + col3 / 2, y + rowH * 3.5 + 1.2, { align: 'center' });
+
+        doc.setDrawColor(150, 150, 150);
+        doc.setLineWidth(0.1);
+        doc.rect(x, y, width, height);
+        doc.line(x, y + rowH, x + width, y + rowH);
+        doc.line(x, y + rowH * 2, x + width, y + rowH * 2);
+        doc.line(x, y + rowH * 3, x + width, y + rowH * 3);
+        doc.line(x + col3, y + rowH * 2, x + col3, y + height);
+        doc.line(x + col3 * 2, y + rowH * 2, x + col3 * 2, y + height);
+    }
+
+    // Redraws just the "Page No." cell once the true page count is known (called after autoTable finishes)
+    private updatePageNumberLabel(doc: jsPDF, pageLabel: string): void {
+        const boxX = doc.internal.pageSize.getWidth() - this.headerMarginX - this.headerBoxWidth;
+        const rowH = this.headerBoxHeight / 4;
+        const col3 = this.headerBoxWidth / 3;
+        const cellX = boxX + col3 * 2;
+        const cellY = this.headerY + rowH * 3;
+
+        doc.setFillColor(255, 255, 255);
+        doc.rect(cellX, cellY, col3, rowH, 'F');
+        doc.setDrawColor(150, 150, 150);
+        doc.setLineWidth(0.1);
+        doc.rect(cellX, cellY, col3, rowH);
+        doc.setTextColor(20, 20, 20);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.text(pageLabel, cellX + col3 / 2, cellY + rowH / 2 + 1.2, { align: 'center' });
     }
 
     private addFooter(doc: jsPDF, footerImg: string): void {
@@ -181,7 +280,7 @@ export class LabSchedulePdfService {
     }
 
     private async buildDocument(data: LabScheduleExportData): Promise<jsPDF> {
-        const [headerImg, footerImg] = await Promise.all([this.loadImageAsBase64(`${window.location.origin}/header.png`), this.loadImageAsBase64(`${window.location.origin}/footer.png`)]);
+        const [headerImg, footerImg] = await Promise.all([this.loadImageAsBase64(`${window.location.origin}/ustp-logo.png`), this.loadImageAsBase64(`${window.location.origin}/footer.png`)]);
 
         const doc = new jsPDF('portrait', 'mm', 'a4');
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -189,19 +288,21 @@ export class LabSchedulePdfService {
 
         const startY = this.addHeader(doc, headerImg);
 
+        const titleY = startY + 10;
+
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(data.headerTitle, pageWidth / 2, startY, { align: 'center' });
+        doc.text(data.headerTitle, this.headerMarginX, titleY, { align: 'left' });
 
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, pageWidth / 2, startY + 5, { align: 'center' });
+        doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, pageWidth - this.headerMarginX, titleY, { align: 'right' });
 
         const head = [['Time', ...data.daysOfWeek.map((day) => day.slice(0, 3))]];
         const body = this.buildBody(data);
 
         // Stretch body rows so the table fills the remaining page height down to the footer
-        const tableStartY = startY + 10;
+        const tableStartY = titleY + 9;
         const headRowHeight = 8;
         const bottomReserve = footerImg ? 20 : 8;
         const availableBodyHeight = pageHeight - tableStartY - headRowHeight - bottomReserve;
@@ -239,7 +340,7 @@ export class LabSchedulePdfService {
                 7: { cellWidth: 25.43 }
             },
             tableWidth: 194,
-            margin: { left: 8, right: 8, bottom: 20, top: 10 },
+            margin: { left: 8, right: 8, bottom: 20, top: tableStartY },
             didDrawPage: () => {
                 if (doc.getCurrentPageInfo().pageNumber > 1) {
                     this.addHeader(doc, headerImg);
@@ -247,6 +348,12 @@ export class LabSchedulePdfService {
                 this.addFooter(doc, footerImg);
             }
         });
+
+        const totalPages = doc.getNumberOfPages();
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+            doc.setPage(pageNum);
+            this.updatePageNumberLabel(doc, `${pageNum} of ${totalPages}`);
+        }
 
         return doc;
     }
