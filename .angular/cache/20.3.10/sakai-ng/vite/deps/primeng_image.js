@@ -2,9 +2,6 @@ import {
   FocusTrap
 } from "./chunk-S2NBXIRK.js";
 import {
-  zindexutils
-} from "./chunk-OLJED6AA.js";
-import {
   blockBodyScroll,
   unblockBodyScroll
 } from "./chunk-P6SMTJBG.js";
@@ -21,16 +18,16 @@ import {
   zindexutils
 } from "./chunk-OLJED6AA.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-75JTQVRY.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
 import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-75JTQVRY.js";
 import {
   PrimeTemplate,
   SharedModule

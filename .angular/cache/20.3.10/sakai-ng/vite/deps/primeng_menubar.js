@@ -1,29 +1,15 @@
 import {
-<<<<<<< HEAD
+  Badge,
+  BadgeModule
+} from "./chunk-7LJ6CF6F.js";
+import {
   Tooltip,
   TooltipModule
-} from "./chunk-BIFJ4FDJ.js";
-import {
-  Badge,
-  BadgeModule
-} from "./chunk-GIUYGYUT.js";
+} from "./chunk-LPFISGDZ.js";
 import "./chunk-P6SMTJBG.js";
-=======
-  Badge,
-  BadgeModule
-} from "./chunk-GIUYGYUT.js";
->>>>>>> fix-issue
 import {
   Ripple
 } from "./chunk-7V5GWXVN.js";
-import {
-  Tooltip,
-  TooltipModule
-} from "./chunk-ADFDAG55.js";
-import {
-  zindexutils
-} from "./chunk-OLJED6AA.js";
-import "./chunk-P6SMTJBG.js";
 import {
   AngleDownIcon,
   AngleRightIcon,
@@ -34,10 +20,6 @@ import {
   zindexutils
 } from "./chunk-OLJED6AA.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-75JTQVRY.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
@@ -45,14 +27,13 @@ import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-75JTQVRY.js";
+import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-HVVMUKCH.js";
-import {
-  RouterLink,
-  RouterLinkActive,
-  RouterModule
-} from "./chunk-UOVNMUXR.js";
 import "./chunk-OTTARZB5.js";
 import {
   J,
@@ -65,6 +46,11 @@ import {
   s3 as s2,
   z2 as z
 } from "./chunk-U4LT4ZJN.js";
+import {
+  RouterLink,
+  RouterLinkActive,
+  RouterModule
+} from "./chunk-UOVNMUXR.js";
 import "./chunk-ZLAPKAAG.js";
 import "./chunk-AS6KI2MM.js";
 import "./chunk-4BOPXW5F.js";

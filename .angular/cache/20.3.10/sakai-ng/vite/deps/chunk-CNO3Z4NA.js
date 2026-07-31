@@ -1,13 +1,13 @@
 import {
-  Badge,
-  BadgeModule
-} from "./chunk-GIUYGYUT.js";
-import {
   Fluid
-} from "./chunk-4EIVXG34.js";
+} from "./chunk-5KG75P36.js";
 import {
   AutoFocus
 } from "./chunk-7QHXTJMK.js";
+import {
+  Badge,
+  BadgeModule
+} from "./chunk-7LJ6CF6F.js";
 import {
   Ripple
 } from "./chunk-7V5GWXVN.js";
@@ -15,15 +15,15 @@ import {
   SpinnerIcon
 } from "./chunk-XJ4CG35O.js";
 import {
-  Bind
-} from "./chunk-75JTQVRY.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
 import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
+import {
+  Bind
+} from "./chunk-75JTQVRY.js";
 import {
   PrimeTemplate,
   SharedModule
@@ -2079,4 +2079,4 @@ export {
   Button,
   ButtonModule
 };
-//# sourceMappingURL=chunk-2ZQ7OSSJ.js.map
+//# sourceMappingURL=chunk-CNO3Z4NA.js.map

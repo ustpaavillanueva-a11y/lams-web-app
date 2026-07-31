@@ -1,12 +1,9 @@
 import {
-  zindexutils
-} from "./chunk-OLJED6AA.js";
-import {
   ConnectedOverlayScrollHandler
 } from "./chunk-P6SMTJBG.js";
 import {
-  Bind
-} from "./chunk-75JTQVRY.js";
+  zindexutils
+} from "./chunk-OLJED6AA.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -14,6 +11,9 @@ import {
 import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
+import {
+  Bind
+} from "./chunk-75JTQVRY.js";
 import {
   OverlayService,
   PrimeTemplate,

@@ -1,32 +1,17 @@
 import {
-<<<<<<< HEAD
-  Tooltip,
-  TooltipModule
-} from "./chunk-BIFJ4FDJ.js";
-import {
-=======
->>>>>>> fix-issue
   Badge,
   BadgeModule
-} from "./chunk-GIUYGYUT.js";
-import {
-<<<<<<< HEAD
-  DomHandler
-} from "./chunk-P6SMTJBG.js";
-=======
-  Ripple
-} from "./chunk-7V5GWXVN.js";
+} from "./chunk-7LJ6CF6F.js";
 import {
   Tooltip,
   TooltipModule
-} from "./chunk-ADFDAG55.js";
-import {
-  zindexutils
-} from "./chunk-OLJED6AA.js";
->>>>>>> fix-issue
+} from "./chunk-LPFISGDZ.js";
 import {
   DomHandler
 } from "./chunk-P6SMTJBG.js";
+import {
+  Ripple
+} from "./chunk-7V5GWXVN.js";
 import {
   AngleRightIcon
 } from "./chunk-XJ4CG35O.js";
@@ -35,10 +20,6 @@ import {
   zindexutils
 } from "./chunk-OLJED6AA.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-75JTQVRY.js";
-import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
@@ -46,14 +27,14 @@ import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-75JTQVRY.js";
+import {
   OverlayService,
   PrimeTemplate,
   SharedModule
 } from "./chunk-HVVMUKCH.js";
-import {
-  RouterLink,
-  RouterModule
-} from "./chunk-UOVNMUXR.js";
 import "./chunk-OTTARZB5.js";
 import {
   $t,
@@ -80,6 +61,10 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
+import {
+  RouterLink,
+  RouterModule
+} from "./chunk-UOVNMUXR.js";
 import "./chunk-ZLAPKAAG.js";
 import "./chunk-AS6KI2MM.js";
 import "./chunk-4BOPXW5F.js";

@@ -65,7 +65,7 @@ import Swal from 'sweetalert2';
                         <label class="font-semibold">Campus:</label>
                         <p-select [(ngModel)]="selectedCampus" [options]="campuses" optionLabel="campusName" placeholder="All Campuses" [showClear]="true" styleClass="w-48" appendTo="body" (onChange)="onCampusFilterChange()" />
                     </div>
-                    <div class="flex items-center gap-2" *ngIf="!isFaculty">
+                    <div class="flex items-center gap-2">
                         <label class="font-semibold">Laboratory:</label>
                         <p-select
                             [(ngModel)]="selectedLaboratory"
@@ -561,6 +561,14 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     this.schedules = data || [];
                 }
             });
+        } else if (this.isFaculty) {
+            // Cleared filter: fall back to showing all of the faculty member's schedules
+            this.messageService.add({
+                severity: 'info',
+                summary: 'Filter Cleared',
+                detail: 'Showing all your schedules'
+            });
+            this.loadSchedules();
         } else {
             this.messageService.add({
                 severity: 'info',
@@ -572,16 +580,13 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
     }
 
     loadSchedules() {
-        // Faculty users load all their schedules without laboratory filter
+        // Faculty users load all their schedules, then optionally narrow by the Laboratory filter
         if (this.isFaculty) {
             const scheduleUrl = `${environment.apiUrl}/faculty-schedules`;
             this.http.get<any[]>(scheduleUrl).subscribe({
                 next: (data: any[]) => {
-                    // Show all schedules for Faculty (no laboratory filter)
-                    this.schedules = data || [];
-
-                    if (this.schedules.length > 0) {
-                    }
+                    const allSchedules = data || [];
+                    this.schedules = this.selectedLaboratory ? allSchedules.filter((s) => s.laboratory?.laboratoryId === this.selectedLaboratory.laboratoryId) : allSchedules;
                 },
                 error: (error: any) => {
                     this.schedules = [];

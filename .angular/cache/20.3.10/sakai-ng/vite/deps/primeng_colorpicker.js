@@ -3,21 +3,16 @@ import {
   AutoFocusModule
 } from "./chunk-7QHXTJMK.js";
 import {
-<<<<<<< HEAD
   BaseEditableHolder
 } from "./chunk-A7H3FXNJ.js";
 import "./chunk-XXGW2ZKJ.js";
-=======
-  zindexutils
-} from "./chunk-OLJED6AA.js";
->>>>>>> fix-issue
 import {
   ConnectedOverlayScrollHandler,
   DomHandler
 } from "./chunk-P6SMTJBG.js";
 import {
-  Bind
-} from "./chunk-75JTQVRY.js";
+  zindexutils
+} from "./chunk-OLJED6AA.js";
 import {
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
@@ -25,19 +20,22 @@ import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
 import {
+  Bind
+} from "./chunk-75JTQVRY.js";
+import {
   OverlayService,
   SharedModule,
   TranslationKeys
 } from "./chunk-HVVMUKCH.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-SLWC4WYB.js";
 import "./chunk-OTTARZB5.js";
 import {
   D,
   I,
   Yt
 } from "./chunk-U4LT4ZJN.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-SLWC4WYB.js";
 import "./chunk-GAL5RSMX.js";
 import {
   animate,

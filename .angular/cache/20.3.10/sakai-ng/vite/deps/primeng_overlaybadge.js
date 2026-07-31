@@ -1,10 +1,7 @@
 import {
   Badge,
   BadgeModule
-} from "./chunk-GIUYGYUT.js";
-import {
-  Bind
-} from "./chunk-75JTQVRY.js";
+} from "./chunk-7LJ6CF6F.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -12,6 +9,9 @@ import {
 import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
+import {
+  Bind
+} from "./chunk-75JTQVRY.js";
 import {
   SharedModule
 } from "./chunk-HVVMUKCH.js";

@@ -1,31 +1,19 @@
 import {
-  Ripple
-} from "./chunk-7V5GWXVN.js";
-import {
   Tooltip,
   TooltipModule
-} from "./chunk-ADFDAG55.js";
-import {
-<<<<<<<< HEAD:.angular/cache/20.3.10/sakai-ng/vite/deps/chunk-FFIS6VWH.js
-  Ripple
-} from "./chunk-7V5GWXVN.js";
-========
-  zindexutils
-} from "./chunk-OLJED6AA.js";
+} from "./chunk-LPFISGDZ.js";
 import {
   ConnectedOverlayScrollHandler
 } from "./chunk-P6SMTJBG.js";
->>>>>>>> fix-issue:.angular/cache/20.3.10/sakai-ng/vite/deps/chunk-45YOUVNS.js
+import {
+  Ripple
+} from "./chunk-7V5GWXVN.js";
 import {
   AngleRightIcon
 } from "./chunk-XJ4CG35O.js";
 import {
   zindexutils
 } from "./chunk-OLJED6AA.js";
-import {
-  Bind,
-  BindModule
-} from "./chunk-75JTQVRY.js";
 import {
   BaseComponent,
   PARENT_INSTANCE
@@ -34,15 +22,14 @@ import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
 import {
+  Bind,
+  BindModule
+} from "./chunk-75JTQVRY.js";
+import {
   OverlayService,
   PrimeTemplate,
   SharedModule
 } from "./chunk-HVVMUKCH.js";
-import {
-  RouterLink,
-  RouterLinkActive,
-  RouterModule
-} from "./chunk-UOVNMUXR.js";
 import {
   D,
   I,
@@ -66,6 +53,11 @@ import {
   transition,
   trigger
 } from "./chunk-GGMOGVES.js";
+import {
+  RouterLink,
+  RouterLinkActive,
+  RouterModule
+} from "./chunk-UOVNMUXR.js";
 import {
   CommonModule,
   NgForOf,
@@ -2219,8 +2211,4 @@ export {
   TieredMenu,
   TieredMenuModule
 };
-<<<<<<<< HEAD:.angular/cache/20.3.10/sakai-ng/vite/deps/chunk-FFIS6VWH.js
-//# sourceMappingURL=chunk-FFIS6VWH.js.map
-========
-//# sourceMappingURL=chunk-45YOUVNS.js.map
->>>>>>>> fix-issue:.angular/cache/20.3.10/sakai-ng/vite/deps/chunk-45YOUVNS.js
+//# sourceMappingURL=chunk-ZONQY643.js.map
