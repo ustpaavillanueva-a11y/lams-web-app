@@ -624,7 +624,7 @@ import Swal from 'sweetalert2';
                                     <th>Requested By</th>
                                     <th>Request Date</th>
                                     <th>Date Approved</th>
-                                    <th>Date Starts</th>
+                                    <th>Date Started</th>
                                     <th>Date Completed</th>
                                     <th>Status</th>
                                     <th>Actions</th>
