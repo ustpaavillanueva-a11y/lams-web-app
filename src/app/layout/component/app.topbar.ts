@@ -553,15 +553,11 @@ export class AppTopbar {
 
             let foundAsset: any = null;
 
-            // Compare each asset's propertyNumber and qrCode with scanned value
-            assets?.forEach((asset, index) => {
-                // Check if propertyNumber matches
-                if (asset.propertyNumber === this.scanResult || asset.propertyNumber?.toString() === this.scanResult?.toString()) {
-                    foundAsset = asset;
-                }
+            const matches = (value: unknown) => value != null && value.toString() === this.scanResult?.toString();
 
-                // Check if qrCode matches
-                if (asset.qrCode === this.scanResult || asset.qrCode?.toString() === this.scanResult?.toString()) {
+            // Compare each asset's propertyNumber, qrCode, and serial number with scanned value
+            assets?.forEach((asset) => {
+                if (matches(asset.propertyNumber) || matches(asset.qrCode) || matches(asset.inventoryCustodianSlip?.serialNumber)) {
                     foundAsset = asset;
                 }
             });
@@ -576,6 +572,7 @@ export class AppTopbar {
                         <div class="text-left">
                             <p><strong>Asset ID:</strong> ${foundAsset.assetId}</p>
                             <p><strong>Property Number:</strong> ${foundAsset.propertyNumber}</p>
+                            <p><strong>Serial Number:</strong> ${foundAsset.inventoryCustodianSlip?.serialNumber || 'N/A'}</p>
                             <p><strong>Asset Name:</strong> ${foundAsset.assetName}</p>
                             <p><strong>Category:</strong> ${foundAsset.category}</p>
                             <p><strong>Location:</strong> ${foundAsset.foundCluster}</p>
@@ -589,12 +586,10 @@ export class AppTopbar {
                     cancelButtonText: 'Close'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        this.router.navigate(['/pages/crud']);
+                        this.router.navigate(['/app/pages/crud'], { queryParams: { assetId: foundAsset.assetId } });
                     }
                 });
             } else {
-                assets?.forEach((asset, idx) => {});
-
                 Swal.fire({
                     title: 'Asset Not Found',
                     text: `No asset found with value: ${this.scanResult}`,

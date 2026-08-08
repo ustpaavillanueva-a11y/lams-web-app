@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -644,6 +644,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private userService: UserService,
         private router: Router,
+        private route: ActivatedRoute,
         private qrCodeService: QrCodeService,
         private assetExportService: AssetExportService,
         private assetFormService: AssetFormService,
@@ -659,6 +660,12 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.loadReferenceData();
         this.loadMaintenanceDialogOptions();
         this.connectToWebSocket();
+
+        // Opened from the QR scanner with a specific asset - jump straight to its history
+        const assetId = this.route.snapshot.queryParamMap.get('assetId');
+        if (assetId) {
+            this.view({ assetId } as Asset);
+        }
     }
 
     /**
