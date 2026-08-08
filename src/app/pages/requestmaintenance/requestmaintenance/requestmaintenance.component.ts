@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -115,11 +115,58 @@ import Swal from 'sweetalert2';
                 background: white;
                 border: 1px solid #e5e7eb;
                 border-radius: 0.5rem;
+            }
+
+            .table-scroll-container {
+                position: relative;
+            }
+
+            .table-wrapper.scrollable {
                 overflow-x: auto;
+                scrollbar-width: none;
+            }
+
+            .table-wrapper.scrollable::-webkit-scrollbar {
+                display: none;
+            }
+
+            .table-wrapper.scrollable table {
+                table-layout: auto;
+                min-width: 1150px;
+            }
+
+            .table-wrapper.scrollable th,
+            .table-wrapper.scrollable td {
+                white-space: nowrap;
+                word-break: normal;
+            }
+
+            .scroll-columns-btn {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                z-index: 5;
+                display: flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.4rem 0.75rem;
+                border-radius: 999px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+                cursor: pointer;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: #374151;
+            }
+
+            .scroll-columns-btn:hover {
+                background: #f3f4f6;
             }
 
             table {
                 width: 100%;
+                table-layout: fixed;
                 border-collapse: collapse;
                 font-size: 14px;
             }
@@ -135,9 +182,8 @@ import Swal from 'sweetalert2';
                 font-size: 15px;
                 font-weight: 600;
                 color: #374151;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                white-space: normal;
+                word-break: break-word;
             }
 
             table td {
@@ -145,10 +191,8 @@ import Swal from 'sweetalert2';
                 border-bottom: 1px solid #e5e7eb;
                 color: #1f2937;
                 font-size: 14px;
-                height: 32px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
+                white-space: normal;
+                word-break: break-word;
             }
 
             table tbody tr:hover {
@@ -562,7 +606,12 @@ import Swal from 'sweetalert2';
 
                 <!-- Completed Tab -->
                 <div class="tab-content" [class.active]="activeTabIndex === 3">
-                    <div class="table-wrapper" *ngIf="!loading">
+                    <div class="table-scroll-container" *ngIf="!loading">
+                        <button type="button" class="scroll-columns-btn" *ngIf="filteredCompletedItems.length > 0" (click)="toggleCompletedColumns()">
+                            <i class="pi" [ngClass]="completedColumnsExpanded ? 'pi-angle-left' : 'pi-angle-right'"></i>
+                            {{ completedColumnsExpanded ? 'Back' : 'More columns' }}
+                        </button>
+                        <div class="table-wrapper scrollable" #completedTableWrapper>
                         <table *ngIf="filteredCompletedItems.length > 0">
                             <thead>
                                 <tr>
@@ -570,7 +619,13 @@ import Swal from 'sweetalert2';
                                         <input type="checkbox" [checked]="isAllSelected('completed')" (change)="toggleSelectAll('completed')" />
                                     </th>
                                     <th>ID</th>
-                                    <th>Maintenance Name</th>
+                                    <th>Asset Name</th>
+                                    <th>Maintenance Type</th>
+                                    <th>Requested By</th>
+                                    <th>Request Date</th>
+                                    <th>Date Approved</th>
+                                    <th>Date Starts</th>
+                                    <th>Date Completed</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -582,6 +637,12 @@ import Swal from 'sweetalert2';
                                     </td>
                                     <td>{{ formatId(row.requestId || row.maintenanceRequest?.requestId) }}</td>
                                     <td>{{ row.maintenanceName || row.maintenanceRequest?.maintenanceName }}</td>
+                                    <td>{{ row.maintenanceRequest?.maintenanceType?.maintenanceTypeName || row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
+                                    <td>{{ getFullName(row.maintenanceRequest || row) || 'N/A' }}</td>
+                                    <td>{{ (row.maintenanceRequest?.requestDate || row.maintenanceRequest?.createdAt || row.requestDate || row.createdAt) | date: 'short' }}</td>
+                                    <td>{{ row.approvedAt | date: 'short' }}</td>
+                                    <td>{{ row.inProgressAt | date: 'short' }}</td>
+                                    <td>{{ row.completedAt | date: 'short' }}</td>
                                     <td>
                                         <span class="tag tag-success">{{ row.maintenanceStatus?.requestStatusName || 'Completed' }}</span>
                                     </td>
@@ -594,6 +655,8 @@ import Swal from 'sweetalert2';
                                 </tr>
                             </tbody>
                         </table>
+                        <div class="empty-message" *ngIf="filteredCompletedItems.length === 0">No completed requests found</div>
+                        </div>
                         <!-- Paginator for Completed -->
                         <div class="paginator" *ngIf="filteredCompletedItems.length > 0">
                             <span class="paginator-info">Showing {{ getPageStart('completed') }} to {{ getPageEnd('completed') }} of {{ getTotalItems('completed') }} requests</span>
@@ -606,7 +669,6 @@ import Swal from 'sweetalert2';
                                 <option *ngFor="let opt of rowsPerPageOptions" [value]="opt">{{ opt }}</option>
                             </select>
                         </div>
-                        <div class="empty-message" *ngIf="filteredCompletedItems.length === 0">No completed requests found</div>
                     </div>
                 </div>
             </div>
@@ -713,6 +775,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         actualReading: ''
     };
     selectedItem: any = null;
+
+    @ViewChild('completedTableWrapper') completedTableWrapper?: ElementRef<HTMLDivElement>;
+    completedColumnsExpanded = false;
 
     constructor(
         private maintenanceService: MaintenanceService,
@@ -994,6 +1059,14 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.scheduledPage = 1;
         this.inProgressPage = 1;
         this.completedPage = 1;
+    }
+
+    toggleCompletedColumns() {
+        const el = this.completedTableWrapper?.nativeElement;
+        if (!el) return;
+
+        this.completedColumnsExpanded = !this.completedColumnsExpanded;
+        el.scrollTo({ left: this.completedColumnsExpanded ? el.scrollWidth : 0, behavior: 'smooth' });
     }
 
     onTabChange(event: any) {
@@ -1750,15 +1823,45 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
     }
 
     exportCSV() {
-        let csv = 'Maintenance Name,Status,ID\n';
-        this.items.forEach((item) => {
-            csv += `${(item.maintenanceName || '').replace(/,/g, ';')},${item.maintenanceStatus?.requestStatusName || 'N/A'},${item.requestId}\n`;
-        });
+        const esc = (value: any) => String(value ?? '').replace(/,/g, ';');
+        const dateStr = (value: any) => (value ? new Date(value).toLocaleString() : '');
+
+        let csv = '';
+        const tabName = ['pending', 'scheduled', 'in-progress', 'completed'][this.activeTabIndex];
+
+        if (this.activeTabIndex === 0) {
+            csv = 'ID,Asset Name,Maintenance Type,Service Name,Priority,Request Date,Requested By,Status\n';
+            this.filteredPendingItems.forEach((row) => {
+                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(row.priorityLevel?.priorityLevelName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
+            });
+        } else if (this.activeTabIndex === 1) {
+            csv = 'ID,Maintenance Name,Assigned Technician,Scheduled Date,Status\n';
+            this.filteredScheduledItems.forEach((row) => {
+                const requestId = row.maintenanceRequest?.requestId || row.requestId;
+                const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
+                csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(dateStr(row.scheduledAt))},${esc(row.status || 'Scheduled')}\n`;
+            });
+        } else if (this.activeTabIndex === 2) {
+            csv = 'ID,Maintenance Name,Assigned Technician,Started At,Status\n';
+            this.filteredInProgressItems.forEach((row) => {
+                const requestId = row.maintenanceRequest?.requestId || row.requestId;
+                const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
+                csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(dateStr(row.inProgressAt))},${esc(row.status || 'In Progress')}\n`;
+            });
+        } else {
+            csv = 'ID,Asset Name,Maintenance Type,Requested By,Request Date,Date Approved,Date Starts,Date Completed,Status\n';
+            this.filteredCompletedItems.forEach((row) => {
+                const requestId = row.requestId || row.maintenanceRequest?.requestId;
+                const mr = row.maintenanceRequest || row;
+                csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceName || mr.maintenanceName)},${esc(mr.maintenanceType?.maintenanceTypeName)},${esc(this.getFullName(mr))},${esc(dateStr(mr.requestDate || mr.createdAt))},${esc(dateStr(row.approvedAt))},${esc(dateStr(row.inProgressAt))},${esc(dateStr(row.completedAt))},${esc(row.maintenanceStatus?.requestStatusName || 'Completed')}\n`;
+            });
+        }
+
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'maintenance-requests.csv';
+        a.download = `maintenance-${tabName}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     }
