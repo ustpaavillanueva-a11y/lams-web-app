@@ -457,21 +457,26 @@ export class AppTopbar {
 
     async requestCameraPermission() {
         try {
-            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+            const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     width: { ideal: 640 },
                     height: { ideal: 480 },
                     facingMode: 'environment' // Use back camera if available
                 }
             });
+
+            // Only used to resolve which physical camera was granted; the actual
+            // scanning stream is opened by decodeFromVideoDevice below.
+            const deviceId = stream.getVideoTracks()[0]?.getSettings().deviceId;
+            stream.getTracks().forEach((track) => track.stop());
+
             this.hasPermission = true;
             this.errorMessage = null;
 
             // Start video stream after view is initialized
             setTimeout(() => {
                 if (this.videoElement && this.videoElement.nativeElement) {
-                    this.videoElement.nativeElement.srcObject = this.mediaStream;
-                    this.startScanning();
+                    this.startScanning(deviceId);
                 }
             }, 100);
         } catch (error) {
@@ -480,7 +485,7 @@ export class AppTopbar {
         }
     }
 
-    async startScanning() {
+    async startScanning(deviceId?: string) {
         if (this.scanningInterval) {
             clearInterval(this.scanningInterval);
         }
@@ -492,8 +497,8 @@ export class AppTopbar {
         this.codeReader = new BrowserMultiFormatReader();
 
         try {
-            // Start continuous scanning
-            await this.codeReader.decodeFromVideoDevice(null, this.videoElement.nativeElement, (result, err) => {
+            // Start continuous scanning, reusing the camera that was granted permission above
+            await this.codeReader.decodeFromVideoDevice(deviceId ?? null, this.videoElement.nativeElement, (result, err) => {
                 if (result) {
                     this.onQRCodeDetected(result.getText());
                     if (this.codeReader) {
