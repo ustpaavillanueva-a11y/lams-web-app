@@ -1846,21 +1846,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     ...buttons
                 }).then((result) => {
                     if (result.isDenied && this.isLabTech) {
-                        // Show confirmation before editing
-                        Swal.fire({
-                            title: 'Update Asset?',
-                            text: 'Are you sure you want to update this asset?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, Update',
-                            cancelButtonText: 'Cancel',
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#6c757d'
-                        }).then((confirmResult) => {
-                            if (confirmResult.isConfirmed) {
-                                this.edit(fullAsset);
-                            }
-                        });
+                        this.edit(fullAsset);
                     }
                 });
             },
@@ -1992,6 +1978,23 @@ export class AssetsComponent implements OnInit, OnDestroy {
             return;
         }
 
+        Swal.fire({
+            title: 'Update Asset?',
+            text: 'Are you sure you want to update this asset?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Update',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#6c757d'
+        }).then((confirmResult) => {
+            if (confirmResult.isConfirmed) {
+                this.performAssetUpdate();
+            }
+        });
+    }
+
+    private performAssetUpdate() {
         this.isSubmitting = true;
 
         // Prepare the update payload

@@ -32,102 +32,102 @@ function createEventId() {
     imports: [CommonModule, UIChart, TableModule, FullCalendarModule],
     template: `
         <div class="p-6">
-            <!-- Top Section: Cards and Calendar -->
+            <!-- Row 1: Stats Cards and Calendar -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Left Side: Stats Cards -->
+                <!-- Stats Cards -->
                 <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Total Departments Card -->
-                    <div class="stat-card stat-card-purple group">
-                        <div class="stat-card-bg"></div>
-                        <div class="stat-card-content">
-                            <div class="stat-icon-wrapper stat-icon-purple">
-                                <i class="pi pi-sitemap text-2xl"></i>
-                            </div>
-                            <div class="stat-info">
-                                <p class="stat-label">Total Departments</p>
-                                <h3 class="stat-value">{{ departmentCount }}</h3>
-                            </div>
+                <!-- Total Departments Card -->
+                <div class="stat-card stat-card-purple group">
+                    <div class="stat-card-bg"></div>
+                    <div class="stat-card-content">
+                        <div class="stat-icon-wrapper stat-icon-purple">
+                            <i class="pi pi-sitemap text-2xl"></i>
                         </div>
-                        <div class="stat-decoration"></div>
-                    </div>
-
-                    <!-- Total Users Card -->
-                    <div class="stat-card stat-card-green group">
-                        <div class="stat-card-bg"></div>
-                        <div class="stat-card-content">
-                            <div class="stat-icon-wrapper stat-icon-green">
-                                <i class="pi pi-users text-2xl"></i>
-                            </div>
-                            <div class="stat-info">
-                                <p class="stat-label">Total Users</p>
-                                <h3 class="stat-value">{{ userCount }}</h3>
-                            </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Departments</p>
+                            <h3 class="stat-value">{{ departmentCount }}</h3>
                         </div>
-                        <div class="stat-decoration"></div>
                     </div>
-
-                    <!-- Total Laboratories Card -->
-                    <div class="stat-card stat-card-blue group">
-                        <div class="stat-card-bg"></div>
-                        <div class="stat-card-content">
-                            <div class="stat-icon-wrapper stat-icon-blue">
-                                <i class="pi pi-desktop text-2xl"></i>
-                            </div>
-                            <div class="stat-info">
-                                <p class="stat-label">Total Laboratories</p>
-                                <h3 class="stat-value">{{ laboratoryCount }}</h3>
-                            </div>
-                        </div>
-                        <div class="stat-decoration"></div>
-                    </div>
-
-                    <!-- Total Assets Card -->
-                    <div class="stat-card stat-card-orange group">
-                        <div class="stat-card-bg"></div>
-                        <div class="stat-card-content">
-                            <div class="stat-icon-wrapper stat-icon-orange">
-                                <i class="pi pi-box text-2xl"></i>
-                            </div>
-                            <div class="stat-info">
-                                <p class="stat-label">Total Assets</p>
-                                <h3 class="stat-value">{{ assetCount }}</h3>
-                            </div>
-                        </div>
-                        <div class="stat-decoration"></div>
-                    </div>
-
-                    <!-- Faculty Count Card -->
-                    <div class="stat-card stat-card-indigo group">
-                        <div class="stat-card-bg"></div>
-                        <div class="stat-card-content">
-                            <div class="stat-icon-wrapper stat-icon-indigo">
-                                <i class="pi pi-user text-2xl"></i>
-                            </div>
-                            <div class="stat-info">
-                                <p class="stat-label">Faculty</p>
-                                <h3 class="stat-value">{{ facultyCount }}</h3>
-                            </div>
-                        </div>
-                        <div class="stat-decoration"></div>
-                    </div>
-
-                    <!-- LabTech Count Card -->
-                    <div class="stat-card stat-card-teal group">
-                        <div class="stat-card-bg"></div>
-                        <div class="stat-card-content">
-                            <div class="stat-icon-wrapper stat-icon-teal">
-                                <i class="pi pi-user-edit text-2xl"></i>
-                            </div>
-                            <div class="stat-info">
-                                <p class="stat-label">Lab Technicians</p>
-                                <h3 class="stat-value">{{ labTechCount }}</h3>
-                            </div>
-                        </div>
-                        <div class="stat-decoration"></div>
-                    </div>
+                    <div class="stat-decoration"></div>
                 </div>
 
-                <!-- Right Side: Calendar -->
+                <!-- Total Users Card -->
+                <div class="stat-card stat-card-green group">
+                    <div class="stat-card-bg"></div>
+                    <div class="stat-card-content">
+                        <div class="stat-icon-wrapper stat-icon-green">
+                            <i class="pi pi-users text-2xl"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Users</p>
+                            <h3 class="stat-value">{{ userCount }}</h3>
+                        </div>
+                    </div>
+                    <div class="stat-decoration"></div>
+                </div>
+
+                <!-- Total Laboratories Card -->
+                <div class="stat-card stat-card-blue group">
+                    <div class="stat-card-bg"></div>
+                    <div class="stat-card-content">
+                        <div class="stat-icon-wrapper stat-icon-blue">
+                            <i class="pi pi-desktop text-2xl"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Laboratories</p>
+                            <h3 class="stat-value">{{ laboratoryCount }}</h3>
+                        </div>
+                    </div>
+                    <div class="stat-decoration"></div>
+                </div>
+
+                <!-- Total Assets Card -->
+                <div class="stat-card stat-card-orange group">
+                    <div class="stat-card-bg"></div>
+                    <div class="stat-card-content">
+                        <div class="stat-icon-wrapper stat-icon-orange">
+                            <i class="pi pi-box text-2xl"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Assets</p>
+                            <h3 class="stat-value">{{ assetCount }}</h3>
+                        </div>
+                    </div>
+                    <div class="stat-decoration"></div>
+                </div>
+
+                <!-- Faculty Count Card -->
+                <div class="stat-card stat-card-indigo group">
+                    <div class="stat-card-bg"></div>
+                    <div class="stat-card-content">
+                        <div class="stat-icon-wrapper stat-icon-indigo">
+                            <i class="pi pi-user text-2xl"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Faculty</p>
+                            <h3 class="stat-value">{{ facultyCount }}</h3>
+                        </div>
+                    </div>
+                    <div class="stat-decoration"></div>
+                </div>
+
+                <!-- LabTech Count Card -->
+                <div class="stat-card stat-card-teal group">
+                    <div class="stat-card-bg"></div>
+                    <div class="stat-card-content">
+                        <div class="stat-icon-wrapper stat-icon-teal">
+                            <i class="pi pi-user-edit text-2xl"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Lab Technicians</p>
+                            <h3 class="stat-value">{{ labTechCount }}</h3>
+                        </div>
+                    </div>
+                    <div class="stat-decoration"></div>
+                </div>
+                </div>
+
+                <!-- Calendar -->
                 <div class="lg:col-span-2 bg-white dark:bg-surface-800 rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-semibold mb-4 dark:text-white">Calendar</h3>
                     <full-calendar [options]="calendarOptions()">
@@ -139,21 +139,21 @@ function createEventId() {
                 </div>
             </div>
 
-            <!-- Charts Row - 3 Charts Side by Side -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            <!-- Row 2: Maintenance Requests by Lab -->
+            <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mt-6">
+                <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Maintenance Requests by Lab</p>
+                <div class="relative overflow-hidden w-full h-[280px] sm:h-[320px] lg:h-[360px]">
+                    <p-chart type="line" [data]="maintenanceRequestsChartData" [options]="lineChartOptions"></p-chart>
+                </div>
+            </div>
+
+            <!-- Row 3: Assets by Laboratory and Maintenance Status -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Assets by Laboratory Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Assets by Laboratory</p>
                     <div class="relative overflow-hidden w-full h-[260px] sm:h-[300px] lg:h-[340px]">
                         <p-chart type="bar" [data]="assetsByLaboratoryChartData" [options]="chartOptions"></p-chart>
-                    </div>
-                </div>
-
-                <!-- Maintenance Requests by Laboratory Chart -->
-                <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                    <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Maintenance Requests by Lab</p>
-                    <div class="relative overflow-hidden w-full h-[220px] sm:h-[260px] lg:h-[300px]">
-                        <p-chart type="bar" [data]="maintenanceRequestsChartData" [options]="horizontalChartOptions"></p-chart>
                     </div>
                 </div>
 
@@ -383,6 +383,7 @@ export class DashboardCampusAdmin implements OnInit {
     maintenanceStatusChartData: any;
     chartOptions: any;
     horizontalChartOptions: any;
+    lineChartOptions: any;
     donutChartOptions: any;
 
     // Calendar properties
@@ -453,6 +454,7 @@ export class DashboardCampusAdmin implements OnInit {
         this.loadCalendarEvents();
         this.initChartOptions();
         this.initHorizontalChartOptions();
+        this.initLineChartOptions();
         this.initDonutChartOptions();
     }
 
@@ -630,6 +632,52 @@ export class DashboardCampusAdmin implements OnInit {
         };
     }
 
+    initLineChartOptions() {
+        const documentStyle = getComputedStyle(document.documentElement);
+        const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+        const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+
+        this.lineChartOptions = {
+            maintainAspectRatio: false,
+            aspectRatio: 0.8,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: textColorSecondary,
+                        usePointStyle: true
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: textColorSecondary,
+                        font: {
+                            weight: 500
+                        }
+                    },
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: textColorSecondary,
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: surfaceBorder,
+                        drawBorder: false
+                    }
+                }
+            }
+        };
+    }
+
     loadMaintenanceRequestsByLaboratory() {
         // First, fetch all laboratories to get the mapping
         const laboratoriesUrl = `${environment.apiUrl}/laboratories`;
@@ -654,10 +702,22 @@ export class DashboardCampusAdmin implements OnInit {
                             return;
                         }
 
-                        // Count maintenance requests by laboratory
-                        const labCount = new Map<string, number>();
+                        // Build the last 6 months (oldest to newest) as the x-axis
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const now = new Date();
+                        const monthKeys: string[] = [];
+                        const monthLabels: string[] = [];
+                        for (let i = 5; i >= 0; i--) {
+                            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                            monthKeys.push(`${d.getFullYear()}-${d.getMonth()}`);
+                            monthLabels.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`);
+                        }
 
-                        requests.forEach((request, index) => {
+                        // Determine each request's laboratory and month, counting per lab per month
+                        const labMonthCount = new Map<string, Map<string, number>>();
+                        const labTotals = new Map<string, number>();
+
+                        requests.forEach((request) => {
                             // Extract laboratory ID from requestId
                             // Format: CAMPUS001-LB001-030826-MR001
                             const requestId = request.requestId || '';
@@ -668,36 +728,55 @@ export class DashboardCampusAdmin implements OnInit {
                                 const labCode = parts[1]; // e.g., "LB001"
                                 const foundName = labMap.get(labCode);
                                 labName = foundName || `Lab ${labCode}`;
-
-                                // Log first few items to debug
-                                if (index < 3) {
-                                }
                             }
 
-                            const currentCount = labCount.get(labName) || 0;
-                            labCount.set(labName, currentCount + 1);
+                            const requestDate = request.requestDate || request.createdAt;
+                            if (!requestDate) {
+                                return;
+                            }
+
+                            const d = new Date(requestDate);
+                            const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
+                            if (!monthKeys.includes(monthKey)) {
+                                return;
+                            }
+
+                            if (!labMonthCount.has(labName)) {
+                                labMonthCount.set(labName, new Map<string, number>());
+                            }
+                            const monthMap = labMonthCount.get(labName)!;
+                            monthMap.set(monthKey, (monthMap.get(monthKey) || 0) + 1);
+                            labTotals.set(labName, (labTotals.get(labName) || 0) + 1);
                         });
 
-                        // Convert to arrays and sort by count (descending)
-                        const labEntries = Array.from(labCount.entries())
-                            .sort((a, b) => b[1] - a[1])
-                            .slice(0, 10); // Top 10 laboratories
+                        if (labTotals.size === 0) {
+                            this.initEmptyMaintenanceByLabChart();
+                            return;
+                        }
 
-                        const labels = labEntries.map((entry) => entry[0]);
-                        const counts = labEntries.map((entry) => entry[1]);
-                        const colors = this.generateColors(labels.length);
+                        // Keep the top 10 laboratories (by requests within this window) as separate lines
+                        const topLabs = Array.from(labTotals.entries())
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 10)
+                            .map((entry) => entry[0]);
+
+                        const colors = this.generateColors(topLabs.length);
 
                         this.maintenanceRequestsChartData = {
-                            labels: labels,
-                            datasets: [
-                                {
-                                    label: 'Maintenance Requests',
-                                    data: counts,
-                                    backgroundColor: colors.map((c) => c.bg),
-                                    borderColor: colors.map((c) => c.border),
-                                    borderWidth: 1
-                                }
-                            ]
+                            labels: monthLabels,
+                            datasets: topLabs.map((labName, index) => {
+                                const monthMap = labMonthCount.get(labName)!;
+                                return {
+                                    label: labName,
+                                    data: monthKeys.map((key) => monthMap.get(key) || 0),
+                                    borderColor: colors[index].border,
+                                    backgroundColor: colors[index].border,
+                                    fill: false,
+                                    tension: 0.4,
+                                    borderWidth: 2,
+                                    pointRadius: 3
+                                };
+                            })
                         };
                     },
                     error: (error) => {
@@ -718,9 +797,9 @@ export class DashboardCampusAdmin implements OnInit {
                 {
                     label: 'Maintenance Requests',
                     data: [0],
-                    backgroundColor: ['rgba(209, 213, 219, 0.6)'],
-                    borderColor: ['rgb(209, 213, 219)'],
-                    borderWidth: 1
+                    borderColor: 'rgb(209, 213, 219)',
+                    backgroundColor: 'rgb(209, 213, 219)',
+                    fill: false
                 }
             ]
         };
