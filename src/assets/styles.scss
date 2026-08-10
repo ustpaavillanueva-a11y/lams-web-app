@@ -4,6 +4,11 @@
 @use 'primeicons/primeicons.css';
 @use './demo/demo.scss';
 
+/* Ensure SweetAlert2 always renders above PrimeNG dialogs/masks (e.g. Edit Asset modal) */
+.swal2-container {
+    z-index: 99999 !important;
+}
+
 /* SweetAlert2 Custom Styles for Calendar Event Details */
 .swal-wide {
     width: 600px !important;

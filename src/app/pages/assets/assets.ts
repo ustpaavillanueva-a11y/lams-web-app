@@ -146,7 +146,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                         <p-tag [value]="asset.warranty ? 'Active' : 'Expired'" [severity]="asset.warranty ? 'success' : 'danger'" />
                     </td>
                     <td>
-                        <button pButton icon="pi pi-qrcode" class="p-button-rounded p-button-text" (click)="viewQrCode(asset.qrCode)" pTooltip="View QR Code"></button>
+                        <button pButton icon="pi pi-qrcode" class="p-button-rounded p-button-text" (click)="viewQrCode(asset.assetId, asset.assetName)" pTooltip="View QR Code"></button>
                     </td>
                     <td>
                         <button *ngIf="isCampusAdmin() || isFaculty || isLabTech" pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-success" (click)="view(asset)" pTooltip="View Asset"></button>
@@ -2023,14 +2023,36 @@ export class AssetsComponent implements OnInit, OnDestroy {
             updatePayload.program = this.newAsset.program;
         }
 
+        const qrCodeImage = this.newAsset.qrCodeImage;
+
         // Call the update API
         this.assetService.patchAsset(this.newAsset.assetId, updatePayload).subscribe({
             next: () => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: 'Asset updated successfully'
-                });
+                if (qrCodeImage) {
+                    // Upload the new QR code image via POST /api/storage/qr-code/{assetId}
+                    this.assetService.uploadQrCode(this.newAsset.assetId, qrCodeImage).subscribe({
+                        next: () => {
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'Success',
+                                detail: 'Asset and QR code updated successfully'
+                            });
+                        },
+                        error: () => {
+                            this.messageService.add({
+                                severity: 'warn',
+                                summary: 'Partial Success',
+                                detail: 'Asset updated, but failed to upload the QR code image'
+                            });
+                        }
+                    });
+                } else {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Asset updated successfully'
+                    });
+                }
                 this.assetDialog = false;
                 this.editMode = false;
                 this.isSubmitting = false;
@@ -2123,8 +2145,20 @@ export class AssetsComponent implements OnInit, OnDestroy {
         return this.qrCodeService.isBase64Image(qrCode);
     }
 
-    viewQrCode(qrCode: string) {
-        this.qrCodeService.viewQrCode(qrCode);
+    viewQrCode(assetId: string, assetName?: string) {
+        if (!assetId) {
+            this.qrCodeService.viewQrCode('');
+            return;
+        }
+
+        this.assetService.getQrCodeImage(assetId).subscribe({
+            next: (response) => {
+                this.qrCodeService.viewQrCode(response.url, assetName);
+            },
+            error: () => {
+                this.qrCodeService.viewQrCode('');
+            }
+        });
     }
 
     copyToClipboard(text: string) {

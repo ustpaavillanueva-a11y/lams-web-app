@@ -293,6 +293,11 @@ export class AssetService {
         return this.http.post<any>(`${this.baseApiUrl}/storage/qr-code/${assetId}`, formData);
     }
 
+    // QR Code fetch method - returns { message, url } where url is the public image URL
+    getQrCodeImage(assetId: string): Observable<{ message: string; url: string }> {
+        return this.http.get<{ message: string; url: string }>(`${this.baseApiUrl}/storage/qr-code/${assetId}`);
+    }
+
     // User methods
     getUsers(): Observable<any[]> {
         return this.http.get<any[]>(`${this.baseApiUrl}/users`);

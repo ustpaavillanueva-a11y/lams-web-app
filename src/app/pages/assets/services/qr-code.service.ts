@@ -100,20 +100,38 @@ export class QrCodeService {
     /**
      * Display QR code in a modal dialog
      */
-    viewQrCode(qrCode: string): void {
+    viewQrCode(qrCode: string, assetName?: string): void {
         if (qrCode) {
             Swal.fire({
                 title: 'QR Code',
-                html: `<img src="${qrCode}" alt="QR Code" style="width: 4in; height: 4in; border-radius: 8px; object-fit: contain;" />`,
+                html: `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 4px 0 8px;">
+                        ${assetName ? `<p style="margin: 0; font-size: 14px; font-weight: 500; color: #374151;">${assetName}</p>` : ''}
+                        <div style="padding: 20px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px;">
+                            <img src="${qrCode}" alt="QR Code" style="width: 240px; height: 240px; object-fit: contain; border-radius: 8px; display: block;" />
+                        </div>
+                        <a href="${qrCode}" download target="_blank" rel="noopener"
+                           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #3b82f6; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                            <i class="pi pi-download"></i> Download
+                        </a>
+                    </div>
+                `,
                 confirmButtonText: 'Close',
-                width: '600px'
+                confirmButtonColor: '#6b7280',
+                width: '380px'
             });
         } else {
             Swal.fire({
-                icon: 'warning',
-                title: 'No QR Code',
-                text: 'This asset does not have a QR code associated with it.',
-                confirmButtonText: 'OK'
+                html: `
+                    <div style="text-align: center; padding: 8px 0;">
+                        <i class="pi pi-qrcode" style="font-size: 2.5rem; color: #9ca3af;"></i>
+                        <p style="margin: 12px 0 0; font-size: 15px; font-weight: 600; color: #374151;">No QR Code</p>
+                        <p style="margin: 6px 0 0; font-size: 13px; color: #6b7280;">This asset does not have a QR code associated with it.</p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#3b82f6',
+                width: '360px'
             });
         }
     }
