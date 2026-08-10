@@ -1,14 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { UserService } from '../../pages/service/user.service';
+import { MaintenanceService } from '../../pages/service/maintenance.service';
+import { MaintenanceWebSocketService } from '../../pages/maintenance/maintenance-websocket.service';
 import { AvatarModule } from 'primeng/avatar';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LayoutService } from '../service/layout.service';
 import { TooltipModule } from 'primeng/tooltip';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'app-menu',
@@ -35,19 +39,49 @@ import { TooltipModule } from 'primeng/tooltip';
         </ng-container>
     </ul> `
 })
-export class AppMenu implements OnInit {
+export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];
     currentUser: any = null;
     laboratories: any[] = [];
 
+    maintenanceBadgeCounts = { pending: 0, scheduled: 0, inProgress: 0 };
+
     constructor(
         private userService: UserService,
+        private maintenanceService: MaintenanceService,
+        private maintenanceWebSocketService: MaintenanceWebSocketService,
         private http: HttpClient,
         public layoutService: LayoutService
     ) {}
 
     ngOnInit() {
         this.loadUserProfile();
+        this.connectToMaintenanceUpdates();
+    }
+
+    ngOnDestroy() {
+        this.maintenanceWebSocketService.disconnect();
+    }
+
+    // Keep the maintenance status badges live: refetch counts whenever a maintenance
+    // request changes status anywhere in the app.
+    private connectToMaintenanceUpdates() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            return;
+        }
+
+        this.maintenanceWebSocketService.connect();
+
+        const refreshBadges = () => this.loadMaintenanceStatusCounts(() => this.loadMenuItems());
+
+        this.maintenanceWebSocketService.onMaintenanceRequestCreated().subscribe(refreshBadges);
+        this.maintenanceWebSocketService.onMaintenanceRequestUpdated().subscribe(refreshBadges);
+        this.maintenanceWebSocketService.onMaintenanceApproved().subscribe(refreshBadges);
+        this.maintenanceWebSocketService.onMaintenanceDisapproved().subscribe(refreshBadges);
+        this.maintenanceWebSocketService.onMaintenanceScheduled().subscribe(refreshBadges);
+        this.maintenanceWebSocketService.onMaintenanceCompleted().subscribe(refreshBadges);
+        this.maintenanceWebSocketService.onMaintenanceOnHold().subscribe(refreshBadges);
     }
 
     // Laboratories are only needed for the LabTech menu's "Locations" submenu
@@ -82,11 +116,37 @@ export class AppMenu implements OnInit {
     }
 
     private loadMenuForCurrentUser() {
-        if (this.currentUser?.role?.toLowerCase() === 'labtech') {
-            this.loadLaboratories();
-        } else {
-            this.loadMenuItems();
-        }
+        this.loadMaintenanceStatusCounts(() => {
+            if (this.currentUser?.role?.toLowerCase() === 'labtech') {
+                this.loadLaboratories();
+            } else {
+                this.loadMenuItems();
+            }
+        });
+    }
+
+    // Fetch real Pending/Scheduled/In Progress counts for the menu badges, reusing the same
+    // endpoints the Request Maintenance page uses for its tabs.
+    loadMaintenanceStatusCounts(callback: () => void) {
+        forkJoin({
+            requests: this.maintenanceService.getMaintenanceRequests().pipe(catchError(() => of([]))),
+            scheduled: this.maintenanceService.getScheduledApprovals().pipe(catchError(() => of([]))),
+            inProgress: this.maintenanceService.getInProgressApprovals().pipe(catchError(() => of([])))
+        }).subscribe(({ requests, scheduled, inProgress }) => {
+            const isLabTech = this.currentUser?.role?.toLowerCase() === 'labtech';
+            const currentUserId = this.currentUser?.userId;
+
+            // LabTech only sees their own assigned items in those tabs, so the badge should match
+            const filterByTechnician = (items: any[]) => (isLabTech ? items.filter((item: any) => item.assignedTechnician?.userId === currentUserId) : items);
+
+            this.maintenanceBadgeCounts = {
+                pending: requests.filter((r: any) => r.maintenanceStatus?.requestStatusName?.toLowerCase() === 'pending').length,
+                scheduled: filterByTechnician(scheduled).length,
+                inProgress: filterByTechnician(inProgress).length
+            };
+
+            callback();
+        });
     }
 
     getInitials(): string {
@@ -96,9 +156,8 @@ export class AppMenu implements OnInit {
         return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
     }
 
-    // TODO: replace with real counts once the backend exposes a maintenance-request status-summary endpoint
     getMaintenanceStatusBadges() {
-        const counts = { pending: 5, scheduled: 2, inProgress: 3 };
+        const counts = this.maintenanceBadgeCounts;
 
         return [
             { count: counts.pending, styleClass: 'menu-badge-pending', label: 'Pending' },

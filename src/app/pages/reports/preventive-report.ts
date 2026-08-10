@@ -93,97 +93,128 @@ interface Laboratory {
 
             <!-- Report Results - Daily -->
             <div *ngIf="reportData && reportType === 'daily' && !isLoading" class="mt-4">
-                <div class="mb-4 p-4 bg-surface-100 dark:bg-surface-700 rounded">
-                    <h3 class="text-xl font-bold mb-2">{{ reportData.laboratoryName }}</h3>
-                    <p><strong>Date:</strong> {{ formatDate(reportData.date) }}</p>
-                    <p><strong>Performed By:</strong> {{ reportData.performedBy || 'N/A' }}</p>
-                    <p><strong>Assisted By:</strong> {{ reportData.assistedBy || 'N/A' }}</p>
-                    <p class="mt-2"><strong>Recommendations:</strong></p>
-                    <p class="text-muted-color">{{ reportData.recommendations || 'No recommendations provided' }}</p>
+                <div class="mb-4 p-6 bg-linear-to-br from-surface-50 to-surface-100 dark:from-surface-800 dark:to-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl">
+                    <div class="pb-4 mb-4 border-b border-surface-200 dark:border-surface-700">
+                        <div>
+                            <h3 class="text-xl font-bold m-0">{{ reportData.laboratoryName }}</h3>
+                            <span class="text-sm text-muted-color inline-flex items-center gap-1"><i class="pi pi-calendar text-xs"></i> {{ formatDate(reportData.date) }}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Performed By</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.performedBy || 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Assisted By</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.assistedBy || 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-dashed border-surface-200 dark:border-surface-700">
+                        <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Recommendations</p>
+                        <p class="text-sm text-color m-0 leading-relaxed">{{ reportData.recommendations || 'No recommendations provided' }}</p>
+                    </div>
                 </div>
 
-                <p-toolbar styleClass="mb-2">
-                    <ng-template #start>
-                        <span class="font-semibold">Daily Report Details</span>
-                    </ng-template>
-                    <ng-template #end>
+                <div class="border border-surface-200 dark:border-surface-700 rounded-xl overflow-hidden">
+                    <div class="flex justify-between items-center px-5 py-3 bg-surface-50 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700">
+                        <span class="font-semibold text-sm inline-flex items-center gap-2"><i class="pi pi-list"></i> Daily Report Details</span>
                         <p-button label="Preview & Export" icon="pi pi-download" (onClick)="openPreview()" size="small" />
-                    </ng-template>
-                </p-toolbar>
+                    </div>
 
-                <p-table [value]="reportData.records" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [tableStyle]="{ 'min-width': '60rem' }">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th style="width: 30%">Machine/Equipment/Instrument</th>
-                            <th style="width: 35%">Action Taken</th>
-                            <th style="width: 35%">Observation</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td>{{ row.machineEquipmentInstrument || 'N/A' }}</td>
-                            <td>{{ row.actionTaken || 'N/A' }}</td>
-                            <td>{{ row.observation || 'N/A' }}</td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="emptymessage">
-                        <tr>
-                            <td colspan="3" class="text-center py-4">No records found.</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
+                    <p-table [value]="reportData.records" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [tableStyle]="{ 'min-width': '60rem' }" [stripedRows]="true">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 30%">Machine/Equipment/Instrument</th>
+                                <th style="width: 35%">Action Taken</th>
+                                <th style="width: 35%">Observation</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-row>
+                            <tr>
+                                <td>{{ row.machineEquipmentInstrument || 'N/A' }}</td>
+                                <td>{{ row.actionTaken || 'N/A' }}</td>
+                                <td>{{ row.observation || 'N/A' }}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="3" class="text-center py-10">
+                                    <i class="pi pi-inbox text-4xl text-muted-color mb-2 block"></i>
+                                    <span class="text-muted-color text-sm">No records found</span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
             </div>
 
             <!-- Report Results - Monthly/Yearly -->
             <div *ngIf="reportData && (reportType === 'monthly' || reportType === 'yearly') && !isLoading" class="mt-4">
-                <div class="mb-4 p-4 bg-surface-100 dark:bg-surface-700 rounded">
-                    <h3 class="text-xl font-bold mb-2">{{ reportData.laboratoryName }}</h3>
-                    <p *ngIf="reportType === 'monthly'"><strong>Period:</strong> {{ getMonthName(reportData.month) }} {{ reportData.year }}</p>
-                    <p *ngIf="reportType === 'yearly'"><strong>Year:</strong> {{ reportData.year || selectedYear }}</p>
-                    <p><strong>Campus:</strong> {{ reportData.campusName || 'N/A' }}</p>
-                    <p><strong>Total Records:</strong> {{ reportData.totalRecords || 0 }}</p>
+                <div class="mb-4 p-6 bg-linear-to-br from-surface-50 to-surface-100 dark:from-surface-800 dark:to-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl">
+                    <div class="pb-4 mb-4 border-b border-surface-200 dark:border-surface-700">
+                        <div>
+                            <h3 class="text-xl font-bold m-0">{{ reportData.laboratoryName }}</h3>
+                            <span class="text-sm text-muted-color inline-flex items-center gap-1">
+                                <i class="pi pi-calendar text-xs"></i>
+                                <ng-container *ngIf="reportType === 'monthly'">{{ getMonthName(reportData.month) }} {{ reportData.year }}</ng-container>
+                                <ng-container *ngIf="reportType === 'yearly'">{{ reportData.year || selectedYear }}</ng-container>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Campus</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.campusName || 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Total Records</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.totalRecords || 0 }}</p>
+                        </div>
+                    </div>
                 </div>
 
-                <p-toolbar styleClass="mb-2">
-                    <ng-template #start>
-                        <span class="font-semibold">{{ reportType === 'monthly' ? 'Monthly' : 'Yearly' }} Report Details</span>
-                    </ng-template>
-                    <ng-template #end>
+                <div class="border border-surface-200 dark:border-surface-700 rounded-xl overflow-hidden">
+                    <div class="flex justify-between items-center px-5 py-3 bg-surface-50 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700">
+                        <span class="font-semibold text-sm inline-flex items-center gap-2"><i class="pi pi-list"></i> {{ reportType === 'monthly' ? 'Monthly' : 'Yearly' }} Report Details</span>
                         <p-button label="Preview & Export" icon="pi pi-download" (onClick)="openPreview()" size="small" />
-                    </ng-template>
-                </p-toolbar>
+                    </div>
 
-                <p-table [value]="reportData.records" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [tableStyle]="{ 'min-width': '80rem' }">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Date</th>
-                            <th>Equipment</th>
-                            <th>Serial Number</th>
-                            <th>Observations</th>
-                            <th>Action Taken</th>
-                            <th>Remarks</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td>{{ row.date | date: 'mediumDate' }}</td>
-                            <td>{{ row.machineEquipmentInstrument || 'N/A' }}</td>
-                            <td>{{ row.serialNumber || 'N/A' }}</td>
-                            <td>{{ row.observations || 'N/A' }}</td>
-                            <td>{{ row.actionTaken || 'N/A' }}</td>
-                            <td>{{ row.remarks || 'N/A' }}</td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="emptymessage">
-                        <tr>
-                            <td colspan="6" class="text-center py-4">No records found.</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
+                    <p-table [value]="reportData.records" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [tableStyle]="{ 'min-width': '80rem' }" [stripedRows]="true">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Date</th>
+                                <th>Equipment</th>
+                                <th>Serial Number</th>
+                                <th>Observations</th>
+                                <th>Action Taken</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-row>
+                            <tr>
+                                <td>{{ row.date | date: 'mediumDate' }}</td>
+                                <td>{{ row.machineEquipmentInstrument || 'N/A' }}</td>
+                                <td>{{ row.serialNumber || 'N/A' }}</td>
+                                <td>{{ row.observations || 'N/A' }}</td>
+                                <td>{{ row.actionTaken || 'N/A' }}</td>
+                                <td>{{ row.remarks || 'N/A' }}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="6" class="text-center py-10">
+                                    <i class="pi pi-inbox text-4xl text-muted-color mb-2 block"></i>
+                                    <span class="text-muted-color text-sm">No records found</span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
             </div>
 
             <!-- No Data Message -->
-            <div *ngIf="!reportData && !isLoading && !errorMessage" class="text-center py-8 text-muted-color">
+            <div *ngIf="!reportData && !isLoading && !errorMessage" class="text-center py-12 text-muted-color border border-dashed border-surface-200 dark:border-surface-700 rounded-xl">
                 <i class="pi pi-info-circle text-4xl mb-3"></i>
                 <p>Select filters and click "Generate Report" to view data.</p>
             </div>

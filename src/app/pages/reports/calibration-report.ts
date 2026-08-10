@@ -85,56 +85,75 @@ interface CalibrationReportRecord {
 
             <!-- Report Results -->
             <div *ngIf="reportData && !isLoading" class="mt-4">
-                <div class="mb-4 p-4 bg-surface-100 dark:bg-surface-700 rounded">
-                    <h3 class="text-xl font-bold mb-2">{{ reportData.laboratoryName || 'Calibration Report' }}</h3>
-                    <p *ngIf="reportType === 'daily'"><strong>Date:</strong> {{ reportData.date ? (reportData.date | date: 'longDate') : (selectedDate | date: 'longDate') }}</p>
-                    <p *ngIf="reportType === 'monthly'"><strong>Period:</strong> {{ getMonthName(selectedMonth) }} {{ selectedYear }}</p>
-                    <p *ngIf="reportType === 'yearly'"><strong>Year:</strong> {{ selectedYear }}</p>
-                    <p><strong>Performed By:</strong> {{ reportData.performedBy || 'N/A' }}</p>
-                    <p><strong>Assisted By:</strong> {{ reportData.assistedBy || 'N/A' }}</p>
-                    <p><strong>Noted By:</strong> {{ reportData.notedBy || 'N/A' }}</p>
-                    <p class="mt-2"><strong>Recommendations:</strong></p>
-                    <p class="text-muted-color">{{ reportData.recommendation || reportData.recommendations || 'No recommendations provided' }}</p>
+                <div class="mb-4 p-6 bg-linear-to-br from-surface-50 to-surface-100 dark:from-surface-800 dark:to-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl">
+                    <div class="pb-4 mb-4 border-b border-surface-200 dark:border-surface-700">
+                        <h3 class="text-xl font-bold m-0">{{ reportData.laboratoryName || 'Calibration Report' }}</h3>
+                        <span class="text-sm text-muted-color inline-flex items-center gap-1">
+                            <i class="pi pi-calendar text-xs"></i>
+                            <ng-container *ngIf="reportType === 'daily'">{{ reportData.date ? (reportData.date | date: 'longDate') : (selectedDate | date: 'longDate') }}</ng-container>
+                            <ng-container *ngIf="reportType === 'monthly'">{{ getMonthName(selectedMonth) }} {{ selectedYear }}</ng-container>
+                            <ng-container *ngIf="reportType === 'yearly'">{{ selectedYear }}</ng-container>
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Performed By</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.performedBy || 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Assisted By</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.assistedBy || 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Noted By</p>
+                            <p class="text-sm font-semibold m-0">{{ reportData.notedBy || 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-dashed border-surface-200 dark:border-surface-700">
+                        <p class="text-xs font-bold uppercase tracking-wide text-muted-color mb-1">Recommendations</p>
+                        <p class="text-sm text-color m-0 leading-relaxed">{{ reportData.recommendation || reportData.recommendations || 'No recommendations provided' }}</p>
+                    </div>
                 </div>
 
-                <p-toolbar styleClass="mb-2">
-                    <ng-template #start>
-                        <span class="font-semibold">Calibration Report Details</span>
-                    </ng-template>
-                    <ng-template #end>
+                <div class="border border-surface-200 dark:border-surface-700 rounded-xl overflow-hidden">
+                    <div class="flex justify-between items-center px-5 py-3 bg-surface-50 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700">
+                        <span class="font-semibold text-sm inline-flex items-center gap-2"><i class="pi pi-list"></i> Calibration Report Details</span>
                         <p-button label="Export Word" icon="pi pi-file-word" (onClick)="openPreview()" size="small" />
-                    </ng-template>
-                </p-toolbar>
+                    </div>
 
-                <p-table [value]="reportData.records" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [tableStyle]="{ 'min-width': '75rem' }">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Equipment / Instrument</th>
-                            <th>Actual Reading</th>
-                            <th>Expected Reading</th>
-                            <th>Observation</th>
-                            <th>Action Taken</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td>{{ row.machineEquipmentInstrument || 'N/A' }}</td>
-                            <td>{{ row.actualReading || 'N/A' }}</td>
-                            <td>{{ row.expectedReading || 'N/A' }}</td>
-                            <td>{{ row.observation || 'N/A' }}</td>
-                            <td>{{ row.actionTaken || 'N/A' }}</td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="emptymessage">
-                        <tr>
-                            <td colspan="5" class="text-center py-4">No records found.</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
+                    <p-table [value]="reportData.records" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [tableStyle]="{ 'min-width': '75rem' }" [stripedRows]="true">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Equipment / Instrument</th>
+                                <th>Actual Reading</th>
+                                <th>Expected Reading</th>
+                                <th>Observation</th>
+                                <th>Action Taken</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-row>
+                            <tr>
+                                <td>{{ row.machineEquipmentInstrument || 'N/A' }}</td>
+                                <td>{{ row.actualReading || 'N/A' }}</td>
+                                <td>{{ row.expectedReading || 'N/A' }}</td>
+                                <td>{{ row.observation || 'N/A' }}</td>
+                                <td>{{ row.actionTaken || 'N/A' }}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="5" class="text-center py-10">
+                                    <i class="pi pi-inbox text-4xl text-muted-color mb-2 block"></i>
+                                    <span class="text-muted-color text-sm">No records found</span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
             </div>
 
             <!-- No Data Message -->
-            <div *ngIf="!reportData && !isLoading && !errorMessage" class="text-center py-8 text-muted-color">
+            <div *ngIf="!reportData && !isLoading && !errorMessage" class="text-center py-12 text-muted-color border border-dashed border-surface-200 dark:border-surface-700 rounded-xl">
                 <i class="pi pi-info-circle text-4xl mb-3"></i>
                 <p>Select filters and click "Generate Report" to view data.</p>
             </div>
