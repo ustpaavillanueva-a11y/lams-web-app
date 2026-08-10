@@ -141,14 +141,14 @@ function createEventId() {
 
             <!-- Row 2: Maintenance Requests by Lab -->
             <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mt-6">
-                <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Maintenance Requests by Lab</p>
-                <div class="relative overflow-hidden w-full h-[280px] sm:h-[320px] lg:h-[360px]">
+                <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Number of Maintenance Requests by Lab</p>
+                <div class="relative overflow-hidden w-full h-[320px] sm:h-[360px] lg:h-[400px]">
                     <p-chart type="line" [data]="maintenanceRequestsChartData" [options]="lineChartOptions"></p-chart>
                 </div>
             </div>
 
             <!-- Row 3: Assets by Laboratory and Maintenance Status -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
                 <!-- Assets by Laboratory Chart -->
                 <div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <p class="text-[20px] font-normal mb-3 text-gray-400 dark:text-gray-500">Assets by Laboratory</p>
@@ -646,7 +646,13 @@ export class DashboardCampusAdmin implements OnInit {
                     position: 'bottom',
                     labels: {
                         color: textColorSecondary,
-                        usePointStyle: true
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        padding: 8,
+                        font: {
+                            size: 11
+                        }
                     }
                 }
             },
@@ -754,10 +760,11 @@ export class DashboardCampusAdmin implements OnInit {
                             return;
                         }
 
-                        // Keep the top 10 laboratories (by requests within this window) as separate lines
+                        // Keep the top 5 laboratories (by requests within this window) as separate lines,
+                        // so the legend stays short enough to fully fit under the chart
                         const topLabs = Array.from(labTotals.entries())
                             .sort((a, b) => b[1] - a[1])
-                            .slice(0, 10)
+                            .slice(0, 5)
                             .map((entry) => entry[0]);
 
                         const colors = this.generateColors(topLabs.length);
