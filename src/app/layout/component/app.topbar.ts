@@ -11,6 +11,7 @@ import { RippleModule } from 'primeng/ripple';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
 import { AssetService } from '../../pages/service/asset.service';
+import { MaintenanceService } from '../../pages/service/maintenance.service';
 import { InstallPromptService } from '../../pages/service/install-prompt.service';
 import { PwaService } from '../../pages/service/pwa.service';
 import { UserService } from '../../pages/service/user.service';
@@ -419,6 +420,7 @@ export class AppTopbar {
         public layoutService: LayoutService,
         private router: Router,
         private assetService: AssetService,
+        private maintenanceService: MaintenanceService,
         private installPromptService: InstallPromptService,
         private pwaService: PwaService,
         private userService: UserService
@@ -549,37 +551,20 @@ export class AppTopbar {
         if (!this.scanResult) return;
 
         try {
-            const assets = await this.assetService.getAssets().toPromise();
-
-            let foundAsset: any = null;
-
-            const matches = (value: unknown) => value != null && value.toString() === this.scanResult?.toString();
-
-            // Compare each asset's propertyNumber, qrCode, and serial number with scanned value
-            assets?.forEach((asset) => {
-                if (matches(asset.propertyNumber) || matches(asset.qrCode) || matches(asset.inventoryCustodianSlip?.serialNumber)) {
-                    foundAsset = asset;
-                }
-            });
+            const foundAsset = await this.assetService.getAsset(this.scanResult as any).toPromise();
 
             if (foundAsset) {
                 this.closeQRScanner();
 
-                // Show success message with asset details
+                const maintenanceHistory = await this.maintenanceService
+                    .getApprovalsByAsset(foundAsset.assetId as string)
+                    .toPromise()
+                    .catch(() => []);
+
                 Swal.fire({
                     title: 'Asset Found!',
-                    html: `
-                        <div class="text-left">
-                            <p><strong>Asset ID:</strong> ${foundAsset.assetId}</p>
-                            <p><strong>Property Number:</strong> ${foundAsset.propertyNumber}</p>
-                            <p><strong>Serial Number:</strong> ${foundAsset.inventoryCustodianSlip?.serialNumber || 'N/A'}</p>
-                            <p><strong>Asset Name:</strong> ${foundAsset.assetName}</p>
-                            <p><strong>Category:</strong> ${foundAsset.category}</p>
-                            <p><strong>Location:</strong> ${foundAsset.foundCluster}</p>
-                            <p><strong>Issued To:</strong> ${foundAsset.issuedTo}</p>
-                            <p><strong>Purpose:</strong> ${foundAsset.purpose}</p>
-                        </div>
-                    `,
+                    width: 720,
+                    html: this.buildAssetScanResultHtml(foundAsset, maintenanceHistory || []),
                     icon: 'success',
                     showCancelButton: true,
                     confirmButtonText: 'View in Assets',
@@ -597,14 +582,104 @@ export class AppTopbar {
                     confirmButtonText: 'OK'
                 });
             }
-        } catch (error) {
-            Swal.fire({
-                title: 'Search Error',
-                text: 'Failed to search for asset. Please try again.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
+        } catch (error: any) {
+            if (error?.status === 404) {
+                Swal.fire({
+                    title: 'Asset Not Found',
+                    text: `No asset found with value: ${this.scanResult}`,
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Search Error',
+                    text: 'Failed to search for asset. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
+    }
+
+    // Builds the two-table (Asset Info / Maintenance History) markup shown after a successful scan
+    private buildAssetScanResultHtml(asset: any, maintenanceHistory: any[]): string {
+        const formatDate = (value: any) => (value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A');
+        const fullName = (user: any) => (user ? `${user.firstName} ${user.lastName}` : 'N/A');
+
+        const maintenanceRows =
+            maintenanceHistory.length > 0
+                ? maintenanceHistory
+                      .map(
+                          (approval) => `
+                    <tr>
+                        <td>${approval.maintenanceRequest?.requestId || 'N/A'}</td>
+                        <td>${approval.maintenanceRequest?.maintenanceType?.maintenanceTypeName || 'N/A'}</td>
+                        <td>${fullName(approval.assignedTechnician)}</td>
+                        <td>${approval.maintenanceRequest?.reason || 'N/A'}</td>
+                        <td>${fullName(approval.maintenanceRequest?.requestedBy)}</td>
+                        <td>${formatDate(approval.completedAt)}</td>
+                        <td><a href="/app/pages/requestmaintenance" style="color: #2563eb;">View</a></td>
+                    </tr>`
+                      )
+                      .join('')
+                : `<tr><td colspan="7" style="text-align: center; font-style: italic; color: #6b7280;">No maintenance history available</td></tr>`;
+
+        return `
+            <style>
+                .scan-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+                .scan-table th, .scan-table td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+                .scan-table thead th { background: #f3f4f6; font-weight: 600; }
+                .scan-section-title { background: #1f2937; color: #ffffff; padding: 6px 8px; font-weight: 600; font-size: 13px; text-align: center; }
+            </style>
+            <div style="text-align: left;">
+                <table class="scan-table">
+                    <tr><td colspan="9" class="scan-section-title">Asset Info</td></tr>
+                    <thead>
+                        <tr>
+                            <th>Asset ID</th>
+                            <th>Asset name</th>
+                            <th>Property Number</th>
+                            <th>Serial Number</th>
+                            <th>Campus</th>
+                            <th>Lab</th>
+                            <th>Issued to</th>
+                            <th>Status</th>
+                            <th>Warranty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${asset.assetId || 'N/A'}</td>
+                            <td>${asset.assetName || 'N/A'}</td>
+                            <td>${asset.propertyNumber || 'N/A'}</td>
+                            <td>${asset.inventoryCustodianSlip?.serialNumber || 'N/A'}</td>
+                            <td>${asset.campus?.campusName || 'N/A'}</td>
+                            <td>${asset.laboratories?.laboratoryName || 'N/A'}</td>
+                            <td>${asset.issuedTo || 'Not assigned'}</td>
+                            <td>${asset.status?.statusName || 'Unknown'}</td>
+                            <td>${asset.warranty ? 'Active' : 'Expired'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="scan-table">
+                    <tr><td colspan="7" class="scan-section-title">Maintenance History</td></tr>
+                    <thead>
+                        <tr>
+                            <th>Maintenance ID</th>
+                            <th>Maintenance type</th>
+                            <th>Lab Tech name</th>
+                            <th>Description of the issue</th>
+                            <th>Requested by</th>
+                            <th>Date completed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${maintenanceRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
     }
 
     // PWA Methods
