@@ -620,58 +620,69 @@ export class AppTopbar {
 
         return `
             <style>
-                .scan-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
-                .scan-table th, .scan-table td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+                .scan-table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+                .scan-table th, .scan-table td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; white-space: nowrap; }
                 .scan-table thead th { background: #f3f4f6; font-weight: 600; }
                 .scan-section-title { background: #1f2937; color: #ffffff; padding: 6px 8px; font-weight: 600; font-size: 13px; text-align: center; }
+                .scan-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
+                .scan-table-scroll .scan-table { margin-bottom: 0; }
+                @media (max-width: 480px) {
+                    .scan-table { font-size: 10.5px; }
+                    .scan-table th, .scan-table td { padding: 4px 6px; }
+                }
             </style>
             <div style="text-align: left;">
-                <table class="scan-table">
-                    <tr><td colspan="9" class="scan-section-title">Asset Info</td></tr>
-                    <thead>
-                        <tr>
-                            <th>Asset ID</th>
-                            <th>Asset name</th>
-                            <th>Property Number</th>
-                            <th>Serial Number</th>
-                            <th>Campus</th>
-                            <th>Lab</th>
-                            <th>Issued to</th>
-                            <th>Status</th>
-                            <th>Warranty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${asset.assetId || 'N/A'}</td>
-                            <td>${asset.assetName || 'N/A'}</td>
-                            <td>${asset.propertyNumber || 'N/A'}</td>
-                            <td>${asset.inventoryCustodianSlip?.serialNumber || 'N/A'}</td>
-                            <td>${asset.campus?.campusName || 'N/A'}</td>
-                            <td>${asset.laboratories?.laboratoryName || 'N/A'}</td>
-                            <td>${asset.issuedTo || 'Not assigned'}</td>
-                            <td>${asset.status?.statusName || 'Unknown'}</td>
-                            <td>${asset.warranty ? 'Active' : 'Expired'}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="scan-table">
-                    <tr><td colspan="7" class="scan-section-title">Maintenance History</td></tr>
-                    <thead>
-                        <tr>
-                            <th>Maintenance ID</th>
-                            <th>Maintenance type</th>
-                            <th>Lab Tech name</th>
-                            <th>Description of the issue</th>
-                            <th>Requested by</th>
-                            <th>Date completed</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${maintenanceRows}
-                    </tbody>
-                </table>
+                <div class="scan-table-scroll">
+                    <table class="scan-table">
+                        <tr><td colspan="9" class="scan-section-title">Asset Info</td></tr>
+                        <thead>
+                            <tr>
+                                <th>Asset ID</th>
+                                <th>Asset name</th>
+                                <th>Property Number</th>
+                                <th>Serial Number</th>
+                                <th>Campus</th>
+                                <th>Lab</th>
+                                <th>Issued to</th>
+                                <th>Status</th>
+                                <th>Warranty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${asset.assetId || 'N/A'}</td>
+                                <td>${asset.assetName || 'N/A'}</td>
+                                <td>${asset.propertyNumber || 'N/A'}</td>
+                                <td>${asset.inventoryCustodianSlip?.serialNumber || 'N/A'}</td>
+                                <td>${asset.campus?.campusName || 'N/A'}</td>
+                                <td>${asset.laboratories?.laboratoryName || 'N/A'}</td>
+                                <td>${asset.issuedTo || 'Not assigned'}</td>
+                                <td>${asset.status?.statusName || 'Unknown'}</td>
+                                <td>${asset.warranty ? 'Active' : 'Expired'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="scan-table-scroll">
+                    <table class="scan-table">
+                        <tr><td colspan="7" class="scan-section-title">Maintenance History</td></tr>
+                        <thead>
+                            <tr>
+                                <th>Maintenance ID</th>
+                                <th>Maintenance type</th>
+                                <th>Lab Tech name</th>
+                                <th>Description of the issue</th>
+                                <th>Requested by</th>
+                                <th>Date completed</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${maintenanceRows}
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size: 10.5px; color: #9ca3af; text-align: center; margin: -8px 0 0;">Swipe left/right on the tables to see more columns</p>
             </div>
         `;
     }
