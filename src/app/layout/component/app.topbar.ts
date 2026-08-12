@@ -551,7 +551,10 @@ export class AppTopbar {
         if (!this.scanResult) return;
 
         try {
-            const foundAsset = await this.assetService.getAsset(this.scanResult as any).toPromise();
+            const assets = await this.assetService.getAssets().toPromise();
+
+            const matches = (value: unknown) => value != null && value.toString() === this.scanResult?.toString();
+            const foundAsset = assets?.find((asset) => matches(asset.propertyNumber) || matches(asset.qrCode) || matches(asset.inventoryCustodianSlip?.serialNumber));
 
             if (foundAsset) {
                 this.closeQRScanner();
@@ -582,22 +585,13 @@ export class AppTopbar {
                     confirmButtonText: 'OK'
                 });
             }
-        } catch (error: any) {
-            if (error?.status === 404) {
-                Swal.fire({
-                    title: 'Asset Not Found',
-                    text: `No asset found with value: ${this.scanResult}`,
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                });
-            } else {
-                Swal.fire({
-                    title: 'Search Error',
-                    text: 'Failed to search for asset. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Search Error',
+                text: 'Failed to search for asset. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 
