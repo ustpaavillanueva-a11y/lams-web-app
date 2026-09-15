@@ -61,6 +61,7 @@ import Swal from 'sweetalert2';
             </ng-template>
             <ng-template #end>
                 <div class="flex items-center gap-4">
+                    <p-button *ngIf="isFaculty" label="My Schedule" icon="pi pi-user" [severity]="!selectedLaboratory ? 'success' : 'secondary'" [outlined]="!!selectedLaboratory" (onClick)="showMySchedule()" />
                     <div class="flex items-center gap-2" *ngIf="isSuperAdmin">
                         <label class="font-semibold">Campus:</label>
                         <p-select [(ngModel)]="selectedCampus" [options]="campuses" optionLabel="campusName" placeholder="All Campuses" [showClear]="true" styleClass="w-48" appendTo="body" (onChange)="onCampusFilterChange()" />
@@ -544,6 +545,16 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         });
     }
 
+    showMySchedule() {
+        this.selectedLaboratory = null;
+        this.messageService.add({
+            severity: 'info',
+            summary: 'My Schedule',
+            detail: 'Showing your own schedule'
+        });
+        this.loadSchedules();
+    }
+
     onLaboratoryFilterChange() {
         if (this.selectedLaboratory) {
             Swal.fire({
@@ -871,13 +882,18 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
     getScheduleColor(schedule: any): string {
         const colors = ['bg-green-500', 'bg-pink-500', 'bg-gray-700', 'bg-blue-600', 'bg-cyan-500', 'bg-yellow-500', 'bg-indigo-600'];
 
-        // Use subject ID to consistently assign the same color
-        if (schedule.subject && schedule.subject.subjectId) {
-            const hashCode = schedule.subject.subjectId.charCodeAt(0);
-            return colors[hashCode % colors.length];
+        const id = schedule.subject?.subjectId;
+        if (!id) {
+            return colors[0];
         }
 
-        return colors[0];
+        // Hash the full ID (not just its first character) so subjects spread across the palette
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+            hash = (hash * 31 + id.charCodeAt(i)) | 0;
+        }
+
+        return colors[Math.abs(hash) % colors.length];
     }
 
     // View schedule details - opens modal
