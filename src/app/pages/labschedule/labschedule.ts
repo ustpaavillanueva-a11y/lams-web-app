@@ -228,7 +228,7 @@ import Swal from 'sweetalert2';
                     </div>
                     <div class="flex items-center gap-3">
                         <i class="pi pi-building text-gray-500"></i>
-                        <span>{{ selectedLaboratory?.laboratoryName || 'N/A' }}</span>
+                        <span>{{ selectedSchedule.laboratory?.laboratoryName || 'N/A' }}</span>
                     </div>
                 </div>
             </ng-template>
