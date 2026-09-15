@@ -97,9 +97,9 @@ export class AssetUtils {
     }
 
     /**
-     * Filter assets by search term and campus
+     * Filter assets by search term, campus, laboratory and issued-to
      */
-    static filterAssets(assets: Asset[], searchTerm: string, selectedCampusId: string | null): Asset[] {
+    static filterAssets(assets: Asset[], searchTerm: string, selectedCampusId: string | null, selectedLaboratoryId: string | null = null, selectedIssuedTo: string | null = null): Asset[] {
         return assets.filter((asset) => {
             const searchLower = searchTerm.toLowerCase();
             const matchesSearch =
@@ -126,9 +126,24 @@ export class AssetUtils {
                 asset.inventoryCustodianSlip?.estimatedUsefullLife?.toLowerCase().includes(searchLower);
 
             const matchesCampus = !selectedCampusId || asset.campus?.campusId === selectedCampusId;
+            const matchesLaboratory = !selectedLaboratoryId || asset.laboratories?.laboratoryId === selectedLaboratoryId;
+            const matchesIssuedTo = !selectedIssuedTo || asset.issuedTo === selectedIssuedTo;
 
-            return matchesSearch && matchesCampus;
+            return matchesSearch && matchesCampus && matchesLaboratory && matchesIssuedTo;
         });
+    }
+
+    /**
+     * Get the distinct, sorted "Issued To" values present in a list of assets
+     */
+    static getIssuedToOptions(assets: Asset[]): string[] {
+        const values = new Set<string>();
+        assets.forEach((asset) => {
+            if (asset.issuedTo) {
+                values.add(asset.issuedTo);
+            }
+        });
+        return Array.from(values).sort((a, b) => a.localeCompare(b));
     }
 
     /**

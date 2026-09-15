@@ -86,6 +86,26 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                         [showClear]="true"
                         (onChange)="filter()"
                     />
+                    <p-select
+                        [(ngModel)]="selectedLaboratory"
+                        [options]="laboratories"
+                        optionLabel="laboratoryName"
+                        optionValue="laboratoryId"
+                        placeholder="Filter by Lab"
+                        class="w-64"
+                        appendTo="body"
+                        [showClear]="true"
+                        (onChange)="filter()"
+                    />
+                    <p-select
+                        [(ngModel)]="selectedIssuedTo"
+                        [options]="issuedToOptions"
+                        placeholder="Filter by Issued To"
+                        class="w-64"
+                        appendTo="body"
+                        [showClear]="true"
+                        (onChange)="filter()"
+                    />
                     <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
                         <input pInputText type="text" [(ngModel)]="searchValue" (input)="filter()" placeholder="Search assets..." />
@@ -587,6 +607,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
     expandedRowIds: Set<string> = new Set();
     searchValue: string = '';
     selectedCampus: string | null = null;
+    selectedLaboratory: string | null = null;
+    selectedIssuedTo: string | null = null;
+    issuedToOptions: string[] = [];
     loading: boolean = true;
     isLabTech: boolean = false;
     isSuperAdmin: boolean = false;
@@ -892,7 +915,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 // Enrich assets with brand/color/program names from loaded reference data
                 this.enrichAssetsWithNames();
 
+                this.issuedToOptions = AssetUtils.getIssuedToOptions(this.assets);
                 this.filteredAssets = [...this.assets];
+                this.filter();
 
                 this.loading = false;
             },
@@ -982,7 +1007,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     filter() {
-        this.filteredAssets = AssetUtils.filterAssets(this.assets, this.searchValue, this.selectedCampus);
+        this.filteredAssets = AssetUtils.filterAssets(this.assets, this.searchValue, this.selectedCampus, this.selectedLaboratory, this.selectedIssuedTo);
     }
 
     getShortAssetId(assetId: string | undefined): string {
