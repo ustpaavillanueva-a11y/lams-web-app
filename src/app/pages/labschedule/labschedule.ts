@@ -580,13 +580,13 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
     }
 
     loadSchedules() {
-        // Faculty users load all their schedules, then optionally narrow by the Laboratory filter
         if (this.isFaculty) {
-            const scheduleUrl = `${environment.apiUrl}/faculty-schedules`;
+            // With a laboratory selected, faculty can view that lab's full schedule (all instructors),
+            // not just their own. With no laboratory selected, default to their own schedules.
+            const scheduleUrl = this.selectedLaboratory ? `${environment.apiUrl}/schedules/filter/by-laboratory/${this.selectedLaboratory.laboratoryId}` : `${environment.apiUrl}/faculty-schedules`;
             this.http.get<any[]>(scheduleUrl).subscribe({
                 next: (data: any[]) => {
-                    const allSchedules = data || [];
-                    this.schedules = this.selectedLaboratory ? allSchedules.filter((s) => s.laboratory?.laboratoryId === this.selectedLaboratory.laboratoryId) : allSchedules;
+                    this.schedules = data || [];
                 },
                 error: (error: any) => {
                     this.schedules = [];
