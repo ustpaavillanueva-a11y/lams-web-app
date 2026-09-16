@@ -150,7 +150,6 @@ export class AssetFormService {
             foundCluster: asset.foundCluster || '',
             purpose: asset.purpose || '',
             issuedTo: asset.issuedTo || '',
-            qrCode: asset.qrCode || '',
             program: asset.program || '',
             supplier: asset.supplier || '',
             laboratories: asset.laboratories || '',
