@@ -235,10 +235,10 @@ import Swal from 'sweetalert2';
             </ng-template>
             <ng-template #footer>
                 <div class="flex justify-between w-full">
-                    <p-button label="Edit" icon="pi pi-pencil" severity="info" (click)="openEditScheduleDialog()" />
-                    <div class="flex gap-2">
+                    <p-button *ngIf="!isFaculty" label="Edit" icon="pi pi-pencil" severity="info" (click)="openEditScheduleDialog()" />
+                    <div class="flex gap-2" [class.ml-auto]="isFaculty">
                         <p-button label="Close" icon="pi pi-times" severity="secondary" text (click)="closeScheduleDetailsDialog()" />
-                        <p-button label="Delete" icon="pi pi-trash" severity="danger" (click)="confirmDeleteSchedule()" />
+                        <p-button *ngIf="!isFaculty" label="Delete" icon="pi pi-trash" severity="danger" (click)="confirmDeleteSchedule()" />
                     </div>
                 </div>
             </ng-template>
