@@ -61,12 +61,11 @@ import Swal from 'sweetalert2';
             </ng-template>
             <ng-template #end>
                 <div class="flex items-center gap-4">
-                    <p-button *ngIf="isFaculty" label="My Schedule" icon="pi pi-user" [severity]="!selectedLaboratory ? 'success' : 'secondary'" [outlined]="!!selectedLaboratory" (onClick)="showMySchedule()" />
                     <div class="flex items-center gap-2" *ngIf="isSuperAdmin">
                         <label class="font-semibold">Campus:</label>
                         <p-select [(ngModel)]="selectedCampus" [options]="campuses" optionLabel="campusName" placeholder="All Campuses" [showClear]="true" styleClass="w-48" appendTo="body" (onChange)="onCampusFilterChange()" />
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2" *ngIf="!isFaculty">
                         <label class="font-semibold">Laboratory:</label>
                         <p-select
                             [(ngModel)]="selectedLaboratory"
@@ -126,6 +125,7 @@ import Swal from 'sweetalert2';
                                 >
                                     <div class="text-sm font-bold">{{ schedule.subject?.subjectCode }}</div>
                                     <div class="text-xs mt-1">{{ schedule.faculty?.firstName }} {{ schedule.faculty?.lastName }}</div>
+                                    <div class="text-xs mt-1">{{ schedule.laboratory?.laboratoryName }}</div>
                                     <div class="text-xs mt-1 font-semibold">{{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}</div>
                                 </div>
                             </td>
@@ -545,16 +545,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
         });
     }
 
-    showMySchedule() {
-        this.selectedLaboratory = null;
-        this.messageService.add({
-            severity: 'info',
-            summary: 'My Schedule',
-            detail: 'Showing your own schedule'
-        });
-        this.loadSchedules();
-    }
-
     onLaboratoryFilterChange() {
         if (this.selectedLaboratory) {
             Swal.fire({
@@ -572,14 +562,6 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
                     this.schedules = data || [];
                 }
             });
-        } else if (this.isFaculty) {
-            // Cleared filter: fall back to showing all of the faculty member's schedules
-            this.messageService.add({
-                severity: 'info',
-                summary: 'Filter Cleared',
-                detail: 'Showing all your schedules'
-            });
-            this.loadSchedules();
         } else {
             this.messageService.add({
                 severity: 'info',
@@ -592,9 +574,8 @@ export class LabScheduleComponent implements OnInit, OnDestroy {
 
     loadSchedules() {
         if (this.isFaculty) {
-            // With a laboratory selected, faculty can view that lab's full schedule (all instructors),
-            // not just their own. With no laboratory selected, default to their own schedules.
-            const scheduleUrl = this.selectedLaboratory ? `${environment.apiUrl}/schedules/filter/by-laboratory/${this.selectedLaboratory.laboratoryId}` : `${environment.apiUrl}/faculty-schedules`;
+            // Faculty only ever see their own schedule, across whichever laboratories they teach in
+            const scheduleUrl = `${environment.apiUrl}/faculty-schedules`;
             this.http.get<any[]>(scheduleUrl).subscribe({
                 next: (data: any[]) => {
                     this.schedules = data || [];
