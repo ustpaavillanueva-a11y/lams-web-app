@@ -17,6 +17,7 @@ import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
+import { DatePickerModule } from 'primeng/datepicker';
 import { FileUploadModule } from 'primeng/fileupload';
 import { StepperModule } from 'primeng/stepper';
 import { MessageService } from 'primeng/api';
@@ -57,6 +58,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
         AutoCompleteModule,
         InputNumberModule,
         TextareaModule,
+        DatePickerModule,
         FileUploadModule,
         StepperModule
     ],
@@ -163,7 +165,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                         <p-tag [value]="asset.status?.statusName || 'Unknown'" [severity]="getStatusSeverity(asset.status?.statusName)" />
                     </td>
                     <td>
-                        <p-tag [value]="asset.warranty ? 'Active' : 'Expired'" [severity]="asset.warranty ? 'success' : 'danger'" />
+                        <p-tag [value]="getWarrantyStatus(asset)" [severity]="getWarrantySeverity(asset)" />
                     </td>
                     <td>
                         <button pButton icon="pi pi-qrcode" class="p-button-rounded p-button-text" (click)="viewQrCode(asset.assetId, asset.assetName)" pTooltip="View QR Code"></button>
@@ -245,6 +247,18 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                                     placeholder="Enter found cluster"
                                     style="width: 100%; padding: 11px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: #fafafa; transition: all 0.3s;"
                                 />
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Acquisition Date</label>
+                                <p-datepicker [(ngModel)]="newAsset.acquisitionDate" dateFormat="yy-mm-dd" [showIcon]="true" [showClear]="true" placeholder="Select acquisition date" class="w-full" appendTo="body" />
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Warranty Expiration Date</label>
+                                <p-datepicker [(ngModel)]="newAsset.warrantyExpirationDate" dateFormat="yy-mm-dd" [showIcon]="true" [showClear]="true" placeholder="Select warranty expiration" class="w-full" appendTo="body" />
+                            </div>
+                            <div *ngIf="isSoftwareCategory()">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Subscription Duration (months)</label>
+                                <p-inputNumber [(ngModel)]="newAsset.subscriptionDurationMonths" [min]="1" [useGrouping]="false" placeholder="e.g. 12" class="w-full" />
                             </div>
                             <div style="grid-column: 1 / -1;">
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Purpose</label>
@@ -1022,6 +1036,14 @@ export class AssetsComponent implements OnInit, OnDestroy {
         return AssetUtils.getFullName(user);
     }
 
+    getWarrantyStatus(asset: Asset): string {
+        return AssetUtils.getWarrantyStatus(asset.warrantyExpirationDate);
+    }
+
+    getWarrantySeverity(asset: Asset): 'success' | 'danger' | 'secondary' {
+        return AssetUtils.getWarrantySeverity(asset.warrantyExpirationDate);
+    }
+
     onSelectionChange(event: any) {
         if (this.selectedAssets.length === 0) {
         } else {
@@ -1124,6 +1146,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
         } else {
             // Clear color when switching back to Hardware
             this.newAsset.inventoryCustodianSlip.color = '';
+            // Subscription only applies to Software
+            this.newAsset.subscriptionDurationMonths = null;
         }
     }
 
@@ -1633,6 +1657,13 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 const assetName = fullAsset.assetName || 'Unknown Asset';
                 const icsData = fullAsset.inventoryCustodianSlip || {};
                 const icsTableData = this.getIcsTableData(icsData);
+                const subscriptionRow =
+                    fullAsset.category === 'Software'
+                        ? `<tr style="background-color: #ffffff;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Subscription</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.subscriptionDurationMonths ? fullAsset.subscriptionDurationMonths + ' month(s)' : 'N/A'}</td>
+                        </tr>`
+                        : '';
 
                 // Filter maintenance history for this asset
                 const assetMaintenanceHistory = maintenanceHistory.filter((m: any) => m.asset?.assetId === item.assetId);
@@ -1823,10 +1854,15 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset['status']?.statusName || 'N/A'}</td>
                                         </tr>
                                         <tr style="background-color: #f9fafb;">
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Warranty</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset['warranty'] ? 'Active' : 'Expired'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Acquisition Date</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${this.formatDate(fullAsset.acquisitionDate)}</td>
                                         </tr>
                                         <tr style="background-color: #ffffff;">
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Warranty</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.getWarrantyStatus(fullAsset.warrantyExpirationDate)}${fullAsset.warrantyExpirationDate ? ' (' + this.formatDate(fullAsset.warrantyExpirationDate) + ')' : ''}</td>
+                                        </tr>
+                                        ${subscriptionRow}
+                                        <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Campus</td>
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.campus?.campusName || 'N/A'}</td>
                                         </tr>
@@ -1898,7 +1934,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
         return statusMap[status] || 'secondary';
     }
 
-    formatDate(date: string | Date): string {
+    formatDate(date: string | Date | null | undefined): string {
         if (!date) return 'N/A';
         const d = new Date(date);
         return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -1946,6 +1982,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     program: programMatch || '',
                     supplier: fullAsset.supplier || '',
                     laboratories: fullAsset.laboratories?.laboratoryId || '',
+                    acquisitionDate: fullAsset.acquisitionDate ? new Date(fullAsset.acquisitionDate) : null,
+                    warrantyExpirationDate: fullAsset.warrantyExpirationDate ? new Date(fullAsset.warrantyExpirationDate) : null,
+                    subscriptionDurationMonths: fullAsset.subscriptionDurationMonths ?? null,
                     inventoryCustodianSlip: {
                         icsNo: ics.icsNo || '',
                         quantity: ics.quantity || 1,
@@ -2040,6 +2079,21 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 serialNumber: this.serialNumbersRaw || this.newAsset.inventoryCustodianSlip.serialNumber
             }
         };
+
+        // Only include these if set - @IsOptional() on the backend needs the key absent, not empty
+        const acquisitionDate = this.assetFormService.toDateOnlyString(this.newAsset.acquisitionDate);
+        if (acquisitionDate) {
+            updatePayload.acquisitionDate = acquisitionDate;
+        }
+
+        const warrantyExpirationDate = this.assetFormService.toDateOnlyString(this.newAsset.warrantyExpirationDate);
+        if (warrantyExpirationDate) {
+            updatePayload.warrantyExpirationDate = warrantyExpirationDate;
+        }
+
+        if (this.newAsset.category === 'Software' && this.newAsset.subscriptionDurationMonths) {
+            updatePayload.subscriptionDurationMonths = Number(this.newAsset.subscriptionDurationMonths);
+        }
 
         // Add program ID if it's an object
         if (typeof this.newAsset.program === 'object' && this.newAsset.program.programId) {

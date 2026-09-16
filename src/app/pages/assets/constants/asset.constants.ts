@@ -26,6 +26,9 @@ export class AssetConstants {
         program: '',
         supplier: '',
         laboratories: '',
+        acquisitionDate: null,
+        warrantyExpirationDate: null,
+        subscriptionDurationMonths: null,
         inventoryCustodianSlip: {
             icsNo: '',
             quantity: 0,

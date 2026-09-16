@@ -17,6 +17,9 @@ export interface Asset {
     purpose?: string;
     qrCode?: string;
     assetCreated?: string;
+    acquisitionDate?: string | null;
+    warrantyExpirationDate?: string | null;
+    subscriptionDurationMonths?: number | null;
     inventoryCustodianSlip?: any;
     // Legacy fields for backward compatibility
     id?: number;

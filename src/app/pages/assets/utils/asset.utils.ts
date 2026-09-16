@@ -152,4 +152,29 @@ export class AssetUtils {
     static isSoftwareCategory(category: string): boolean {
         return category === 'Software';
     }
+
+    /**
+     * Derive warranty status from the warranty expiration date
+     */
+    static getWarrantyStatus(warrantyExpirationDate: string | Date | null | undefined): 'Active' | 'Expired' | 'N/A' {
+        if (!warrantyExpirationDate) return 'N/A';
+
+        const expiration = new Date(warrantyExpirationDate);
+        if (isNaN(expiration.getTime())) return 'N/A';
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return expiration >= today ? 'Active' : 'Expired';
+    }
+
+    /**
+     * Get PrimeNG tag severity for a warranty status
+     */
+    static getWarrantySeverity(warrantyExpirationDate: string | Date | null | undefined): 'success' | 'danger' | 'secondary' {
+        const status = AssetUtils.getWarrantyStatus(warrantyExpirationDate);
+        if (status === 'Active') return 'success';
+        if (status === 'Expired') return 'danger';
+        return 'secondary';
+    }
 }

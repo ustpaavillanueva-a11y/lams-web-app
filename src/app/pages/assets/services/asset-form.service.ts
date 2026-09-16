@@ -128,6 +128,18 @@ export class AssetFormService {
     }
 
     /**
+     * Convert a Date (or already-ISO string) to a YYYY-MM-DD date-only string.
+     * Returns null when no value was picked, since the backend's @IsOptional()
+     * validators only skip validation for an absent/null value, not an empty string.
+     */
+    toDateOnlyString(value: Date | string | null | undefined): string | null {
+        if (!value) return null;
+        const date = value instanceof Date ? value : new Date(value);
+        if (isNaN(date.getTime())) return null;
+        return date.toISOString().split('T')[0];
+    }
+
+    /**
      * Prepare asset data for API submission
      */
     prepareAssetForSubmission(asset: any, serialNumber: string): any {
@@ -209,6 +221,23 @@ export class AssetFormService {
                 assetToSend.inventoryCustodianSlip[key] = typeof assetToSend.inventoryCustodianSlip[key] === 'number' ? 0 : '';
             }
         });
+
+        // Added after the null/undefined sweep above: these are @IsOptional() on the backend,
+        // which only skips validation when the key is absent - an empty string would fail
+        // @IsDateString()/@IsInt(), so only include the key when a value was actually picked.
+        const acquisitionDate = this.toDateOnlyString(asset.acquisitionDate);
+        if (acquisitionDate) {
+            assetToSend.acquisitionDate = acquisitionDate;
+        }
+
+        const warrantyExpirationDate = this.toDateOnlyString(asset.warrantyExpirationDate);
+        if (warrantyExpirationDate) {
+            assetToSend.warrantyExpirationDate = warrantyExpirationDate;
+        }
+
+        if (asset.category === 'Software' && asset.subscriptionDurationMonths) {
+            assetToSend.subscriptionDurationMonths = Number(asset.subscriptionDurationMonths);
+        }
 
         return assetToSend;
     }

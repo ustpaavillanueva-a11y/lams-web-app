@@ -15,6 +15,9 @@ export interface AssetFormData {
     program: string;
     supplier: string;
     laboratories: string;
+    acquisitionDate: Date | string | null;
+    warrantyExpirationDate: Date | string | null;
+    subscriptionDurationMonths: number | null;
     inventoryCustodianSlip: InventoryCustodianSlipData;
 }
 
