@@ -1,11 +1,15 @@
 import {
-  AutoFocus
-} from "./chunk-7QHXTJMK.js";
-import {
   BaseEditableHolder
 } from "./chunk-A7H3FXNJ.js";
 import "./chunk-XXGW2ZKJ.js";
+import {
+  AutoFocus
+} from "./chunk-7QHXTJMK.js";
 import "./chunk-P6SMTJBG.js";
+import {
+  Bind,
+  BindModule
+} from "./chunk-75JTQVRY.js";
 import {
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
@@ -13,18 +17,14 @@ import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
 import {
-  Bind,
-  BindModule
-} from "./chunk-75JTQVRY.js";
-import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-HVVMUKCH.js";
+import "./chunk-OTTARZB5.js";
+import "./chunk-U4LT4ZJN.js";
 import {
   NG_VALUE_ACCESSOR
 } from "./chunk-SLWC4WYB.js";
-import "./chunk-OTTARZB5.js";
-import "./chunk-U4LT4ZJN.js";
 import {
   CommonModule,
   NgTemplateOutlet

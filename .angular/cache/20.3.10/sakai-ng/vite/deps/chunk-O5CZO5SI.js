@@ -2,15 +2,15 @@ import {
   TimesCircleIcon
 } from "./chunk-XJ4CG35O.js";
 import {
+  Bind
+} from "./chunk-75JTQVRY.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
 import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
-import {
-  Bind
-} from "./chunk-75JTQVRY.js";
 import {
   PrimeTemplate,
   SharedModule,
@@ -636,4 +636,4 @@ export {
   Chip,
   ChipModule
 };
-//# sourceMappingURL=chunk-3QOF35MF.js.map
+//# sourceMappingURL=chunk-O5CZO5SI.js.map

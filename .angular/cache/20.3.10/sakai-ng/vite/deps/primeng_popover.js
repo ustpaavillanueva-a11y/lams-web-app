@@ -5,15 +5,15 @@ import {
   zindexutils
 } from "./chunk-OLJED6AA.js";
 import {
+  Bind
+} from "./chunk-75JTQVRY.js";
+import {
   BaseComponent,
   PARENT_INSTANCE
 } from "./chunk-32HJBRZT.js";
 import {
   BaseStyle
 } from "./chunk-7FDDY7DG.js";
-import {
-  Bind
-} from "./chunk-75JTQVRY.js";
 import {
   OverlayService,
   PrimeTemplate,
