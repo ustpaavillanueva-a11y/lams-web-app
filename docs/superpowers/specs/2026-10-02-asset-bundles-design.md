@@ -129,3 +129,14 @@ Procurement of components, depreciation, nested bundles (a bundle containing bun
 - Backend: unit tests for derived status, scope validation on requests (exactly-one-target rule), status changes limited to affected components, replace/remove/transfer flows.
 - Frontend: component tests for the create-bundle form, scope selector and bundle status display; manual walkthrough for QR routing.
 - Regression: existing single-asset maintenance flow must behave identically.
+
+## 16. Amendment (2026-10-02, phase 2 planning): keep `maintenance_requests.asset` NOT NULL
+
+Reading the maintenance code showed `MaintenanceApprovalService` dereferences `request.asset.campus.campusId` in roughly 40 places (permissions, activity logs, websocket rooms, calendar, dashboards). Making `asset` nullable (section 4.3) would put every one of those at risk. Instead:
+
+- `maintenance_requests.asset` stays NOT NULL. For a request that targets several components or the whole set, `asset` holds an **anchor component** (the first selected component; for an entire-set request, the first active component). Campus, permission and notification code keeps working unchanged.
+- New column `scope` (enum `ASSET` | `COMPONENTS` | `BUNDLE`, default `ASSET`): `ASSET` = one asset (plain or a single component), `COMPONENTS` = a chosen subset of one bundle's components, `BUNDLE` = the entire set.
+- New column `bundle` (nullable FK to `asset_bundles`, `ON DELETE SET NULL`): the bundle snapshot from section 4.3, set whenever the target belongs to a bundle.
+- New column `takeBundleOffline` (boolean, default false): the "take the whole set offline" option from decision 4.
+- `maintenance_request_components` (section 4.4) is kept: it lists every affected component for `COMPONENTS` and `BUNDLE` scope (including the anchor). For `ASSET` scope it is empty and the affected set is just `asset`.
+- Status propagation (section 6): approval, start, hold, complete and cancel update the affected set: the join-table components (or `asset` for `ASSET` scope), or all active components of `bundle` when `takeBundleOffline` is true. Restoring to Serviceable skips any component that is also covered by another active (Approved, Scheduled or In Progress) request.
