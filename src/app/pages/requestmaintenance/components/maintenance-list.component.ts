@@ -112,8 +112,8 @@ import Swal from 'sweetalert2';
             </div>
 
             <p-tabs [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event)">
-                <!-- All Tab (Super Admin and Campus Admin only) -->
-                <p-tabpanel *ngIf="isSuperAdmin() || isCampusAdmin()" [header]="'All (' + (summary$ | async)?.totalCount + ')'">
+                <!-- All Tab (every role; records are already scoped by role on the backend) -->
+                <p-tabpanel [header]="'All (' + ((summary$ | async)?.totalCount || 0) + ')'">
                     <app-maintenance-table
                         [approvals]="allApprovals"
                         [loading]="loading"
@@ -149,7 +149,7 @@ import Swal from 'sweetalert2';
                 </p-tabpanel>
 
                 <!-- Scheduled Tab (includes both Scheduled and legacy Approved statuses) -->
-                <p-tabpanel [header]="'Scheduled (' + ((summary$ | async)?.scheduledCount || 0) + ((summary$ | async)?.approvedCount || 0) + ')'">
+                <p-tabpanel [header]="'Scheduled (' + (((summary$ | async)?.scheduledCount || 0) + ((summary$ | async)?.approvedCount || 0)) + ')'">
                     <app-maintenance-table
                         [approvals]="scheduledApprovals"
                         [loading]="loading"

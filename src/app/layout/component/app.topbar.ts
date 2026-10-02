@@ -15,6 +15,7 @@ import { MaintenanceService } from '../../pages/service/maintenance.service';
 import { InstallPromptService } from '../../pages/service/install-prompt.service';
 import { PwaService } from '../../pages/service/pwa.service';
 import { UserService } from '../../pages/service/user.service';
+import { AssetUtils } from '../../pages/assets/utils/asset.utils';
 import Swal from 'sweetalert2';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
@@ -658,7 +659,7 @@ export class AppTopbar {
                                 <td>${asset.laboratories?.laboratoryName || 'N/A'}</td>
                                 <td>${asset.issuedTo || 'Not assigned'}</td>
                                 <td>${asset.status?.statusName || 'Unknown'}</td>
-                                <td>${asset.warranty ? 'Active' : 'Expired'}</td>
+                                <td>${AssetUtils.getWarrantyStatus(asset.warrantyExpirationDate)}${asset.warrantyExpirationDate ? ' (' + formatDate(asset.warrantyExpirationDate) + ')' : ''}</td>
                             </tr>
                         </tbody>
                     </table>
