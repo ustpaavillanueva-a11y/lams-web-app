@@ -20,6 +20,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FileUploadModule } from 'primeng/fileupload';
 import { StepperModule } from 'primeng/stepper';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { MessageService } from 'primeng/api';
 import { AssetService, Asset, Program, Color, Brand, Status, Laboratory } from '../service/asset.service';
 import { MaintenanceService, MaintenanceRequestPayload } from '../service/maintenance.service';
@@ -36,6 +37,9 @@ import { AssetExportService } from './services/asset-export.service';
 import { AssetFormService } from './services/asset-form.service';
 import { AssetUtils } from './utils/asset.utils';
 import { AssetsWebSocketService } from './services/assets-websocket.service';
+import { AssetBundleService } from './services/asset-bundle.service';
+import { AssetBundle } from './models/asset-bundle.model';
+import { BundleListComponent } from './components/bundle-list';
 
 @Component({
     selector: 'app-assets',
@@ -60,14 +64,22 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
         TextareaModule,
         DatePickerModule,
         FileUploadModule,
-        StepperModule
+        StepperModule,
+        SelectButtonModule,
+        BundleListComponent
     ],
     providers: [MessageService, QrCodeService, AssetExportService, AssetFormService],
     styleUrls: ['./assets.component.scss'],
     template: `
         <p-toast />
 
-        <p-toolbar styleClass="mb-4">
+        <div class="mb-4">
+            <p-selectButton [options]="viewOptions" [(ngModel)]="viewMode" optionLabel="label" optionValue="value" [allowEmpty]="false" (onChange)="onViewChange()" />
+        </div>
+
+        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="loadBundles()" />
+
+        <p-toolbar *ngIf="viewMode === 'assets'" styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
                     <p-button *ngIf="!isSuperAdmin && !isCampusAdmin() && !isFaculty" label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
@@ -121,6 +133,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
         </p-toolbar>
 
         <p-table
+            *ngIf="viewMode === 'assets'"
             #dt
             [value]="filteredAssets"
             [rows]="10"
@@ -157,7 +170,10 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                 <tr>
                     <td><p-tableCheckbox [value]="asset" /></td>
                     <td>{{ getShortAssetId(asset.assetId) }}</td>
-                    <td>{{ asset.assetName }}</td>
+                    <td>
+                        {{ asset.assetName }}
+                        <p-tag *ngIf="asset.bundle" class="ml-2" severity="info" [value]="'Part of ' + asset.bundle.bundleName" />
+                    </td>
                     <td>{{ asset.propertyNumber }}</td>
                     <td>{{ asset.inventoryCustodianSlip?.serialNumber || 'N/A' }}</td>
                     <td>{{ asset.campus?.campusName || 'N/A' }}</td>
@@ -638,6 +654,15 @@ export class AssetsComponent implements OnInit, OnDestroy {
     isSuperAdmin: boolean = false;
     isFaculty: boolean = false;
 
+    // View toggle (individual assets vs. bundles)
+    viewOptions = [
+        { label: 'Assets', value: 'assets' },
+        { label: 'Bundles', value: 'bundles' }
+    ];
+    viewMode: 'assets' | 'bundles' = 'assets';
+    bundles: AssetBundle[] = [];
+    bundlesLoaded: boolean = false;
+
     // Dialog and form
     assetDialog: boolean = false;
     editMode: boolean = false;
@@ -694,7 +719,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
         private qrCodeService: QrCodeService,
         private assetExportService: AssetExportService,
         private assetFormService: AssetFormService,
-        private assetsWebSocketService: AssetsWebSocketService
+        private assetsWebSocketService: AssetsWebSocketService,
+        private assetBundleService: AssetBundleService
     ) {}
 
     getEmptyAsset() {
@@ -924,6 +950,26 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.maintenanceService.getPriorityLevels().subscribe({
             next: (levels) => {
                 this.priorityLevelsOptions = (levels || []).map((p: any) => ({ label: p.priorityLevelName, value: p.priorityLevelId }));
+            }
+        });
+    }
+
+    onViewChange() {
+        if (this.viewMode === 'bundles' && !this.bundlesLoaded) {
+            this.loadBundles();
+        }
+    }
+
+    loadBundles() {
+        this.assetBundleService.getBundles().subscribe({
+            next: (data) => {
+                this.bundles = data || [];
+                this.bundlesLoaded = true;
+                // Deleting a bundle frees its components, so refresh the asset list too
+                this.loadAssets();
+            },
+            error: (error: any) => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to load bundles: ${error?.error?.message || error?.message}` });
             }
         });
     }
