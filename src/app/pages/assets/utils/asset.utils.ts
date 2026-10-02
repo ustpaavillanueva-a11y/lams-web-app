@@ -99,7 +99,7 @@ export class AssetUtils {
     /**
      * Filter assets by search term, campus, laboratory and issued-to
      */
-    static filterAssets(assets: Asset[], searchTerm: string, selectedCampusId: string | null, selectedLaboratoryId: string | null = null, selectedIssuedTo: string | null = null): Asset[] {
+    static filterAssets(assets: Asset[], searchTerm: string, selectedCampusId: string | null, selectedLaboratoryId: string | null = null, selectedIssuedTo: string | null = null, selectedCondition: string | null = null): Asset[] {
         return assets.filter((asset) => {
             const searchLower = searchTerm.toLowerCase();
             const matchesSearch =
@@ -108,6 +108,7 @@ export class AssetUtils {
                 asset.assetName?.toLowerCase().includes(searchLower) ||
                 asset.propertyNumber?.toLowerCase().includes(searchLower) ||
                 asset.category?.toLowerCase().includes(searchLower) ||
+                asset.condition?.toLowerCase().includes(searchLower) ||
                 asset.foundCluster?.toLowerCase().includes(searchLower) ||
                 asset.purpose?.toLowerCase().includes(searchLower) ||
                 asset.issuedTo?.toLowerCase().includes(searchLower) ||
@@ -128,8 +129,9 @@ export class AssetUtils {
             const matchesCampus = !selectedCampusId || asset.campus?.campusId === selectedCampusId;
             const matchesLaboratory = !selectedLaboratoryId || asset.laboratories?.laboratoryId === selectedLaboratoryId;
             const matchesIssuedTo = !selectedIssuedTo || asset.issuedTo === selectedIssuedTo;
+            const matchesCondition = !selectedCondition || asset.condition === selectedCondition;
 
-            return matchesSearch && matchesCampus && matchesLaboratory && matchesIssuedTo;
+            return matchesSearch && matchesCampus && matchesLaboratory && matchesIssuedTo && matchesCondition;
         });
     }
 

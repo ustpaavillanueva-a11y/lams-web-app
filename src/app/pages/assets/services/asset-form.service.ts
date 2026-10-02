@@ -224,6 +224,10 @@ export class AssetFormService {
         // Added after the null/undefined sweep above: these are @IsOptional() on the backend,
         // which only skips validation when the key is absent - an empty string would fail
         // @IsDateString()/@IsInt(), so only include the key when a value was actually picked.
+        if (asset.condition) {
+            assetToSend.condition = asset.condition;
+        }
+
         const acquisitionDate = this.toDateOnlyString(asset.acquisitionDate);
         if (acquisitionDate) {
             assetToSend.acquisitionDate = acquisitionDate;

@@ -11,6 +11,13 @@ export class AssetConstants {
         { label: 'Hardware', value: 'Hardware' }
     ];
 
+    static readonly CONDITION_OPTIONS: DropdownOption[] = [
+        { label: 'Brand New', value: 'Brand New' },
+        { label: 'Transferred', value: 'Transferred' },
+        { label: 'Replaced', value: 'Replaced' },
+        { label: 'Old', value: 'Old' }
+    ];
+
     static readonly SOFTWARE_CATEGORY = 'Software';
     static readonly HARDWARE_CATEGORY = 'Hardware';
 
@@ -26,6 +33,7 @@ export class AssetConstants {
         program: '',
         supplier: '',
         laboratories: '',
+        condition: '',
         acquisitionDate: null,
         warrantyExpirationDate: null,
         subscriptionDurationMonths: null,

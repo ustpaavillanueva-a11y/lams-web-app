@@ -17,6 +17,7 @@ export interface Asset {
     purpose?: string;
     qrCode?: string;
     assetCreated?: string;
+    condition?: string | null;
     acquisitionDate?: string | null;
     warrantyExpirationDate?: string | null;
     subscriptionDurationMonths?: number | null;

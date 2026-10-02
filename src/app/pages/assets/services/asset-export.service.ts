@@ -65,6 +65,7 @@ export class AssetExportService {
                 Laboratory: asset.laboratories?.laboratoryName || '',
                 Program: programName,
                 'Issued To': asset.issuedTo || '',
+                Condition: asset.condition || '',
                 Status: (asset as any).status?.statusName || '',
                 Brand: brandName,
                 Color: colorName,
@@ -215,6 +216,7 @@ export class AssetExportService {
                 <td>${asset.laboratories?.laboratoryName || ''}</td>
                 <td>${programName}</td>
                 <td>${asset.issuedTo || ''}</td>
+                <td>${asset.condition || ''}</td>
                 <td>${(asset as any).status?.statusName || ''}</td>
                 <td>${brandName}</td>
                 <td>${colorName}</td>
@@ -266,6 +268,7 @@ export class AssetExportService {
                             <th style="width: 9%">Laboratory</th>
                             <th style="width: 9%">Program</th>
                             <th style="width: 10%">Issued To</th>
+                            <th style="width: 7%">Condition</th>
                             <th style="width: 7%">Status</th>
                             <th style="width: 8%">Brand</th>
                             <th style="width: 7%">Color</th>

@@ -15,6 +15,7 @@ export interface AssetFormData {
     program: string;
     supplier: string;
     laboratories: string;
+    condition: string;
     acquisitionDate: Date | string | null;
     warrantyExpirationDate: Date | string | null;
     subscriptionDurationMonths: number | null;

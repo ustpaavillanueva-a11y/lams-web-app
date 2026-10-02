@@ -108,6 +108,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                         [showClear]="true"
                         (onChange)="filter()"
                     />
+                    <p-select [(ngModel)]="selectedCondition" [options]="conditionOptions" placeholder="Filter by Condition" class="w-64" appendTo="body" [showClear]="true" (onChange)="filter()" />
                     <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
                         <input pInputText type="text" [(ngModel)]="searchValue" (input)="filter()" placeholder="Search assets..." />
@@ -145,6 +146,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                     <th style="width:7rem">Lab</th>
                     <th style="width:7rem">Issued To</th>
                     <th style="width:5rem">Status</th>
+                    <th style="width:6rem">Condition</th>
                     <th style="width:5rem">Warranty</th>
                     <th style="width:5rem">QR</th>
                     <th style="width:8rem">Actions</th>
@@ -164,6 +166,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                     <td>
                         <p-tag [value]="asset.status?.statusName || 'Unknown'" [severity]="getStatusSeverity(asset.status?.statusName)" />
                     </td>
+                    <td>{{ asset.condition || 'N/A' }}</td>
                     <td>
                         <p-tag [value]="getWarrantyStatus(asset)" [severity]="getWarrantySeverity(asset)" />
                     </td>
@@ -238,6 +241,10 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Category *</label>
                                 <p-select [(ngModel)]="newAsset.category" [options]="categoryOptions" placeholder="Select category" class="w-full" appendTo="body" (onChange)="onCategoryChange()" />
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Condition</label>
+                                <p-select [(ngModel)]="newAsset.condition" [options]="conditionOptions" placeholder="Select condition" class="w-full" appendTo="body" [showClear]="true" />
                             </div>
                             <div>
                                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; font-size: 13px;">Found Cluster</label>
@@ -623,6 +630,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
     selectedCampus: string | null = null;
     selectedLaboratory: string | null = null;
     selectedIssuedTo: string | null = null;
+    selectedCondition: string | null = null;
+    conditionOptions = AssetConstants.CONDITION_OPTIONS;
     issuedToOptions: string[] = [];
     loading: boolean = true;
     isLabTech: boolean = false;
@@ -1021,7 +1030,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     filter() {
-        this.filteredAssets = AssetUtils.filterAssets(this.assets, this.searchValue, this.selectedCampus, this.selectedLaboratory, this.selectedIssuedTo);
+        this.filteredAssets = AssetUtils.filterAssets(this.assets, this.searchValue, this.selectedCampus, this.selectedLaboratory, this.selectedIssuedTo, this.selectedCondition);
     }
 
     getShortAssetId(assetId: string | undefined): string {
@@ -1850,6 +1859,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.category || 'N/A'}</td>
                                         </tr>
                                         <tr style="background-color: #ffffff;">
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Condition</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.condition || 'N/A'}</td>
+                                        </tr>
+                                        <tr style="background-color: #ffffff;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Status</td>
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset['status']?.statusName || 'N/A'}</td>
                                         </tr>
@@ -1976,6 +1989,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     assetName: fullAsset.assetName || '',
                     propertyNumber: fullAsset.propertyNumber || '',
                     category: fullAsset.category || '',
+                    condition: fullAsset.condition || '',
                     foundCluster: fullAsset.foundCluster || '',
                     purpose: fullAsset.purpose || '',
                     issuedTo: fullAsset.issuedTo || '',
@@ -2081,6 +2095,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
         };
 
         // Only include these if set - @IsOptional() on the backend needs the key absent, not empty
+        if (this.newAsset.condition) {
+            updatePayload.condition = this.newAsset.condition;
+        }
+
         const acquisitionDate = this.assetFormService.toDateOnlyString(this.newAsset.acquisitionDate);
         if (acquisitionDate) {
             updatePayload.acquisitionDate = acquisitionDate;
@@ -2206,9 +2224,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     exportCSV() {
-        let csv = 'Property Number,Asset Name,Category,Found Cluster,Issued To,Purpose,QR Code\n';
+        let csv = 'Property Number,Asset Name,Category,Condition,Found Cluster,Issued To,Purpose,QR Code\n';
         this.assets.forEach((asset) => {
-            csv += `${asset.propertyNumber},${asset.assetName},${asset.category},${asset.foundCluster},${asset.issuedTo || 'Not assigned'},${asset.purpose},${asset.qrCode}\n`;
+            csv += `${asset.propertyNumber},${asset.assetName},${asset.category},${asset.condition || ''},${asset.foundCluster},${asset.issuedTo || 'Not assigned'},${asset.purpose},${asset.qrCode}\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
