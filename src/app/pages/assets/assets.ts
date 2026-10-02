@@ -41,6 +41,7 @@ import { AssetBundleService } from './services/asset-bundle.service';
 import { AssetBundle } from './models/asset-bundle.model';
 import { BundleListComponent } from './components/bundle-list';
 import { BundleFormDialogComponent } from './components/bundle-form-dialog';
+import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './components/maintenance-scope-dialog';
 
 @Component({
     selector: 'app-assets',
@@ -68,7 +69,8 @@ import { BundleFormDialogComponent } from './components/bundle-form-dialog';
         StepperModule,
         SelectButtonModule,
         BundleListComponent,
-        BundleFormDialogComponent
+        BundleFormDialogComponent,
+        MaintenanceScopeDialogComponent
     ],
     providers: [MessageService, QrCodeService, AssetExportService, AssetFormService],
     styleUrls: ['./assets.component.scss'],
@@ -79,7 +81,9 @@ import { BundleFormDialogComponent } from './components/bundle-form-dialog';
             <p-selectButton [options]="viewOptions" [(ngModel)]="viewMode" optionLabel="label" optionValue="value" [allowEmpty]="false" (onChange)="onViewChange()" />
         </div>
 
-        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" />
+        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" (requestMaintenance)="onBundleRequestMaintenance($event)" />
+
+        <app-maintenance-scope-dialog [(visible)]="scopeDialog" [asset]="scopeAsset" [bundleId]="scopeBundleId" [defaultScope]="scopeDefault" (scopeChosen)="onScopeChosen($event)" />
 
         <app-bundle-form-dialog [(visible)]="bundleDialog" [programs]="programs" [laboratories]="laboratories" [brands]="brands" [colors]="colors" (saved)="onBundleChanged()" />
 
@@ -685,7 +689,23 @@ export class AssetsComponent implements OnInit, OnDestroy {
     // Request maintenance dialog state
     requestDialog: boolean = false;
     requestAsset: Asset | null = null;
-    maintenanceRequest: { maintenanceName: string; maintenanceType: string; serviceMaintenance: string; asset: string; priorityLevel: string; reason: string } = {
+    // Scope dialog state (assets that belong to a bundle, or requests started from the bundle list)
+    scopeDialog: boolean = false;
+    scopeAsset: any = null;
+    scopeBundleId: string | null = null;
+    scopeDefault: 'ASSET' | 'COMPONENTS' | 'BUNDLE' | null = null;
+    maintenanceRequest: {
+        maintenanceName: string;
+        maintenanceType: string;
+        serviceMaintenance: string;
+        asset: string;
+        priorityLevel: string;
+        reason: string;
+        scope?: 'ASSET' | 'COMPONENTS' | 'BUNDLE';
+        bundle?: string;
+        components?: string[];
+        takeBundleOffline?: boolean;
+    } = {
         maintenanceName: '',
         maintenanceType: '',
         serviceMaintenance: '',
@@ -1401,10 +1421,34 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     // Request Maintenance Handlers
-    openRequestDialog(asset: Asset) {
+    openRequestDialog(asset: Asset, choice?: MaintenanceScopeChoice) {
         this.requestAsset = asset;
-        this.maintenanceRequest = { maintenanceName: asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '', reason: '' };
+        this.maintenanceRequest = { maintenanceName: choice?.title || asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '', reason: '' };
+        if (choice) {
+            // Scope fields are only added for bundle-related requests; plain asset requests keep the original payload
+            this.maintenanceRequest.scope = choice.scope;
+            if (choice.bundle) this.maintenanceRequest.bundle = choice.bundle;
+            if (choice.components) this.maintenanceRequest.components = choice.components;
+            if (choice.takeBundleOffline) this.maintenanceRequest.takeBundleOffline = true;
+        }
         this.requestDialog = true;
+    }
+
+    // Bundle-aware entry points: ask for the scope first, then continue into the normal request form
+    onBundleRequestMaintenance(event: { bundleId: string; componentId?: string }) {
+        const bundle = this.bundles.find((b) => b.bundleId === event.bundleId);
+        const component = event.componentId ? bundle?.components?.find((c: any) => c.assetId === event.componentId) : null;
+        this.scopeAsset = component ? { ...component, bundle: { bundleId: bundle!.bundleId, bundleName: bundle!.bundleName } } : null;
+        this.scopeBundleId = event.bundleId;
+        this.scopeDefault = component ? 'ASSET' : 'BUNDLE';
+        this.scopeDialog = true;
+    }
+
+    onScopeChosen(choice: MaintenanceScopeChoice) {
+        // The request form needs an asset carrying the anchor id; the server computes the real anchor itself
+        const base = this.scopeAsset && String(this.scopeAsset.assetId) === choice.assetId ? this.scopeAsset : null;
+        const asset = (base || { assetId: choice.assetId, assetName: choice.assetName }) as Asset;
+        this.openRequestDialog(asset, choice);
     }
 
     closeRequestDialog() {
@@ -2273,6 +2317,15 @@ export class AssetsComponent implements OnInit, OnDestroy {
     requestMaintenance(item: Asset) {
         if (!item?.assetId) {
             this.messageService.add({ severity: 'warn', summary: 'Missing ID', detail: 'Asset ID is required to request maintenance' });
+            return;
+        }
+
+        const bundleRef = (item as any).bundle;
+        if (bundleRef?.bundleId) {
+            this.scopeAsset = item;
+            this.scopeBundleId = bundleRef.bundleId;
+            this.scopeDefault = 'ASSET';
+            this.scopeDialog = true;
             return;
         }
 

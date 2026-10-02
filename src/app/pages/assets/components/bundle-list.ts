@@ -26,7 +26,7 @@ import { AssetConstants } from '../constants/asset.constants';
                     <th style="width:8rem">Lab</th>
                     <th style="width:8rem">Issued To</th>
                     <th style="width:14rem">Status</th>
-                    <th *ngIf="isLabTech" style="width:5rem">Actions</th>
+                    <th *ngIf="showActions" style="width:7rem">Actions</th>
                 </tr>
             </ng-template>
 
@@ -44,15 +44,16 @@ import { AssetConstants } from '../constants/asset.constants';
                         <p-tag [value]="bundle.derived.status" [severity]="statusSeverity(bundle.derived.status)" />
                         <span class="ml-2 text-sm">{{ bundle.derived.availableCount }}/{{ bundle.derived.activeCount }} available</span>
                     </td>
-                    <td *ngIf="isLabTech">
-                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="confirmDelete(bundle)" pTooltip="Delete Bundle"></button>
+                    <td *ngIf="showActions">
+                        <button *ngIf="canRequest" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance.emit({ bundleId: bundle.bundleId })" pTooltip="Request Maintenance"></button>
+                        <button *ngIf="isLabTech" pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="confirmDelete(bundle)" pTooltip="Delete Bundle"></button>
                     </td>
                 </tr>
             </ng-template>
 
             <ng-template pTemplate="rowexpansion" let-bundle>
                 <tr>
-                    <td [attr.colspan]="isLabTech ? 8 : 7">
+                    <td [attr.colspan]="showActions ? 8 : 7">
                         <div class="p-3">
                             <table class="w-full text-sm">
                                 <thead>
@@ -62,6 +63,7 @@ import { AssetConstants } from '../constants/asset.constants';
                                         <th>Serial Number</th>
                                         <th>Status</th>
                                         <th>Condition</th>
+                                        <th *ngIf="canRequest"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -71,9 +73,12 @@ import { AssetConstants } from '../constants/asset.constants';
                                         <td>{{ c.inventoryCustodianSlip?.serialNumber || 'N/A' }}</td>
                                         <td><p-tag [value]="c.status?.statusName || 'Unknown'" [severity]="componentSeverity(c.status?.statusName)" /></td>
                                         <td>{{ c.condition || 'N/A' }}</td>
+                                        <td *ngIf="canRequest">
+                                            <button pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance.emit({ bundleId: bundle.bundleId, componentId: c.assetId })" pTooltip="Request Maintenance for this component"></button>
+                                        </td>
                                     </tr>
                                     <tr *ngIf="!bundle.components?.length">
-                                        <td colspan="5">No components.</td>
+                                        <td [attr.colspan]="canRequest ? 6 : 5">No components.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -84,7 +89,7 @@ import { AssetConstants } from '../constants/asset.constants';
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td [attr.colspan]="isLabTech ? 8 : 7">No bundles found.</td>
+                    <td [attr.colspan]="showActions ? 8 : 7">No bundles found.</td>
                 </tr>
             </ng-template>
         </p-table>
@@ -93,8 +98,14 @@ import { AssetConstants } from '../constants/asset.constants';
 export class BundleListComponent {
     @Input() bundles: AssetBundle[] = [];
     @Output() deleted = new EventEmitter<string>();
+    @Output() requestMaintenance = new EventEmitter<{ bundleId: string; componentId?: string }>();
 
     isLabTech = false;
+    canRequest = false;
+
+    get showActions(): boolean {
+        return this.isLabTech || this.canRequest;
+    }
 
     constructor(
         private bundleService: AssetBundleService,
@@ -103,8 +114,11 @@ export class BundleListComponent {
         try {
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             this.isLabTech = currentUser?.role === 'LabTech';
+            // Same roles that see the wrench button in the asset list
+            this.canRequest = currentUser?.role !== 'SuperAdmin';
         } catch {
             this.isLabTech = false;
+            this.canRequest = false;
         }
     }
 
