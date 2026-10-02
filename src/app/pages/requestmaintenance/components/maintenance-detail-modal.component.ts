@@ -38,7 +38,7 @@ import { MaintenanceConstants } from '../constants/maintenance.constants';
                     <div>
                         <h4 class="font-semibold text-gray-700 mb-2">Asset Information</h4>
                         <div class="space-y-2 text-sm">
-                            <div><span class="font-medium">Asset:</span> {{ approval.maintenanceRequest?.asset?.assetName }}</div>
+                            <div><span class="font-medium">Asset:</span> {{ describeTarget() }}</div>
                             <div><span class="font-medium">Property No:</span> {{ approval.maintenanceRequest?.asset?.propertyNumber || 'N/A' }}</div>
                             <div><span class="font-medium">Campus:</span> {{ approval.maintenanceRequest?.asset?.campus?.campusName }}</div>
                             <div><span class="font-medium">Laboratory:</span> {{ approval.maintenanceRequest?.asset?.laboratories?.laboratoryName || 'N/A' }}</div>
@@ -211,6 +211,10 @@ export class MaintenanceDetailModalComponent implements OnChanges {
 
     getPrioritySeverity(priority: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         return MaintenanceConstants.getPrioritySeverity(priority || '');
+    }
+
+    describeTarget(): string {
+        return MaintenanceUtils.describeMaintenanceTarget(this.approval?.maintenanceRequest);
     }
 
     formatUserName(user: any): string {

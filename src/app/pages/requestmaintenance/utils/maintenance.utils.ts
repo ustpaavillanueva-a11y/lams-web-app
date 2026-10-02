@@ -7,6 +7,35 @@ import { MaintenanceApproval, MaintenanceTimelineEvent, TimelineEventType, Maint
 import { MaintenanceConstants } from '../constants/maintenance.constants';
 
 export class MaintenanceUtils {
+    // ==================== TARGET DISPLAY ====================
+
+    /**
+     * Describe what a maintenance request targets (asset, components of a set, or an entire set).
+     * Takes the REQUEST object (for approvals pass approval.maintenanceRequest).
+     */
+    static describeMaintenanceTarget(request: any): string {
+        if (!request) return 'N/A';
+        const anchorName = request.asset?.assetName || 'N/A';
+        const bundleName = request.bundle?.bundleName;
+        const scope = request.scope || 'ASSET';
+
+        if (scope === 'ASSET') {
+            return bundleName ? `${anchorName} (${bundleName})` : anchorName;
+        }
+
+        if (!bundleName) {
+            const names = ((request.affectedComponents as any[]) || []).map((c) => c?.assetName).filter(Boolean);
+            return names.length ? names.join(', ') : anchorName;
+        }
+
+        if (scope === 'BUNDLE') {
+            return `${bundleName} (entire set)`;
+        }
+
+        const parts = ((request.affectedComponents as any[]) || []).map((c) => c?.componentRole || c?.assetName).filter(Boolean);
+        return `${bundleName}: ${parts.join(', ')}`;
+    }
+
     // ==================== TIMELINE BUILDING ====================
 
     /**
@@ -134,7 +163,7 @@ export class MaintenanceUtils {
             // Search term (asset name, property number, requester name)
             if (filter.searchTerm) {
                 const searchLower = filter.searchTerm.toLowerCase();
-                const assetName = approval.maintenanceRequest?.asset?.assetName?.toLowerCase() || '';
+                const assetName = (approval.maintenanceRequest?.asset?.assetName || '').toLowerCase() + ' ' + MaintenanceUtils.describeMaintenanceTarget(approval.maintenanceRequest).toLowerCase();
                 const propertyNumber = approval.maintenanceRequest?.asset?.propertyNumber?.toLowerCase() || '';
                 const requesterName = `${approval.maintenanceRequest?.requestedBy?.firstName} ${approval.maintenanceRequest?.requestedBy?.lastName}`.toLowerCase();
 

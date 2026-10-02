@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { MaintenanceService } from '../../service/maintenance.service';
+import { MaintenanceUtils } from '../utils/maintenance.utils';
 import { AuthService } from '../../service/auth.service';
 import { MaintenanceWebSocketService } from '../../maintenance/maintenance-websocket.service';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -1759,7 +1760,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                                     </tr>
                                     <tr>
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Asset</td>
-                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.asset?.assetName || 'N/A'}</td>
+                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${MaintenanceUtils.describeMaintenanceTarget(data)}</td>
                                     </tr>
                                     <tr style="background: #f8fafc;">
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Priority</td>

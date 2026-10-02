@@ -32,6 +32,10 @@ export interface MaintenanceRequestPayload {
     asset: string; // asset ID
     priorityLevel: string; // ID
     reason: string; // Reason for maintenance request
+    scope?: 'ASSET' | 'COMPONENTS' | 'BUNDLE';
+    bundle?: string;
+    components?: string[];
+    takeBundleOffline?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

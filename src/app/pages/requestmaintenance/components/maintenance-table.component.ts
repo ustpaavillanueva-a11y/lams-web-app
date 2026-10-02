@@ -58,7 +58,7 @@ import { AuthService } from '../../service/auth.service';
                 <tr>
                     <td>
                         <div class="flex flex-col">
-                            <span class="font-semibold">{{ approval.maintenanceRequest?.asset?.assetName || 'N/A' }}</span>
+                            <span class="font-semibold">{{ describeTarget(approval) }}</span>
                             <span class="text-sm text-gray-600">{{ approval.maintenanceRequest?.maintenanceName }}</span>
                         </div>
                     </td>
@@ -167,7 +167,7 @@ export class MaintenanceTableComponent implements OnChanges {
 
         const searchLower = this.searchValue.toLowerCase();
         this.displayApprovals = this.approvals.filter((approval) => {
-            const assetName = approval.maintenanceRequest?.asset?.assetName?.toLowerCase() || '';
+            const assetName = (approval.maintenanceRequest?.asset?.assetName || '').toLowerCase() + ' ' + this.describeTarget(approval).toLowerCase();
             const propertyNumber = approval.maintenanceRequest?.asset?.propertyNumber?.toLowerCase() || '';
             const requesterName = MaintenanceUtils.formatUserName(approval.maintenanceRequest?.requestedBy).toLowerCase();
 
@@ -200,6 +200,10 @@ export class MaintenanceTableComponent implements OnChanges {
 
     isOverdue(approval: MaintenanceApproval): boolean {
         return MaintenanceConstants.isOverdue(approval.scheduledAt);
+    }
+
+    describeTarget(approval: MaintenanceApproval): string {
+        return MaintenanceUtils.describeMaintenanceTarget(approval.maintenanceRequest);
     }
 
     formatUserName(user: any): string {
