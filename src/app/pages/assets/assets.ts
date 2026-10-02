@@ -40,6 +40,7 @@ import { AssetsWebSocketService } from './services/assets-websocket.service';
 import { AssetBundleService } from './services/asset-bundle.service';
 import { AssetBundle } from './models/asset-bundle.model';
 import { BundleListComponent } from './components/bundle-list';
+import { BundleFormDialogComponent } from './components/bundle-form-dialog';
 
 @Component({
     selector: 'app-assets',
@@ -66,7 +67,8 @@ import { BundleListComponent } from './components/bundle-list';
         FileUploadModule,
         StepperModule,
         SelectButtonModule,
-        BundleListComponent
+        BundleListComponent,
+        BundleFormDialogComponent
     ],
     providers: [MessageService, QrCodeService, AssetExportService, AssetFormService],
     styleUrls: ['./assets.component.scss'],
@@ -77,12 +79,15 @@ import { BundleListComponent } from './components/bundle-list';
             <p-selectButton [options]="viewOptions" [(ngModel)]="viewMode" optionLabel="label" optionValue="value" [allowEmpty]="false" (onChange)="onViewChange()" />
         </div>
 
-        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="loadBundles()" />
+        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" />
+
+        <app-bundle-form-dialog [(visible)]="bundleDialog" [programs]="programs" [laboratories]="laboratories" [brands]="brands" [colors]="colors" (saved)="onBundleChanged()" />
 
         <p-toolbar *ngIf="viewMode === 'assets'" styleClass="mb-4">
             <ng-template #start>
                 <div class="flex items-center gap-2">
                     <p-button *ngIf="!isSuperAdmin && !isCampusAdmin() && !isFaculty" label="New" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+                    <p-button *ngIf="isLabTech" label="Add Set/Bundle" icon="pi pi-box" severity="secondary" (onClick)="bundleDialog = true" />
                     <p-button label="Delete Selected" icon="pi pi-trash" severity="secondary" outlined (onClick)="deleteSelected()" [disabled]="!selectedAssets.length" />
                 </div>
             </ng-template>
@@ -662,6 +667,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
     viewMode: 'assets' | 'bundles' = 'assets';
     bundles: AssetBundle[] = [];
     bundlesLoaded: boolean = false;
+    bundleDialog: boolean = false;
 
     // Dialog and form
     assetDialog: boolean = false;
@@ -960,13 +966,17 @@ export class AssetsComponent implements OnInit, OnDestroy {
         }
     }
 
+    onBundleChanged() {
+        // Creating or deleting a bundle changes which assets are components, so refresh both
+        this.loadBundles();
+        this.loadAssets();
+    }
+
     loadBundles() {
         this.assetBundleService.getBundles().subscribe({
             next: (data) => {
                 this.bundles = data || [];
                 this.bundlesLoaded = true;
-                // Deleting a bundle frees its components, so refresh the asset list too
-                this.loadAssets();
             },
             error: (error: any) => {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to load bundles: ${error?.error?.message || error?.message}` });
