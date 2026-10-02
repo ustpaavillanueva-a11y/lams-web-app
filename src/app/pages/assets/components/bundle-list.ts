@@ -20,7 +20,7 @@ import { AssetConstants } from '../constants/asset.constants';
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:3rem"></th>
-                    <th style="width:7rem">Bundle ID</th>
+                    <th style="width:9rem">Bundle ID</th>
                     <th>Name</th>
                     <th style="width:8rem">Property Number</th>
                     <th style="width:8rem">Lab</th>
@@ -35,7 +35,7 @@ import { AssetConstants } from '../constants/asset.constants';
                     <td>
                         <button type="button" pButton pRipple [pRowToggler]="bundle" class="p-button-text p-button-rounded p-button-plain" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></button>
                     </td>
-                    <td>{{ shortId(bundle.bundleId) }}</td>
+                    <td>{{ bundle.bundleId }}</td>
                     <td>{{ bundle.bundleName }}</td>
                     <td>{{ bundle.propertyNumber || 'N/A' }}</td>
                     <td>{{ bundle.laboratories?.laboratoryName || 'N/A' }}</td>
@@ -106,10 +106,6 @@ export class BundleListComponent {
         } catch {
             this.isLabTech = false;
         }
-    }
-
-    shortId(id: string): string {
-        return id ? id.substring(0, 8) : '';
     }
 
     statusSeverity(status: BundleStatus): 'success' | 'warn' | 'danger' | 'secondary' {
