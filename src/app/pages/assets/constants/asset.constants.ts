@@ -57,10 +57,11 @@ export class AssetConstants {
 
         const statusLower = status.toLowerCase();
 
-        if (statusLower.includes('serviceable') || statusLower.includes('working') || statusLower.includes('available')) {
-            return 'success';
-        } else if (statusLower.includes('unserviceable') || statusLower.includes('broken') || statusLower.includes('defective')) {
+        // Check unserviceable first: 'unserviceable' contains 'serviceable' and would otherwise match as success
+        if (statusLower.includes('unserviceable') || statusLower.includes('broken') || statusLower.includes('defective')) {
             return 'danger';
+        } else if (statusLower.includes('serviceable') || statusLower.includes('working') || statusLower.includes('available')) {
+            return 'success';
         } else if (statusLower.includes('maintenance') || statusLower.includes('repair')) {
             return 'warn';
         } else if (statusLower.includes('deployed') || statusLower.includes('in use')) {
