@@ -2006,7 +2006,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                             (fullAsset as any).bundle
                                                 ? `<tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Set</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">Part of ${(fullAsset as any).bundle.bundleName} (${(fullAsset as any).bundle.bundleId})</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">Part of ${AssetUtils.escapeHtml((fullAsset as any).bundle.bundleName)} (${AssetUtils.escapeHtml((fullAsset as any).bundle.bundleId)})</td>
                                         </tr>`
                                                 : ''
                                         }

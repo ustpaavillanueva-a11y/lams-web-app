@@ -625,26 +625,18 @@ export class AppTopbar {
         }
     }
 
-    private escapeHtml(value: any): string {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-
     // Summary shown when a scan matches a set (bundle) rather than a single asset
     private buildBundleScanResultHtml(bundle: any): string {
         const components: any[] = bundle.components || [];
         const shown = components.slice(0, 6);
         const available = bundle.derived?.availableCount ?? 0;
         const total = components.length;
-        const items = shown.map((c) => `<li>${this.escapeHtml(c.assetName || c.asset?.assetName || c.assetId || 'Component')}${c.componentRole ? ` (${this.escapeHtml(c.componentRole)})` : ''}</li>`).join('');
+        const items = shown.map((c) => `<li>${AssetUtils.escapeHtml(c.assetName || c.asset?.assetName || c.assetId || 'Component')}${c.componentRole ? ` (${AssetUtils.escapeHtml(c.componentRole)})` : ''}</li>`).join('');
         const more = total > shown.length ? `<li>and ${total - shown.length} more</li>` : '';
         return `
             <div style="text-align: left; font-size: 14px;">
-                <p><strong>${this.escapeHtml(bundle.bundleName)}</strong> (${this.escapeHtml(bundle.bundleId)})</p>
-                <p>Status: ${this.escapeHtml(bundle.derived?.status || 'Unknown')} &middot; ${available}/${total} available</p>
+                <p><strong>${AssetUtils.escapeHtml(bundle.bundleName)}</strong> (${AssetUtils.escapeHtml(bundle.bundleId)})</p>
+                <p>Status: ${AssetUtils.escapeHtml(bundle.derived?.status || 'Unknown')} &middot; ${available}/${total} available</p>
                 ${items ? `<ul style="margin: 8px 0 0 18px; padding: 0;">${items}${more}</ul>` : ''}
             </div>`;
     }
@@ -686,7 +678,7 @@ export class AppTopbar {
                 }
             </style>
             <div style="text-align: left;">
-                ${asset.bundle?.bundleId ? `<p style="margin: 0 0 8px; font-size: 13px;">Part of ${this.escapeHtml(asset.bundle.bundleName)} (${this.escapeHtml(asset.bundle.bundleId)})</p>` : ''}
+                ${asset.bundle?.bundleId ? `<p style="margin: 0 0 8px; font-size: 13px;">Part of ${AssetUtils.escapeHtml(asset.bundle.bundleName)} (${AssetUtils.escapeHtml(asset.bundle.bundleId)})</p>` : ''}
                 <div class="scan-table-scroll">
                     <table class="scan-table">
                         <tr><td colspan="9" class="scan-section-title">Asset Info</td></tr>
