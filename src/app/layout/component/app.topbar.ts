@@ -12,6 +12,7 @@ import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
 import { AssetService } from '../../pages/service/asset.service';
 import { MaintenanceService } from '../../pages/service/maintenance.service';
+import { AssetBundleService } from '../../pages/assets/services/asset-bundle.service';
 import { InstallPromptService } from '../../pages/service/install-prompt.service';
 import { PwaService } from '../../pages/service/pwa.service';
 import { UserService } from '../../pages/service/user.service';
@@ -422,6 +423,7 @@ export class AppTopbar {
         private router: Router,
         private assetService: AssetService,
         private maintenanceService: MaintenanceService,
+        private assetBundleService: AssetBundleService,
         private installPromptService: InstallPromptService,
         private pwaService: PwaService,
         private userService: UserService
@@ -565,26 +567,53 @@ export class AppTopbar {
                     .toPromise()
                     .catch(() => []);
 
+                const assetBundle = (foundAsset as any).bundle;
                 Swal.fire({
                     title: 'Asset Found!',
                     width: 720,
                     html: this.buildAssetScanResultHtml(foundAsset, maintenanceHistory || []),
                     icon: 'success',
                     showCancelButton: true,
+                    showDenyButton: !!assetBundle?.bundleId,
                     confirmButtonText: 'View in Assets',
+                    denyButtonText: 'Open set',
                     cancelButtonText: 'Close'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         this.router.navigate(['/app/pages/crud'], { queryParams: { assetId: foundAsset.assetId } });
+                    } else if (result.isDenied && assetBundle?.bundleId) {
+                        this.router.navigate(['/app/pages/crud'], { queryParams: { bundleId: assetBundle.bundleId } });
                     }
                 });
             } else {
-                Swal.fire({
-                    title: 'Asset Not Found',
-                    text: `No asset found with value: ${this.scanResult}`,
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                });
+                // No asset matched - the scanned value may identify a whole set
+                const scanned = (this.scanResult || '').toString().trim().toLowerCase();
+                const bundles: any[] = scanned ? (await this.assetBundleService.getBundles().toPromise().catch(() => [])) || [] : [];
+                const foundBundle = bundles.find((b: any) => (b.bundleId || '').toString().trim().toLowerCase() === scanned || (b.propertyNumber || '').toString().trim().toLowerCase() === scanned);
+
+                if (foundBundle) {
+                    this.closeQRScanner();
+                    Swal.fire({
+                        title: 'Set Found!',
+                        width: 720,
+                        html: this.buildBundleScanResultHtml(foundBundle),
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Open set',
+                        cancelButtonText: 'Close'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.router.navigate(['/app/pages/crud'], { queryParams: { bundleId: foundBundle.bundleId } });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Asset Not Found',
+                        text: `No asset found with value: ${this.scanResult}`,
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                }
             }
         } catch (error) {
             Swal.fire({
@@ -594,6 +623,30 @@ export class AppTopbar {
                 confirmButtonText: 'OK'
             });
         }
+    }
+
+    private escapeHtml(value: any): string {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Summary shown when a scan matches a set (bundle) rather than a single asset
+    private buildBundleScanResultHtml(bundle: any): string {
+        const components: any[] = bundle.components || [];
+        const shown = components.slice(0, 6);
+        const available = bundle.derived?.availableCount ?? 0;
+        const total = components.length;
+        const items = shown.map((c) => `<li>${this.escapeHtml(c.assetName || c.asset?.assetName || c.assetId || 'Component')}${c.componentRole ? ` (${this.escapeHtml(c.componentRole)})` : ''}</li>`).join('');
+        const more = total > shown.length ? `<li>and ${total - shown.length} more</li>` : '';
+        return `
+            <div style="text-align: left; font-size: 14px;">
+                <p><strong>${this.escapeHtml(bundle.bundleName)}</strong> (${this.escapeHtml(bundle.bundleId)})</p>
+                <p>Status: ${this.escapeHtml(bundle.derived?.status || 'Unknown')} &middot; ${available}/${total} available</p>
+                ${items ? `<ul style="margin: 8px 0 0 18px; padding: 0;">${items}${more}</ul>` : ''}
+            </div>`;
     }
 
     // Builds the two-table (Asset Info / Maintenance History) markup shown after a successful scan
@@ -633,6 +686,7 @@ export class AppTopbar {
                 }
             </style>
             <div style="text-align: left;">
+                ${asset.bundle?.bundleId ? `<p style="margin: 0 0 8px; font-size: 13px;">Part of ${this.escapeHtml(asset.bundle.bundleName)} (${this.escapeHtml(asset.bundle.bundleId)})</p>` : ''}
                 <div class="scan-table-scroll">
                     <table class="scan-table">
                         <tr><td colspan="9" class="scan-section-title">Asset Info</td></tr>

@@ -770,6 +770,34 @@ export class AssetsComponent implements OnInit, OnDestroy {
         if (assetId) {
             this.view({ assetId } as Asset);
         }
+
+        // Opened from the QR scanner with a set - show the Bundles view and its detail dialog.
+        // Subscribed (not a snapshot) so scanning again while already on this page also works.
+        this.route.queryParamMap.subscribe((params) => {
+            const bundleId = params.get('bundleId');
+            if (bundleId) {
+                this.openBundleFromQuery(bundleId);
+            }
+        });
+    }
+
+    openBundleFromQuery(bundleId: string) {
+        this.viewMode = 'bundles';
+        this.assetBundleService.getBundles().subscribe({
+            next: (data) => {
+                this.bundles = data || [];
+                this.bundlesLoaded = true;
+                const target = this.bundles.find((b) => b.bundleId === bundleId);
+                if (target) {
+                    this.openBundleDetail(target.bundleId);
+                } else {
+                    this.messageService.add({ severity: 'info', summary: 'Info', detail: `Set ${bundleId} was not found` });
+                }
+            },
+            error: (error: any) => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to load bundles: ${error?.error?.message || error?.message}` });
+            }
+        });
     }
 
     /**
@@ -1794,8 +1822,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         </tr>`
                         : '';
 
-                // Filter maintenance history for this asset
-                const assetMaintenanceHistory = maintenanceHistory.filter((m: any) => m.asset?.assetId === item.assetId);
+                // Filter maintenance history for this asset, including set requests where it is only an affected component
+                const assetMaintenanceHistory = maintenanceHistory.filter((m: any) => m.asset?.assetId === item.assetId || m.affectedComponents?.some((c: any) => c.assetId === item.assetId));
 
                 let icsHtml = '';
                 if (icsTableData.length > 0) {
@@ -1974,6 +2002,14 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Property Number</td>
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.propertyNumber || 'N/A'}</td>
                                         </tr>
+                                        ${
+                                            (fullAsset as any).bundle
+                                                ? `<tr style="background-color: #f9fafb;">
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Set</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">Part of ${(fullAsset as any).bundle.bundleName} (${(fullAsset as any).bundle.bundleId})</td>
+                                        </tr>`
+                                                : ''
+                                        }
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Category</td>
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.category || 'N/A'}</td>
