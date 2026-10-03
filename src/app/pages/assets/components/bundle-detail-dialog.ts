@@ -9,9 +9,10 @@ import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { Menu, MenuModule } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
 import { AssetBundle, BundleHistoryItem, BundleStatus, MembershipLogItem } from '../models/asset-bundle.model';
 import { AssetBundleService } from '../services/asset-bundle.service';
+import { BundleQrPrintService } from '../services/bundle-qr-print.service';
 import { BundleComponentActionsComponent, ComponentActionMode } from './bundle-component-actions';
 import { Brand } from '../../service/asset.service';
 import { AssetConstants } from '../constants/asset.constants';
@@ -23,6 +24,10 @@ import { MaintenanceConstants } from '../../requestmaintenance/constants/mainten
     imports: [CommonModule, DialogModule, TabsModule, TagModule, ButtonModule, ChipModule, TooltipModule, ProgressSpinnerModule, MenuModule, BundleComponentActionsComponent],
     template: `
         <p-dialog [visible]="visible" (visibleChange)="onVisibleChange($event)" [modal]="true" [style]="{ width: '60rem', maxWidth: '95vw' }" [header]="bundle?.bundleName || 'Bundle Details'" [draggable]="false">
+            <div class="flex justify-end mb-2">
+                <p-button label="Print QR label" icon="pi pi-print" size="small" severity="secondary" [outlined]="true" [disabled]="bundleLoading || !bundle" (onClick)="printQr()" />
+            </div>
+
             <div *ngIf="bundleLoading" class="flex justify-center p-6">
                 <p-progressSpinner strokeWidth="4" [style]="{ width: '40px', height: '40px' }" />
             </div>
@@ -226,7 +231,11 @@ export class BundleDetailDialogComponent implements OnDestroy {
     // Both fetches are tracked so a reopen/bundle switch unsubscribes any still-running request (no stale overwrite)
     private subs = new Subscription();
 
-    constructor(private bundleService: AssetBundleService) {
+    constructor(
+        private bundleService: AssetBundleService,
+        private qrPrintService: BundleQrPrintService,
+        private messageService: MessageService
+    ) {
         try {
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             // Same roles that see the wrench button in the asset list
@@ -250,6 +259,15 @@ export class BundleDetailDialogComponent implements OnDestroy {
 
     onVisibleChange(v: boolean) {
         this.visibleChange.emit(v);
+    }
+
+    async printQr() {
+        if (!this.bundle) return;
+        try {
+            await this.qrPrintService.print(this.bundle);
+        } catch (err: any) {
+            this.messageService.add({ severity: 'error', summary: 'Print failed', detail: err?.message || 'Could not print the QR label' });
+        }
     }
 
     reload() {
