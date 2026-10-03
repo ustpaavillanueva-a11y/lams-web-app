@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
@@ -8,15 +8,19 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { AssetBundle, BundleHistoryItem, BundleStatus } from '../models/asset-bundle.model';
+import { Menu, MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { AssetBundle, BundleHistoryItem, BundleStatus, MembershipLogItem } from '../models/asset-bundle.model';
 import { AssetBundleService } from '../services/asset-bundle.service';
+import { BundleComponentActionsComponent, ComponentActionMode } from './bundle-component-actions';
+import { Brand } from '../../service/asset.service';
 import { AssetConstants } from '../constants/asset.constants';
 import { MaintenanceConstants } from '../../requestmaintenance/constants/maintenance.constants';
 
 @Component({
     selector: 'app-bundle-detail-dialog',
     standalone: true,
-    imports: [CommonModule, DialogModule, TabsModule, TagModule, ButtonModule, ChipModule, TooltipModule, ProgressSpinnerModule],
+    imports: [CommonModule, DialogModule, TabsModule, TagModule, ButtonModule, ChipModule, TooltipModule, ProgressSpinnerModule, MenuModule, BundleComponentActionsComponent],
     template: `
         <p-dialog [visible]="visible" (visibleChange)="onVisibleChange($event)" [modal]="true" [style]="{ width: '60rem', maxWidth: '95vw' }" [header]="bundle?.bundleName || 'Bundle Details'" [draggable]="false">
             <div *ngIf="bundleLoading" class="flex justify-center p-6">
@@ -40,10 +44,15 @@ import { MaintenanceConstants } from '../../requestmaintenance/constants/mainten
                     <div><span class="text-muted-color">Issued To:</span> {{ bundle.issuedTo || 'Not assigned' }}</div>
                 </div>
 
-                <p-tabs [value]="activeTab" (valueChange)="activeTab = '' + $event">
+                <div *ngIf="isLabTech" class="mb-3">
+                    <p-button label="Add components" icon="pi pi-plus" size="small" severity="secondary" (onClick)="openAction('add', null)" />
+                </div>
+
+                <p-tabs [value]="activeTab" (valueChange)="onTabChange('' + $event)">
                     <p-tablist>
                         <p-tab value="components">Components</p-tab>
                         <p-tab value="history">Maintenance History</p-tab>
+                        <p-tab value="changes">Changes</p-tab>
                     </p-tablist>
                     <p-tabpanels>
                         <p-tabpanel value="components">
@@ -59,16 +68,20 @@ import { MaintenanceConstants } from '../../requestmaintenance/constants/mainten
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let c of bundle.components">
+                                    <tr *ngFor="let c of bundle.components" [class.opacity-50]="isRetired(c)">
                                         <td>{{ c.componentRole || 'N/A' }}</td>
-                                        <td>{{ c.assetName }}</td>
+                                        <td>
+                                            {{ c.assetName }}
+                                            <p-tag *ngIf="isRetired(c)" class="ml-2" value="Retired" severity="secondary" />
+                                        </td>
                                         <td>{{ c.inventoryCustodianSlip?.serialNumber || 'N/A' }}</td>
                                         <td><p-tag [value]="c.status?.statusName || 'Unknown'" [severity]="componentSeverity(c.status?.statusName)" /></td>
                                         <td>{{ c.condition || 'N/A' }}</td>
                                         <td class="whitespace-nowrap">
                                             <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-secondary" (click)="viewComponent.emit(c.assetId)" pTooltip="View Details"></button>
-                                            <button *ngIf="canRequest" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance.emit({ bundleId: bundle.bundleId, componentId: c.assetId })" pTooltip="Request Maintenance"></button>
+                                            <button *ngIf="canRequest && !isRetired(c)" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance.emit({ bundleId: bundle.bundleId, componentId: c.assetId })" pTooltip="Request Maintenance"></button>
                                             <button pButton icon="pi pi-history" class="p-button-rounded p-button-text p-button-help" (click)="showComponentHistory(c)" pTooltip="View Maintenance History"></button>
+                                            <button *ngIf="isLabTech && !isRetired(c)" pButton icon="pi pi-ellipsis-v" class="p-button-rounded p-button-text p-button-secondary" (click)="openActionsMenu($event, c)" pTooltip="Component actions"></button>
                                         </td>
                                     </tr>
                                     <tr *ngIf="!bundle.components?.length">
@@ -109,10 +122,53 @@ import { MaintenanceConstants } from '../../requestmaintenance/constants/mainten
                                 <li *ngIf="!filteredHistory.length" class="text-muted-color">No maintenance history.</li>
                             </ul>
                         </p-tabpanel>
+
+                        <p-tabpanel value="changes">
+                            <div *ngIf="logLoading" class="flex justify-center p-6">
+                                <p-progressSpinner strokeWidth="4" [style]="{ width: '40px', height: '40px' }" />
+                            </div>
+
+                            <div *ngIf="logError && !logLoading" class="p-4">
+                                <p class="text-red-500 mb-3">{{ logError }}</p>
+                                <p-button label="Retry" icon="pi pi-refresh" severity="secondary" (onClick)="loadLog()" />
+                            </div>
+
+                            <table *ngIf="!logLoading && !logError" class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-left">
+                                        <th>When</th>
+                                        <th>Action</th>
+                                        <th>Component</th>
+                                        <th>Move</th>
+                                        <th>By</th>
+                                        <th>Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let l of membershipLog">
+                                        <td class="whitespace-nowrap">{{ l.createdAt | date: 'medium' }}</td>
+                                        <td><p-tag [value]="l.action" [severity]="actionSeverity(l.action)" /></td>
+                                        <td>
+                                            {{ l.assetName }}<span *ngIf="l.componentRole" class="text-muted-color"> ({{ l.componentRole }})</span>
+                                        </td>
+                                        <td>{{ l.fromBundleId || '-' }} <span *ngIf="l.fromBundleId || l.toBundleId">&rarr;</span> {{ l.toBundleId || '-' }}</td>
+                                        <td>{{ l.actorName || 'N/A' }}</td>
+                                        <td>{{ l.reason || '' }}</td>
+                                    </tr>
+                                    <tr *ngIf="!membershipLog.length">
+                                        <td colspan="6" class="text-muted-color">No changes recorded.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p-tabpanel>
                     </p-tabpanels>
                 </p-tabs>
             </ng-container>
         </p-dialog>
+
+        <p-menu #actionsMenu [popup]="true" [model]="actionItems" appendTo="body" />
+
+        <app-bundle-component-actions [bundleId]="bundleId" [component]="actionComponent" [mode]="actionMode" [candidateAssets]="candidateAssets" [otherBundles]="otherBundles" [brands]="brands" (done)="onActionDone()" (closed)="closeAction()" />
     `
 })
 export class BundleDetailDialogComponent implements OnDestroy {
@@ -141,6 +197,21 @@ export class BundleDetailDialogComponent implements OnDestroy {
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() requestMaintenance = new EventEmitter<{ bundleId: string; componentId?: string }>();
     @Output() viewComponent = new EventEmitter<string>();
+    @Output() changed = new EventEmitter<void>();
+
+    @Input() candidateAssets: any[] = [];
+    @Input() otherBundles: AssetBundle[] = [];
+    @Input() brands: Brand[] = [];
+
+    @ViewChild('actionsMenu') actionsMenu?: Menu;
+    actionItems: MenuItem[] = [];
+    actionMode: ComponentActionMode = null;
+    actionComponent: any = null;
+    isLabTech = false;
+    membershipLog: MembershipLogItem[] = [];
+    logLoading = false;
+    logError = '';
+    private logLoaded = false;
 
     bundle: AssetBundle | null = null;
     history: BundleHistoryItem[] = [];
@@ -160,8 +231,10 @@ export class BundleDetailDialogComponent implements OnDestroy {
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             // Same roles that see the wrench button in the asset list
             this.canRequest = currentUser?.role !== 'SuperAdmin';
+            this.isLabTech = currentUser?.role === 'LabTech';
         } catch {
             this.canRequest = false;
+            this.isLabTech = false;
         }
     }
 
@@ -181,6 +254,109 @@ export class BundleDetailDialogComponent implements OnDestroy {
 
     reload() {
         this.load();
+    }
+
+    isRetired(c: any): boolean {
+        return c?.status?.statusName === 'Retired';
+    }
+
+    actionSeverity(action: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        switch (action) {
+            case 'JOINED':
+            case 'CONVERTED':
+                return 'success';
+            case 'TRANSFERRED':
+            case 'REPLACED':
+                return 'info';
+            case 'REMOVED':
+                return 'warn';
+            case 'RETIRED':
+                return 'danger';
+            default:
+                return 'secondary';
+        }
+    }
+
+    onTabChange(tab: string) {
+        this.activeTab = tab;
+        if (tab === 'changes' && !this.logLoaded && !this.logLoading) this.loadLog();
+    }
+
+    openActionsMenu(event: Event, c: any) {
+        this.actionItems = [
+            { label: 'Replace', icon: 'pi pi-sync', command: () => this.openAction('replace', c) },
+            { label: 'Transfer', icon: 'pi pi-arrow-right-arrow-left', command: () => this.openAction('transfer', c) },
+            { label: 'Remove', icon: 'pi pi-minus-circle', command: () => this.openAction('remove', c) },
+            { label: 'Retire', icon: 'pi pi-ban', command: () => this.openAction('retire', c) }
+        ];
+        this.actionsMenu?.toggle(event);
+    }
+
+    openAction(mode: ComponentActionMode, c: any) {
+        this.actionComponent = c;
+        this.actionMode = mode;
+    }
+
+    closeAction() {
+        this.actionMode = null;
+        this.actionComponent = null;
+    }
+
+    onActionDone() {
+        this.closeAction();
+        this.refresh();
+        this.changed.emit();
+    }
+
+    loadLog() {
+        const id = this._bundleId;
+        if (!id) return;
+        this.logLoading = true;
+        this.logError = '';
+        this.subs.add(
+            this.bundleService.getMembershipLog(id).subscribe({
+                next: (l) => {
+                    this.membershipLog = l || [];
+                    this.logLoaded = true;
+                    this.logLoading = false;
+                },
+                error: (err) => {
+                    this.logError = err?.error?.message || 'Failed to load changes';
+                    this.logLoading = false;
+                }
+            })
+        );
+    }
+
+    // Reload bundle, history and (if already viewed) the log in place, without resetting the active tab
+    private refresh() {
+        const id = this._bundleId;
+        if (!id) return;
+        this.cancel();
+        this.logLoading = false;
+        this.subs.add(
+            this.bundleService.getBundle(id).subscribe({
+                next: (b) => {
+                    this.bundle = b;
+                    this.bundleError = '';
+                },
+                error: (err) => {
+                    this.bundleError = err?.error?.message || 'Failed to load bundle';
+                }
+            })
+        );
+        this.subs.add(
+            this.bundleService.getBundleHistory(id).subscribe({
+                next: (h) => {
+                    this.history = h || [];
+                    this.historyError = '';
+                },
+                error: (err) => {
+                    this.historyError = err?.error?.message || 'Failed to load maintenance history';
+                }
+            })
+        );
+        if (this.logLoaded || this.activeTab === 'changes') this.loadLog();
     }
 
     showComponentHistory(c: any) {
@@ -222,6 +398,11 @@ export class BundleDetailDialogComponent implements OnDestroy {
         this.historyError = '';
         this.historyFilter = null;
         this.activeTab = 'components';
+        this.membershipLog = [];
+        this.logLoaded = false;
+        this.logLoading = false;
+        this.logError = '';
+        this.closeAction();
         const id = this._bundleId;
         if (!id) return;
 

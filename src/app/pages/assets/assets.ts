@@ -85,7 +85,7 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
 
         <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" (requestMaintenance)="onBundleRequestMaintenance($event)" (view)="openBundleDetail($event)" />
 
-        <app-bundle-detail-dialog [bundleId]="bundleDetailId" [(visible)]="bundleDetailVisible" (requestMaintenance)="onBundleRequestMaintenance($event)" (viewComponent)="onViewBundleComponent($event)" />
+        <app-bundle-detail-dialog [bundleId]="bundleDetailId" [(visible)]="bundleDetailVisible" (requestMaintenance)="onBundleRequestMaintenance($event)" (viewComponent)="onViewBundleComponent($event)" (changed)="onBundleChanged()" [candidateAssets]="bundleCandidateAssets" [otherBundles]="bundles" [brands]="brands" />
 
         <app-maintenance-scope-dialog [(visible)]="scopeDialog" [asset]="scopeAsset" [bundleId]="scopeBundleId" [defaultScope]="scopeDefault" (scopeChosen)="onScopeChosen($event)" />
 
@@ -1030,6 +1030,23 @@ export class AssetsComponent implements OnInit, OnDestroy {
             return;
         }
         this.view({ assetId } as Asset);
+    }
+
+    private candidateSource: Asset[] | null = null;
+    private candidateCache: Asset[] = [];
+
+    // Standalone, non-retired assets that can be added to a set (expanded serial rows share an assetId, so dedupe)
+    get bundleCandidateAssets(): Asset[] {
+        if (this.candidateSource !== this.assets) {
+            const seen = new Set<string>();
+            this.candidateCache = this.assets.filter((a) => {
+                if (!a.assetId || (a as any).bundle || (a as any).status?.statusName === 'Retired' || seen.has(a.assetId)) return false;
+                seen.add(a.assetId);
+                return true;
+            });
+            this.candidateSource = this.assets;
+        }
+        return this.candidateCache;
     }
 
     onBundleChanged() {

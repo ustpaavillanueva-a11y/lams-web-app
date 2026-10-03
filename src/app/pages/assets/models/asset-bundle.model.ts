@@ -26,3 +26,18 @@ export interface BundleHistoryItem {
     performedBy: string | null;
     components: { assetId: string; assetName: string; componentRole: string | null }[];
 }
+
+export type MembershipAction = 'JOINED' | 'REMOVED' | 'TRANSFERRED' | 'REPLACED' | 'RETIRED' | 'CONVERTED';
+
+export interface MembershipLogItem {
+    id: string;
+    action: MembershipAction;
+    assetId: string;
+    assetName: string;
+    componentRole: string | null;
+    fromBundleId: string | null;
+    toBundleId: string | null;
+    reason: string | null;
+    actorName: string | null;
+    createdAt: string;
+}
