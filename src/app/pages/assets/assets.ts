@@ -41,6 +41,7 @@ import { AssetBundleService } from './services/asset-bundle.service';
 import { AssetBundle } from './models/asset-bundle.model';
 import { BundleListComponent } from './components/bundle-list';
 import { BundleFormDialogComponent } from './components/bundle-form-dialog';
+import { ConvertToBundleDialogComponent } from './components/convert-to-bundle-dialog';
 import { BundleDetailDialogComponent } from './components/bundle-detail-dialog';
 import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './components/maintenance-scope-dialog';
 
@@ -71,6 +72,7 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
         SelectButtonModule,
         BundleListComponent,
         BundleFormDialogComponent,
+        ConvertToBundleDialogComponent,
         BundleDetailDialogComponent,
         MaintenanceScopeDialogComponent
     ],
@@ -90,6 +92,8 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
         <app-maintenance-scope-dialog [(visible)]="scopeDialog" [asset]="scopeAsset" [bundleId]="scopeBundleId" [defaultScope]="scopeDefault" (scopeChosen)="onScopeChosen($event)" />
 
         <app-bundle-form-dialog [(visible)]="bundleDialog" [programs]="programs" [laboratories]="laboratories" [brands]="brands" [colors]="colors" (saved)="onBundleChanged()" />
+
+        <app-convert-to-bundle-dialog [(visible)]="convertDialog" [asset]="convertAsset" [brands]="brands" (converted)="onBundleChanged()" />
 
         <p-toolbar *ngIf="viewMode === 'assets'" styleClass="mb-4">
             <ng-template #start>
@@ -204,6 +208,7 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
                     </td>
                     <td>
                         <button *ngIf="isCampusAdmin() || isFaculty || isLabTech" pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-success" (click)="view(asset)" pTooltip="View Asset"></button>
+                        <button *ngIf="isLabTech && !asset.bundle && asset.status?.statusName !== 'Retired'" pButton icon="pi pi-sitemap" class="p-button-rounded p-button-text p-button-secondary" (click)="openConvert(asset)" pTooltip="Convert to set"></button>
                         <button *ngIf="!isFaculty" pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="delete(asset)" pTooltip="Delete"></button>
                         <button *ngIf="!isSuperAdmin" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance(asset)" pTooltip="Request Maintenance"></button>
                     </td>
@@ -676,6 +681,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
     bundles: AssetBundle[] = [];
     bundlesLoaded: boolean = false;
     bundleDialog: boolean = false;
+    convertDialog: boolean = false;
+    convertAsset: any = null;
     bundleDetailVisible: boolean = false;
     bundleDetailId: string | null = null;
 
@@ -1047,6 +1054,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
             this.candidateSource = this.assets;
         }
         return this.candidateCache;
+    }
+
+    openConvert(asset: any) {
+        this.convertAsset = asset;
+        this.convertDialog = true;
     }
 
     onBundleChanged() {
