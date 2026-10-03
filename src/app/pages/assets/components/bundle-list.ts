@@ -52,7 +52,7 @@ import { AssetConstants } from '../constants/asset.constants';
                 </tr>
             </ng-template>
 
-            <ng-template pTemplate="rowexpansion" let-bundle>
+            <ng-template pTemplate="expandedrow" let-bundle>
                 <tr>
                     <td colspan="8">
                         <div class="p-3">
