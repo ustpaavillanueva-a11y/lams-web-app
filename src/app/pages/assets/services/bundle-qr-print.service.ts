@@ -8,11 +8,18 @@ import { AssetUtils } from '../utils/asset.utils';
 export class BundleQrPrintService {
     // The QR encodes exactly the bundleId: the topbar scanner resolves it against bundles by bundleId
     async print(bundle: { bundleId: string; bundleName: string; propertyNumber?: string | null }): Promise<void> {
-        const dataUrl = await QRCode.toDataURL(bundle.bundleId, { margin: 1, width: 300, errorCorrectionLevel: 'M' });
-
+        // Must be the first statement: the popup has to open synchronously within the user's click
         const win = window.open('', '_blank');
         if (!win) {
             throw new Error('Popup blocked: allow popups to print the QR label');
+        }
+
+        let dataUrl: string;
+        try {
+            dataUrl = await QRCode.toDataURL(bundle.bundleId, { margin: 1, width: 300, errorCorrectionLevel: 'M' });
+        } catch (err) {
+            win.close();
+            throw err;
         }
 
         const esc = AssetUtils.escapeHtml;
@@ -44,9 +51,11 @@ export class BundleQrPrintService {
         win.document.close();
 
         let printed = false;
+        let fallback: ReturnType<typeof setTimeout> | undefined;
         const doPrint = () => {
             if (printed) return;
             printed = true;
+            if (fallback !== undefined) clearTimeout(fallback);
             win.focus();
             win.print();
         };
@@ -57,6 +66,6 @@ export class BundleQrPrintService {
         } else {
             setTimeout(doPrint, 0);
         }
-        setTimeout(doPrint, 1500);
+        if (!printed) fallback = setTimeout(doPrint, 1500);
     }
 }
