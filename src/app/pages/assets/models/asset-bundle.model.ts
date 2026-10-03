@@ -6,7 +6,6 @@ export interface AssetBundle {
     propertyNumber?: string;
     issuedTo?: string;
     acquisitionDate?: string;
-    notes?: string;
     laboratories?: any;
     campus?: any;
     components: any[];
