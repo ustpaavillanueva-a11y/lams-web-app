@@ -644,7 +644,7 @@ export class AppTopbar {
     // Builds the two-table (Asset Info / Maintenance History) markup shown after a successful scan
     private buildAssetScanResultHtml(asset: any, maintenanceHistory: any[]): string {
         const formatDate = (value: any) => (value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A');
-        const fullName = (user: any) => (user ? `${user.firstName} ${user.lastName}` : 'N/A');
+        const fullName = (user: any) => (user ? AssetUtils.escapeHtml(`${user.firstName} ${user.lastName}`) : 'N/A');
 
         const maintenanceRows =
             maintenanceHistory.length > 0
@@ -652,10 +652,10 @@ export class AppTopbar {
                       .map(
                           (approval) => `
                     <tr>
-                        <td>${approval.maintenanceRequest?.requestId || 'N/A'}</td>
-                        <td>${approval.maintenanceRequest?.maintenanceType?.maintenanceTypeName || 'N/A'}</td>
+                        <td>${AssetUtils.escapeHtml(approval.maintenanceRequest?.requestId || 'N/A')}</td>
+                        <td>${AssetUtils.escapeHtml(approval.maintenanceRequest?.maintenanceType?.maintenanceTypeName || 'N/A')}</td>
                         <td>${fullName(approval.assignedTechnician)}</td>
-                        <td>${approval.maintenanceRequest?.reason || 'N/A'}</td>
+                        <td>${AssetUtils.escapeHtml(approval.maintenanceRequest?.reason || 'N/A')}</td>
                         <td>${fullName(approval.maintenanceRequest?.requestedBy)}</td>
                         <td>${formatDate(approval.completedAt)}</td>
                         <td><a href="/app/pages/requestmaintenance" style="color: #2563eb;">View</a></td>
@@ -697,14 +697,14 @@ export class AppTopbar {
                         </thead>
                         <tbody>
                             <tr>
-                                <td>${asset.assetId || 'N/A'}</td>
-                                <td>${asset.assetName || 'N/A'}</td>
-                                <td>${asset.propertyNumber || 'N/A'}</td>
-                                <td>${asset.inventoryCustodianSlip?.serialNumber || 'N/A'}</td>
-                                <td>${asset.campus?.campusName || 'N/A'}</td>
-                                <td>${asset.laboratories?.laboratoryName || 'N/A'}</td>
-                                <td>${asset.issuedTo || 'Not assigned'}</td>
-                                <td>${asset.status?.statusName || 'Unknown'}</td>
+                                <td>${AssetUtils.escapeHtml(asset.assetId || 'N/A')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.assetName || 'N/A')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.propertyNumber || 'N/A')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.inventoryCustodianSlip?.serialNumber || 'N/A')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.campus?.campusName || 'N/A')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.laboratories?.laboratoryName || 'N/A')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.issuedTo || 'Not assigned')}</td>
+                                <td>${AssetUtils.escapeHtml(asset.status?.statusName || 'Unknown')}</td>
                                 <td>${AssetUtils.getWarrantyStatus(asset.warrantyExpirationDate)}${asset.warrantyExpirationDate ? ' (' + formatDate(asset.warrantyExpirationDate) + ')' : ''}</td>
                             </tr>
                         </tbody>

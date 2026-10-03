@@ -1026,12 +1026,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     onViewBundleComponent(assetId: string) {
-        const asset = this.assets.find((a) => a.assetId === assetId);
-        if (!asset) {
-            this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Component not in the current list' });
+        if (!assetId) {
             return;
         }
-        this.view(asset);
+        this.view({ assetId } as Asset);
     }
 
     onBundleChanged() {
@@ -1818,7 +1816,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                     fullAsset.category === 'Software'
                         ? `<tr style="background-color: #ffffff;">
                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Subscription</td>
-                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.subscriptionDurationMonths ? fullAsset.subscriptionDurationMonths + ' month(s)' : 'N/A'}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.subscriptionDurationMonths ? AssetUtils.escapeHtml(fullAsset.subscriptionDurationMonths) + ' month(s)' : 'N/A'}</td>
                         </tr>`
                         : '';
 
@@ -1847,8 +1845,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                             .map(
                                                 (row, idx) => `
                                             <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f9fafb'};">
-                                                <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">${row.field}</td>
-                                                <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${row.value}</td>
+                                                <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">${AssetUtils.escapeHtml(row.field)}</td>
+                                                <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(row.value)}</td>
                                             </tr>
                                         `
                                             )
@@ -1875,23 +1873,23 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                         (maint: any, idx: number) => `
                                     <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin-bottom: 8px; background-color: ${idx % 2 === 0 ? '#ffffff' : '#f9fafb'};">
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <strong style="font-size: 13px;">${maint.maintenanceName || 'Maintenance Request'}</strong>
+                                            <strong style="font-size: 13px;">${AssetUtils.escapeHtml(maint.maintenanceName || 'Maintenance Request')}</strong>
                                             <span style="background: ${this.getMaintenanceStatusColor(maint.requestStatus?.requestStatusName)}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
-                                                ${maint.requestStatus?.requestStatusName || 'Unknown'}
+                                                ${AssetUtils.escapeHtml(maint.requestStatus?.requestStatusName || 'Unknown')}
                                             </span>
                                         </div>
                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-                                            <div><strong>Type:</strong> ${maint.maintenanceType?.maintenanceTypeName || 'N/A'}</div>
-                                            <div><strong>Service:</strong> ${maint.serviceMaintenance?.serviceName || 'N/A'}</div>
-                                            <div><strong>Priority:</strong> ${maint.priorityLevel?.priorityLevelName || 'N/A'}</div>
+                                            <div><strong>Type:</strong> ${AssetUtils.escapeHtml(maint.maintenanceType?.maintenanceTypeName || 'N/A')}</div>
+                                            <div><strong>Service:</strong> ${AssetUtils.escapeHtml(maint.serviceMaintenance?.serviceName || 'N/A')}</div>
+                                            <div><strong>Priority:</strong> ${AssetUtils.escapeHtml(maint.priorityLevel?.priorityLevelName || 'N/A')}</div>
                                             <div><strong>Requested:</strong> ${this.formatDate(maint.createdAt)}</div>
-                                            ${maint.requestedBy ? `<div><strong>Requested By:</strong> ${maint.requestedBy.firstName} ${maint.requestedBy.lastName}</div>` : ''}
-                                            ${maint.maintenanceApproval?.assignedTechnician ? `<div><strong>Technician:</strong> ${maint.maintenanceApproval.assignedTechnician.firstName} ${maint.maintenanceApproval.assignedTechnician.lastName}</div>` : ''}
+                                            ${maint.requestedBy ? `<div><strong>Requested By:</strong> ${AssetUtils.escapeHtml(maint.requestedBy.firstName)} ${AssetUtils.escapeHtml(maint.requestedBy.lastName)}</div>` : ''}
+                                            ${maint.maintenanceApproval?.assignedTechnician ? `<div><strong>Technician:</strong> ${AssetUtils.escapeHtml(maint.maintenanceApproval.assignedTechnician.firstName)} ${AssetUtils.escapeHtml(maint.maintenanceApproval.assignedTechnician.lastName)}</div>` : ''}
                                             ${maint.maintenanceApproval?.scheduledDate ? `<div><strong>Scheduled:</strong> ${this.formatDate(maint.maintenanceApproval.scheduledDate)}</div>` : ''}
                                             ${maint.maintenanceApproval?.completedAt ? `<div><strong>Completed:</strong> ${this.formatDate(maint.maintenanceApproval.completedAt)}</div>` : ''}
                                         </div>
-                                        ${maint.reason ? `<div style="margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 11px;"><strong>Reason:</strong> ${maint.reason}</div>` : ''}
-                                        ${maint.maintenanceApproval?.completionNotes ? `<div style="margin-top: 8px; padding: 8px; background: #f0fdf4; border-radius: 4px; font-size: 11px;"><strong>Notes:</strong> ${maint.maintenanceApproval.completionNotes}</div>` : ''}
+                                        ${maint.reason ? `<div style="margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 11px;"><strong>Reason:</strong> ${AssetUtils.escapeHtml(maint.reason)}</div>` : ''}
+                                        ${maint.maintenanceApproval?.completionNotes ? `<div style="margin-top: 8px; padding: 8px; background: #f0fdf4; border-radius: 4px; font-size: 11px;"><strong>Notes:</strong> ${AssetUtils.escapeHtml(maint.maintenanceApproval.completionNotes)}</div>` : ''}
                                     </div>
                                 `
                                     )
@@ -1926,7 +1924,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                             </div>
                             <div class="accordion-content">
                                 <div style="display: flex; justify-content: center; padding: 20px;">
-                                    <img src="${fullAsset.qrCode}" alt="QR Code" style="max-width: 300px; border: 2px solid #d1d5db; border-radius: 8px;" />
+                                    <img src="${AssetUtils.escapeHtml(fullAsset.qrCode)}" alt="QR Code" style="max-width: 300px; border: 2px solid #d1d5db; border-radius: 8px;" />
                                 </div>
                             </div>
                         </div>
@@ -1992,15 +1990,15 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                     <tbody>
                                         <tr style="background-color: #ffffff;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Asset Name</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${assetName}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(assetName)}</td>
                                         </tr>
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Asset ID</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.assetId || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.assetId || 'N/A')}</td>
                                         </tr>
                                         <tr style="background-color: #ffffff;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Property Number</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.propertyNumber || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.propertyNumber || 'N/A')}</td>
                                         </tr>
                                         ${
                                             (fullAsset as any).bundle
@@ -2012,15 +2010,15 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                         }
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Category</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.category || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.category || 'N/A')}</td>
                                         </tr>
                                         <tr style="background-color: #ffffff;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Condition</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.condition || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.condition || 'N/A')}</td>
                                         </tr>
                                         <tr style="background-color: #ffffff;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Status</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset['status']?.statusName || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset['status']?.statusName || 'N/A')}</td>
                                         </tr>
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Acquisition Date</td>
@@ -2033,19 +2031,19 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                         ${subscriptionRow}
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Campus</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.campus?.campusName || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.campus?.campusName || 'N/A')}</td>
                                         </tr>
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Laboratory</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.laboratories?.laboratoryName || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.laboratories?.laboratoryName || 'N/A')}</td>
                                         </tr>
                                         <tr style="background-color: #ffffff;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Issued To</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.issuedTo || 'Not assigned'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.issuedTo || 'Not assigned')}</td>
                                         </tr>
                                         <tr style="background-color: #f9fafb;">
                                             <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px; font-weight: 500;">Purpose</td>
-                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${fullAsset.purpose || 'N/A'}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; font-size: 12px;">${AssetUtils.escapeHtml(fullAsset.purpose || 'N/A')}</td>
                                         </tr>
                                     </tbody>
                                 </table>
