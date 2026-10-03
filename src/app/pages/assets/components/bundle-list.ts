@@ -26,7 +26,7 @@ import { AssetConstants } from '../constants/asset.constants';
                     <th style="width:8rem">Lab</th>
                     <th style="width:8rem">Issued To</th>
                     <th style="width:14rem">Status</th>
-                    <th *ngIf="showActions" style="width:7rem">Actions</th>
+                    <th style="width:10rem">Actions</th>
                 </tr>
             </ng-template>
 
@@ -44,7 +44,8 @@ import { AssetConstants } from '../constants/asset.constants';
                         <p-tag [value]="bundle.derived.status" [severity]="statusSeverity(bundle.derived.status)" />
                         <span class="ml-2 text-sm">{{ bundle.derived.availableCount }}/{{ bundle.derived.activeCount }} available</span>
                     </td>
-                    <td *ngIf="showActions">
+                    <td>
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-secondary" (click)="view.emit(bundle.bundleId)" pTooltip="View Details"></button>
                         <button *ngIf="canRequest" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance.emit({ bundleId: bundle.bundleId })" pTooltip="Request Maintenance"></button>
                         <button *ngIf="isLabTech" pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="confirmDelete(bundle)" pTooltip="Delete Bundle"></button>
                     </td>
@@ -53,7 +54,7 @@ import { AssetConstants } from '../constants/asset.constants';
 
             <ng-template pTemplate="rowexpansion" let-bundle>
                 <tr>
-                    <td [attr.colspan]="showActions ? 8 : 7">
+                    <td colspan="8">
                         <div class="p-3">
                             <table class="w-full text-sm">
                                 <thead>
@@ -89,7 +90,7 @@ import { AssetConstants } from '../constants/asset.constants';
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td [attr.colspan]="showActions ? 8 : 7">No bundles found.</td>
+                    <td colspan="8">No bundles found.</td>
                 </tr>
             </ng-template>
         </p-table>
@@ -98,6 +99,7 @@ import { AssetConstants } from '../constants/asset.constants';
 export class BundleListComponent {
     @Input() bundles: AssetBundle[] = [];
     @Output() deleted = new EventEmitter<string>();
+    @Output() view = new EventEmitter<string>();
     @Output() requestMaintenance = new EventEmitter<{ bundleId: string; componentId?: string }>();
 
     isLabTech = false;

@@ -41,6 +41,7 @@ import { AssetBundleService } from './services/asset-bundle.service';
 import { AssetBundle } from './models/asset-bundle.model';
 import { BundleListComponent } from './components/bundle-list';
 import { BundleFormDialogComponent } from './components/bundle-form-dialog';
+import { BundleDetailDialogComponent } from './components/bundle-detail-dialog';
 import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './components/maintenance-scope-dialog';
 
 @Component({
@@ -70,6 +71,7 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
         SelectButtonModule,
         BundleListComponent,
         BundleFormDialogComponent,
+        BundleDetailDialogComponent,
         MaintenanceScopeDialogComponent
     ],
     providers: [MessageService, QrCodeService, AssetExportService, AssetFormService],
@@ -81,7 +83,9 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
             <p-selectButton [options]="viewOptions" [(ngModel)]="viewMode" optionLabel="label" optionValue="value" [allowEmpty]="false" (onChange)="onViewChange()" />
         </div>
 
-        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" (requestMaintenance)="onBundleRequestMaintenance($event)" />
+        <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" (requestMaintenance)="onBundleRequestMaintenance($event)" (view)="openBundleDetail($event)" />
+
+        <app-bundle-detail-dialog [bundleId]="bundleDetailId" [(visible)]="bundleDetailVisible" (requestMaintenance)="onBundleRequestMaintenance($event)" (viewComponent)="onViewBundleComponent($event)" />
 
         <app-maintenance-scope-dialog [(visible)]="scopeDialog" [asset]="scopeAsset" [bundleId]="scopeBundleId" [defaultScope]="scopeDefault" (scopeChosen)="onScopeChosen($event)" />
 
@@ -672,6 +676,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
     bundles: AssetBundle[] = [];
     bundlesLoaded: boolean = false;
     bundleDialog: boolean = false;
+    bundleDetailVisible: boolean = false;
+    bundleDetailId: string | null = null;
 
     // Dialog and form
     assetDialog: boolean = false;
@@ -984,6 +990,20 @@ export class AssetsComponent implements OnInit, OnDestroy {
         if (this.viewMode === 'bundles' && !this.bundlesLoaded) {
             this.loadBundles();
         }
+    }
+
+    openBundleDetail(bundleId: string) {
+        this.bundleDetailId = bundleId;
+        this.bundleDetailVisible = true;
+    }
+
+    onViewBundleComponent(assetId: string) {
+        const asset = this.assets.find((a) => a.assetId === assetId);
+        if (!asset) {
+            this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Component not in the current list' });
+            return;
+        }
+        this.view(asset);
     }
 
     onBundleChanged() {
