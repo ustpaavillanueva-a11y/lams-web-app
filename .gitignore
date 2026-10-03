@@ -3,3 +3,6 @@ node_modules
 # Claude Code
 .claude/
 CLAUDE.md
+
+# Angular build cache (machine-generated, can be hundreds of MB)
+/.angular/cache
