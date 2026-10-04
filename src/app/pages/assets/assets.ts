@@ -629,13 +629,9 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
                         <label class="text-xs text-gray-600">Service *</label>
                         <p-select [(ngModel)]="maintenanceRequest.serviceMaintenance" [options]="serviceMaintenancesOptions" optionLabel="label" optionValue="value" placeholder="Select" class="w-full p-select-sm" appendTo="body" />
                     </div>
-                    <div class="col-span-6">
+                    <div class="col-span-12">
                         <label class="text-xs text-gray-600">Asset ID</label>
                         <input pInputText [(ngModel)]="maintenanceRequest.asset" class="w-full p-inputtext-sm" style="padding: 6px 8px;" [disabled]="true" />
-                    </div>
-                    <div class="col-span-6">
-                        <label class="text-xs text-gray-600">Priority *</label>
-                        <p-select [(ngModel)]="maintenanceRequest.priorityLevel" [options]="priorityLevelsOptions" optionLabel="label" optionValue="value" placeholder="Select" class="w-full p-select-sm" appendTo="body" />
                     </div>
                     <div class="col-span-12">
                         <label class="text-xs text-gray-600">Reason *</label>
@@ -712,7 +708,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         maintenanceType: string;
         serviceMaintenance: string;
         asset: string;
-        priorityLevel: string;
         reason: string;
         scope?: 'ASSET' | 'COMPONENTS' | 'BUNDLE';
         bundle?: string;
@@ -723,13 +718,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
         maintenanceType: '',
         serviceMaintenance: '',
         asset: '',
-        priorityLevel: '',
         reason: ''
     };
     // Dropdown option arrays (label/value)
     maintenanceTypesOptions: { label: string; value: string }[] = [];
     serviceMaintenancesOptions: { label: string; value: string }[] = [];
-    priorityLevelsOptions: { label: string; value: string }[] = [];
 
     // Reference data
     programs: Program[] = [];
@@ -1011,12 +1004,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.maintenanceService.getServiceMaintenances().subscribe({
             next: (services) => {
                 this.serviceMaintenancesOptions = (services || []).map((s: any) => ({ label: s.serviceName, value: s.serviceMaintenanceId }));
-            }
-        });
-        // Priority Levels
-        this.maintenanceService.getPriorityLevels().subscribe({
-            next: (levels) => {
-                this.priorityLevelsOptions = (levels || []).map((p: any) => ({ label: p.priorityLevelName, value: p.priorityLevelId }));
             }
         });
     }
@@ -1498,7 +1485,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
     // Request Maintenance Handlers
     openRequestDialog(asset: Asset, choice?: MaintenanceScopeChoice) {
         this.requestAsset = asset;
-        this.maintenanceRequest = { maintenanceName: choice?.title || asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), priorityLevel: '', reason: '' };
+        this.maintenanceRequest = { maintenanceName: choice?.title || asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), reason: '' };
         if (choice) {
             // Scope fields are only added for bundle-related requests; plain asset requests keep the original payload
             this.maintenanceRequest.scope = choice.scope;
@@ -1538,7 +1525,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         }
         if (
             !this.maintenanceRequest.maintenanceName ||
-            !this.maintenanceRequest.priorityLevel ||
             !this.maintenanceRequest.maintenanceType ||
             !this.maintenanceRequest.asset ||
             !this.maintenanceRequest.serviceMaintenance ||

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, CUS
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { MaintenanceService } from '../../service/maintenance.service';
+import { MaintenanceService, PriorityLevel } from '../../service/maintenance.service';
 import { MaintenanceUtils } from '../utils/maintenance.utils';
 import { AuthService } from '../../service/auth.service';
 import { MaintenanceWebSocketService } from '../../maintenance/maintenance-websocket.service';
@@ -232,6 +232,11 @@ import Swal from 'sweetalert2';
                 color: #1e40af;
             }
 
+            .tag-pending {
+                background: #ffedd5;
+                color: #9a3412;
+            }
+
             .actions {
                 display: flex;
                 gap: 0.5rem;
@@ -436,7 +441,6 @@ import Swal from 'sweetalert2';
                                     <th>Asset Name</th>
                                     <th>Maintenance Type</th>
                                     <th>Service Name</th>
-                                    <th>Priority</th>
                                     <th>Request Date</th>
                                     <th>Requested By</th>
                                     <th>Status</th>
@@ -452,15 +456,10 @@ import Swal from 'sweetalert2';
                                     <td>{{ row.maintenanceName }}</td>
                                     <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
                                     <td>{{ row.serviceMaintenance?.serviceName || 'N/A' }}</td>
-                                    <td>
-                                        <span class="tag" [ngClass]="'tag-' + getPriorityClass(row.priorityLevel?.priorityLevelName)">
-                                            {{ row.priorityLevel?.priorityLevelName || 'N/A' }}
-                                        </span>
-                                    </td>
                                     <td>{{ row.requestDate || row.createdAt | date: 'short' }}</td>
                                     <td>{{ getFullName(row) }}</td>
                                     <td>
-                                        <span class="tag tag-info">{{ row.maintenanceStatus?.requestStatusName }}</span>
+                                        <span class="tag tag-pending">{{ row.maintenanceStatus?.requestStatusName }}</span>
                                     </td>
                                     <td *ngIf="isCampusAdmin()">
                                         <div class="actions">
@@ -499,6 +498,7 @@ import Swal from 'sweetalert2';
                                     <th>ID</th>
                                     <th>Maintenance Name</th>
                                     <th>Assigned Technician</th>
+                                    <th>Priority</th>
                                     <th>Scheduled Date</th>
                                     <th>Status</th>
                                     <th *ngIf="isLabTech()">Actions</th>
@@ -512,6 +512,11 @@ import Swal from 'sweetalert2';
                                     <td>{{ formatId(row.maintenanceRequest?.requestId) }}</td>
                                     <td>{{ row.maintenanceRequest?.maintenanceName }}</td>
                                     <td>{{ row.assignedTechnician?.firstName }} {{ row.assignedTechnician?.lastName || '' }}</td>
+                                    <td>
+                                        <span class="tag" [ngClass]="'tag-' + getPriorityClass(row.maintenanceRequest?.priorityLevel?.priorityLevelName)">
+                                            {{ row.maintenanceRequest?.priorityLevel?.priorityLevelName || 'N/A' }}
+                                        </span>
+                                    </td>
                                     <td>{{ row.scheduledAt | date: 'short' }}</td>
                                     <td>
                                         <span class="tag tag-info">
@@ -758,6 +763,15 @@ import Swal from 'sweetalert2';
                         <input type="text" class="form-control" [value]="getCurrentUserFullName()" disabled />
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Priority *</label>
+                        <select class="form-control" [(ngModel)]="approveFormData.priorityLevel">
+                            <option value="">-- Select Priority --</option>
+                            <option *ngFor="let level of priorityLevels" [value]="level.priorityLevelId">
+                                {{ level.priorityLevelName }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Details *</label>
                         <textarea class="form-control" [(ngModel)]="approveFormData.reason" placeholder="Enter reason..."></textarea>
                     </div>
@@ -826,7 +840,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
     approveModalVisible: boolean = false;
     confirmModalVisible: boolean = false;
     technicians: any[] = [];
-    approveFormData: any = { technicianId: null, reason: '', scheduledAt: null };
+    priorityLevels: PriorityLevel[] = [];
+    approveFormData: any = { technicianId: null, reason: '', scheduledAt: null, priorityLevel: '' };
     confirmFormData: any = {
         reason: '',
         actionTaken: '',
@@ -1185,6 +1200,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         if (s.includes('complete')) return 'tag-success';
         if (s.includes('cancel') || s.includes('declin') || s.includes('reject')) return 'tag-danger';
         if (s.includes('progress') || s.includes('hold')) return 'tag-warning';
+        if (s.includes('pending')) return 'tag-pending';
         return 'tag-info';
     }
 
@@ -1198,7 +1214,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             const maintenanceName = (item.maintenanceName || '').toLowerCase();
             const maintenanceType = (item.maintenanceType?.maintenanceTypeName || '').toLowerCase();
             const serviceName = (item.serviceMaintenance?.serviceName || '').toLowerCase();
-            const priority = (item.priorityLevel?.priorityLevelName || '').toLowerCase();
             const status = (item.maintenanceStatus?.requestStatusName || '').toLowerCase();
             const requestedBy = this.getFullName(item).toLowerCase();
             const rawId = (item.requestId || '').toLowerCase();
@@ -1207,7 +1222,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 maintenanceName.includes(searchLower) ||
                 maintenanceType.includes(searchLower) ||
                 serviceName.includes(searchLower) ||
-                priority.includes(searchLower) ||
                 status.includes(searchLower) ||
                 requestedBy.includes(searchLower) ||
                 rawId.includes(searchLower)
@@ -1231,10 +1245,11 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             const formattedId = this.formatId(requestId).toLowerCase();
             const maintenanceName = (item.maintenanceRequest?.maintenanceName || item.maintenanceName || '').toLowerCase();
             const technicianName = `${item.assignedTechnician?.firstName || ''} ${item.assignedTechnician?.lastName || ''}`.toLowerCase();
+            const priority = (item.maintenanceRequest?.priorityLevel?.priorityLevelName || '').toLowerCase();
             const status = (item.status || '').toLowerCase();
             const rawId = requestId.toLowerCase();
 
-            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || technicianName.includes(searchLower) || status.includes(searchLower) || rawId.includes(searchLower);
+            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || technicianName.includes(searchLower) || priority.includes(searchLower) || status.includes(searchLower) || rawId.includes(searchLower);
         });
     }
 
@@ -1466,12 +1481,20 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             this.approveFormData = {
                 technicianId: (currentUser as any)?.userId,
                 reason: '',
-                scheduledAt: null
+                scheduledAt: null,
+                priorityLevel: ''
             };
         } else {
             // For CampusAdmin, let them choose a technician
-            this.approveFormData = { technicianId: null, reason: '', scheduledAt: null };
+            this.approveFormData = { technicianId: null, reason: '', scheduledAt: null, priorityLevel: '' };
             this.loadTechnicians(item.asset?.campus?.campusId);
+        }
+
+        if (!this.priorityLevels.length) {
+            this.maintenanceService.getPriorityLevels().subscribe({
+                next: (levels) => (this.priorityLevels = levels || []),
+                error: () => Swal.fire('Failed to load priority levels')
+            });
         }
 
         this.approveModalVisible = true;
@@ -1503,6 +1526,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
             return;
         }
+        if (!this.approveFormData.priorityLevel) {
+            Swal.fire('Priority is required');
+            return;
+        }
         if (!this.approveFormData.reason.trim()) {
             Swal.fire('Reason is required');
 
@@ -1512,7 +1539,8 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         const assignmentPayload = {
             technicianId: this.approveFormData.technicianId,
             reason: this.approveFormData.reason.trim(),
-            scheduledAt: this.approveFormData.scheduledAt
+            scheduledAt: this.approveFormData.scheduledAt,
+            priorityLevel: this.approveFormData.priorityLevel
         };
 
         // Use new endpoint: POST /api/maintenance-approvals/{requestId}/assign-technician
@@ -1933,16 +1961,16 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         const tabName = ['all', 'pending', 'scheduled', 'in-progress', 'completed'][this.activeTabIndex];
 
         if (this.activeTabIndex === 1) {
-            csv = 'ID,Asset Name,Maintenance Type,Service Name,Priority,Request Date,Requested By,Status\n';
+            csv = 'ID,Asset Name,Maintenance Type,Service Name,Request Date,Requested By,Status\n';
             this.filteredPendingItems.forEach((row) => {
-                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(row.priorityLevel?.priorityLevelName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
+                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else if (this.activeTabIndex === 2) {
-            csv = 'ID,Maintenance Name,Assigned Technician,Scheduled Date,Status\n';
+            csv = 'ID,Maintenance Name,Assigned Technician,Priority,Scheduled Date,Status\n';
             this.filteredScheduledItems.forEach((row) => {
                 const requestId = row.maintenanceRequest?.requestId || row.requestId;
                 const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
-                csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(dateStr(row.scheduledAt))},${esc(row.status || 'Scheduled')}\n`;
+                csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(row.maintenanceRequest?.priorityLevel?.priorityLevelName)},${esc(dateStr(row.scheduledAt))},${esc(row.status || 'Scheduled')}\n`;
             });
         } else if (this.activeTabIndex === 3) {
             csv = 'ID,Maintenance Name,Assigned Technician,Started At,Status\n';

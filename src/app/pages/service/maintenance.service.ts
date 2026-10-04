@@ -30,7 +30,7 @@ export interface MaintenanceRequestPayload {
     maintenanceType: string; // ID
     serviceMaintenance: string; // ID
     asset: string; // asset ID
-    priorityLevel: string; // ID
+    priorityLevel?: string; // ID — normally set when a technician is assigned
     reason: string; // Reason for maintenance request
     scope?: 'ASSET' | 'COMPONENTS' | 'BUNDLE';
     bundle?: string;
