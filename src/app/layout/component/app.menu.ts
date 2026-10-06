@@ -215,6 +215,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         statusBadges: this.getMaintenanceStatusBadges()
                     },
                     {
+                        label: 'Incident Reports',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/app/pages/incidentreports']
+                    },
+                    {
                         label: 'Campuses',
                         icon: 'pi pi-fw pi-building',
                         routerLink: ['/app/pages/campuses']
@@ -261,6 +266,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         queryParams: { tab: 'pending' },
                         statusBadges: this.getMaintenanceStatusBadges()
                     },
+                    {
+                        label: 'Incident Reports',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/app/pages/incidentreports']
+                    },
 
                     {
                         label: 'Departments',
@@ -300,6 +310,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         statusBadges: this.getMaintenanceStatusBadges()
                     },
                     {
+                        label: 'Incident Reports',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/app/pages/incidentreports']
+                    },
+                    {
                         label: 'Lab Schedule',
                         icon: 'pi pi-fw pi-calendar',
                         routerLink: ['/app/pages/labschedule']
@@ -330,6 +345,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         routerLink: ['/app/requestmaintenance'],
                         queryParams: { tab: 'pending' },
                         statusBadges: this.getMaintenanceStatusBadges()
+                    },
+                    {
+                        label: 'Incident Reports',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/app/pages/incidentreports']
                     },
                     {
                         label: 'Laboratories',

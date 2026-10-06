@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Documentation } from './documentation/documentation';
 import { AssetsComponent } from './assets/assets';
 import { RequestmaintenanceComponent } from './requestmaintenance/requestmaintenance/requestmaintenance.component';
+import { IncidentReportsComponent } from './incidentreports/incident-reports.component';
 import { UsersComponent } from './users/users';
 import { CampusesComponent } from './campuses/campuses';
 import { DepartmentsComponent } from './departments/departments';
@@ -43,6 +44,7 @@ export const pageRoutes: Routes = [
     { path: 'reports/calibration', component: CalibrationReportComponent },
     // Activities/Logs
     { path: 'activities', component: ActivitiesComponent },
+    { path: 'incidentreports', component: IncidentReportsComponent },
     { path: '**', redirectTo: '/notfound' }
 ];
 
