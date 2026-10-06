@@ -45,6 +45,9 @@ import { ConvertToBundleDialogComponent } from './components/convert-to-bundle-d
 import { BundleDetailDialogComponent } from './components/bundle-detail-dialog';
 import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './components/maintenance-scope-dialog';
 import { ReportIncidentDialogComponent } from './components/report-incident-dialog';
+import { IncidentReportService } from '../service/incident-report.service';
+import { renderIncidentHistoryHtml } from '../incidentreports/incident-report.utils';
+import { AssetReportPdfService } from '../service/asset-report-pdf.service';
 
 @Component({
     selector: 'app-assets',
@@ -757,7 +760,9 @@ export class AssetsComponent implements OnInit, OnDestroy {
         private assetExportService: AssetExportService,
         private assetFormService: AssetFormService,
         private assetsWebSocketService: AssetsWebSocketService,
-        private assetBundleService: AssetBundleService
+        private assetBundleService: AssetBundleService,
+        private incidentReportService: IncidentReportService,
+        private assetReportPdfService: AssetReportPdfService
     ) {}
 
     getEmptyAsset() {
@@ -1820,9 +1825,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
         // Fetch full asset details and maintenance history
         forkJoin({
             asset: this.assetService.getAsset(item.assetId as any),
-            maintenanceHistory: this.maintenanceService.getMaintenanceRequests().pipe(catchError(() => of([])))
+            maintenanceHistory: this.maintenanceService.getMaintenanceRequests().pipe(catchError(() => of([]))),
+            incidents: this.incidentReportService.getByAsset(String(item.assetId)).pipe(catchError(() => of([])))
         }).subscribe({
-            next: ({ asset: fullAsset, maintenanceHistory }) => {
+            next: ({ asset: fullAsset, maintenanceHistory, incidents }) => {
                 const assetName = fullAsset.assetName || 'Unknown Asset';
                 const icsData = fullAsset.inventoryCustodianSlip || {};
                 const icsTableData = this.getIcsTableData(icsData);
@@ -2065,13 +2071,17 @@ export class AssetsComponent implements OnInit, OnDestroy {
                         </div>
                         ${icsHtml}
                         ${maintenanceHtml}
+                        ${renderIncidentHistoryHtml(incidents, AssetUtils.escapeHtml, (d) => this.formatDate(d))}
                         ${qrCodeHtml}
                     </div>
                 `;
 
                 const buttons: any = {
                     confirmButtonText: 'Close',
-                    confirmButtonColor: '#6b7280'
+                    confirmButtonColor: '#6b7280',
+                    showCancelButton: true,
+                    cancelButtonText: 'Print Report',
+                    cancelButtonColor: '#0ea5e9'
                 };
 
                 // Show Edit button only for LabTech
@@ -2089,6 +2099,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 }).then((result) => {
                     if (result.isDenied && this.isLabTech) {
                         this.edit(fullAsset);
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        this.assetReportPdfService.generate(fullAsset, assetMaintenanceHistory, incidents);
                     }
                 });
             },
