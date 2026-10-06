@@ -101,12 +101,6 @@ export interface MaintenanceType {
     maintenanceTypeName: string;
 }
 
-export interface ServiceMaintenance {
-    serviceMaintenanceId: string;
-    serviceName: string;
-    serviceDescription?: string;
-}
-
 export interface MaintenanceApproval {
     maintenanceApprovalId: string;
     assignedTechnician?: User;
@@ -137,7 +131,6 @@ export interface MaintenanceRequest {
     requestId: string;
     maintenanceName: string;
     maintenanceType?: MaintenanceType;
-    serviceMaintenance?: ServiceMaintenance;
     maintenanceStatus: RequestStatus;
     maintenanceApproval?: MaintenanceApproval;
     priorityLevel?: string;

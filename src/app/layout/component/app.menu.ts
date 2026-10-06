@@ -396,7 +396,6 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: 'Maintenance Properties',
                         icon: 'pi pi-fw pi-wrench',
                         items: [
-                            { label: 'Services', icon: 'pi pi-fw pi-cog', routerLink: ['/app/pages/maintenance/services'] },
                             { label: 'Status', icon: 'pi pi-fw pi-check-circle', routerLink: ['/app/pages/maintenance/status'] },
                             { label: 'Priority Level', icon: 'pi pi-fw pi-bars', routerLink: ['/app/pages/maintenance/priority-level'] },
                             { label: 'Types', icon: 'pi pi-fw pi-list', routerLink: ['/app/pages/maintenance/types'] }

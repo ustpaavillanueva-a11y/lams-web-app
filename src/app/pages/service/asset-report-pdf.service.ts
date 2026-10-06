@@ -58,15 +58,14 @@ export class AssetReportPdfService {
         const maintRows = (maintenanceHistory || []).map((m) => [
             this.fmt(m.requestId ?? m.id),
             this.fmt(m.maintenanceType?.maintenanceTypeName),
-            this.fmt(m.serviceMaintenance?.serviceName),
             this.fmt(m.priorityLevel?.priorityLevelName),
             this.fmt(m.requestStatus?.requestStatusName),
             this.fmtDate(m.createdAt)
         ]);
         autoTable(doc, {
             startY: y + 3,
-            head: [['Request ID', 'Type', 'Service', 'Priority', 'Status', 'Requested']],
-            body: maintRows.length ? maintRows : [[{ content: 'No records', colSpan: 6, styles: { halign: 'center' } } as any]],
+            head: [['Request ID', 'Type', 'Priority', 'Status', 'Requested']],
+            body: maintRows.length ? maintRows : [[{ content: 'No records', colSpan: 5, styles: { halign: 'center' } } as any]],
             theme: 'grid',
             headStyles,
             styles: { fontSize: 8 }

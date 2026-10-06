@@ -51,7 +51,6 @@ export interface SerialNumberValidation {
 export interface MaintenanceRequest {
     maintenanceName: string;
     maintenanceType: string;
-    serviceMaintenance: string;
     asset: string;
     priorityLevel: string;
     reason: string;

@@ -73,7 +73,6 @@ import { DatePickerModule } from 'primeng/datepicker';
                         <th pSortableColumn>Type <p-sortIcon field="maintenanceTypeName" /></th>
                         <th>Priority</th>
                         <th>Status</th>
-                        <th>Service</th>
                         <th pSortableColumn>Date <p-sortIcon field="createdDate" /></th>
                     </tr>
                 </ng-template>
@@ -86,9 +85,7 @@ import { DatePickerModule } from 'primeng/datepicker';
                         </td>
                         <td>
                             <p-tag [value]="req.requestStatusName || 'Pending'" [severity]="getStatusSeverity(req.requestStatusName)" />
-                        </td>
-                        <td>{{ req.serviceMaintenanceName || 'N/A' }}</td>
-                        <td>{{ formatDate(req.createdDate) }}</td>
+                        </td>                        <td>{{ formatDate(req.createdDate) }}</td>
                     </tr>
                 </ng-template>
                 <ng-template #emptymessage>
@@ -255,8 +252,8 @@ export class MaintenanceReportComponent implements OnInit {
     }
 
     exportToCSV() {
-        const headers = ['Request Name', 'Type', 'Priority', 'Status', 'Service', 'Date'];
-        const rows = this.filteredRequests.map((r) => [r.maintenanceName || 'N/A', r.maintenanceTypeName || 'N/A', r.priorityLevelName || 'Normal', r.requestStatusName || 'Pending', r.serviceMaintenanceName || 'N/A', this.formatDate(r.createdDate)]);
+        const headers = ['Request Name', 'Type', 'Priority', 'Status', 'Date'];
+        const rows = this.filteredRequests.map((r) => [r.maintenanceName || 'N/A', r.maintenanceTypeName || 'N/A', r.priorityLevelName || 'Normal', r.requestStatusName || 'Pending', this.formatDate(r.createdDate)]);
 
         let csv = headers.join(',') + '\n';
         rows.forEach((row) => {
@@ -281,9 +278,7 @@ export class MaintenanceReportComponent implements OnInit {
                 <td>${r.maintenanceName || 'N/A'}</td>
                 <td>${r.maintenanceTypeName || 'N/A'}</td>
                 <td>${r.priorityLevelName || 'Normal'}</td>
-                <td>${r.requestStatusName || 'Pending'}</td>
-                <td>${r.serviceMaintenanceName || 'N/A'}</td>
-                <td>${this.formatDate(r.createdDate)}</td>
+                <td>${r.requestStatusName || 'Pending'}</td>                <td>${this.formatDate(r.createdDate)}</td>
             </tr>
         `
             )
@@ -325,7 +320,6 @@ export class MaintenanceReportComponent implements OnInit {
                             <th>Type</th>
                             <th>Priority</th>
                             <th>Status</th>
-                            <th>Service</th>
                             <th>Date</th>
                         </tr>
                     </thead>

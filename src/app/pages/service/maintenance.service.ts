@@ -4,12 +4,6 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-export interface ServiceMaintenance {
-    serviceMaintenanceId: string;
-    serviceName: string;
-    serviceDescription: string;
-}
-
 export interface RequestStatus {
     requestStatusId: string;
     requestStatusName: string;
@@ -28,7 +22,6 @@ export interface MaintenanceType {
 export interface MaintenanceRequestPayload {
     maintenanceName: string;
     maintenanceType: string; // ID
-    serviceMaintenance: string; // ID
     asset: string; // asset ID
     priorityLevel?: string; // ID — normally set when a technician is assigned
     reason: string; // Reason for maintenance request
@@ -43,23 +36,6 @@ export class MaintenanceService {
     private baseApiUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) {}
-
-    getServiceMaintenances(): Observable<ServiceMaintenance[]> {
-        const url = `${this.baseApiUrl}/service-maintenance`;
-        return this.http.get<ServiceMaintenance[]>(url).pipe(tap());
-    }
-
-    createServiceMaintenance(body: Partial<ServiceMaintenance>): Observable<ServiceMaintenance> {
-        return this.http.post<ServiceMaintenance>(`${this.baseApiUrl}/service-maintenance`, body);
-    }
-
-    updateServiceMaintenance(id: string, body: Partial<ServiceMaintenance>): Observable<ServiceMaintenance> {
-        return this.http.put<ServiceMaintenance>(`${this.baseApiUrl}/service-maintenance/${id}`, body);
-    }
-
-    deleteServiceMaintenance(id: string): Observable<void> {
-        return this.http.delete<void>(`${this.baseApiUrl}/service-maintenance/${id}`);
-    }
 
     getRequestStatuses(): Observable<RequestStatus[]> {
         const url = `${this.baseApiUrl}/request-status`;

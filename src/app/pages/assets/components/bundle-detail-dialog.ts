@@ -119,7 +119,7 @@ import { MaintenanceConstants } from '../../requestmaintenance/constants/mainten
                                         <span *ngIf="h.maintenanceType" class="text-sm text-muted-color">{{ h.maintenanceType }}</span>
                                     </div>
                                     <div class="text-sm mt-1">{{ h.target }}</div>
-                                    <div class="text-sm text-muted-color">{{ h.maintenanceName }}<span *ngIf="h.serviceName"> - {{ h.serviceName }}</span></div>
+                                    <div class="text-sm text-muted-color">{{ h.maintenanceName }}</div>
                                     <div class="text-sm text-muted-color">
                                         Performed by: {{ h.performedBy || 'N/A' }}<span *ngIf="h.completedAt"> (completed {{ h.completedAt | date: 'mediumDate' }})</span>
                                     </div>

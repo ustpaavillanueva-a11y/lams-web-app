@@ -440,7 +440,6 @@ import Swal from 'sweetalert2';
                                     <th>Request ID</th>
                                     <th>Asset Name</th>
                                     <th>Maintenance Type</th>
-                                    <th>Service Name</th>
                                     <th>Request Date</th>
                                     <th>Requested By</th>
                                     <th>Status</th>
@@ -454,9 +453,7 @@ import Swal from 'sweetalert2';
                                     </td>
                                     <td>{{ formatId(row.requestId) }}</td>
                                     <td>{{ row.maintenanceName }}</td>
-                                    <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
-                                    <td>{{ row.serviceMaintenance?.serviceName || 'N/A' }}</td>
-                                    <td>{{ row.requestDate || row.createdAt | date: 'short' }}</td>
+                                    <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>                                    <td>{{ row.requestDate || row.createdAt | date: 'short' }}</td>
                                     <td>{{ getFullName(row) }}</td>
                                     <td>
                                         <span class="tag tag-pending">{{ row.maintenanceStatus?.requestStatusName }}</span>
@@ -691,7 +688,6 @@ import Swal from 'sweetalert2';
                                     <th>Request ID</th>
                                     <th>Asset Name</th>
                                     <th>Maintenance Type</th>
-                                    <th>Service Name</th>
                                     <th>Priority</th>
                                     <th>Request Date</th>
                                     <th>Requested By</th>
@@ -705,9 +701,7 @@ import Swal from 'sweetalert2';
                                     </td>
                                     <td>{{ formatId(row.requestId) }}</td>
                                     <td>{{ row.maintenanceName }}</td>
-                                    <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>
-                                    <td>{{ row.serviceMaintenance?.serviceName || 'N/A' }}</td>
-                                    <td>
+                                    <td>{{ row.maintenanceType?.maintenanceTypeName || 'N/A' }}</td>                                    <td>
                                         <span class="tag" [ngClass]="'tag-' + getPriorityClass(row.priorityLevel?.priorityLevelName)">
                                             {{ row.priorityLevel?.priorityLevelName || 'N/A' }}
                                         </span>
@@ -1195,11 +1189,10 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             const formattedId = this.formatId(requestId).toLowerCase();
             const maintenanceName = (item.maintenanceName || '').toLowerCase();
             const maintenanceType = (item.maintenanceType?.maintenanceTypeName || '').toLowerCase();
-            const serviceName = (item.serviceMaintenance?.serviceName || '').toLowerCase();
             const priority = (item.priorityLevel?.priorityLevelName || '').toLowerCase();
             const status = (item.maintenanceStatus?.requestStatusName || '').toLowerCase();
             const requestedBy = this.getFullName(item).toLowerCase();
-            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || maintenanceType.includes(searchLower) || serviceName.includes(searchLower) || priority.includes(searchLower) || status.includes(searchLower) || requestedBy.includes(searchLower) || requestId.toLowerCase().includes(searchLower);
+            return formattedId.includes(searchLower) || maintenanceName.includes(searchLower) || maintenanceType.includes(searchLower) || priority.includes(searchLower) || status.includes(searchLower) || requestedBy.includes(searchLower) || requestId.toLowerCase().includes(searchLower);
         });
     }
 
@@ -1226,7 +1219,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             const formattedId = this.formatId(item.requestId).toLowerCase();
             const maintenanceName = (item.maintenanceName || '').toLowerCase();
             const maintenanceType = (item.maintenanceType?.maintenanceTypeName || '').toLowerCase();
-            const serviceName = (item.serviceMaintenance?.serviceName || '').toLowerCase();
             const status = (item.maintenanceStatus?.requestStatusName || '').toLowerCase();
             const requestedBy = this.getFullName(item).toLowerCase();
             const rawId = (item.requestId || '').toLowerCase();
@@ -1234,7 +1226,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 formattedId.includes(searchLower) ||
                 maintenanceName.includes(searchLower) ||
                 maintenanceType.includes(searchLower) ||
-                serviceName.includes(searchLower) ||
                 status.includes(searchLower) ||
                 requestedBy.includes(searchLower) ||
                 rawId.includes(searchLower)
@@ -1795,10 +1786,6 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Type</td>
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.maintenanceType?.maintenanceTypeName || 'N/A'}</td>
                                     </tr>
-                                    <tr style="background: #f8fafc;">
-                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Service</td>
-                                        <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${data.serviceMaintenance?.serviceName || 'N/A'}</td>
-                                    </tr>
                                     <tr>
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Asset</td>
                                         <td style="padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${MaintenanceUtils.describeMaintenanceTarget(data)}</td>
@@ -1974,9 +1961,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         const tabName = ['all', 'pending', 'scheduled', 'in-progress', 'completed'][this.activeTabIndex];
 
         if (this.activeTabIndex === 1) {
-            csv = 'ID,Asset Name,Maintenance Type,Service Name,Request Date,Requested By,Status\n';
+            csv = 'ID,Asset Name,Maintenance Type,Request Date,Requested By,Status\n';
             this.ownRows(this.filteredPendingItems).forEach((row) => {
-                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
+                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else if (this.activeTabIndex === 2) {
             csv = 'ID,Maintenance Name,Assigned Technician,Priority,Scheduled Date,Status\n';
@@ -1993,9 +1980,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(dateStr(row.inProgressAt))},${esc(row.status || 'In Progress')}\n`;
             });
         } else if (this.activeTabIndex === 0) {
-            csv = 'ID,Asset Name,Maintenance Type,Service Name,Priority,Request Date,Requested By,Status\n';
+            csv = 'ID,Asset Name,Maintenance Type,Priority,Request Date,Requested By,Status\n';
             this.ownRows(this.filteredAllItems).forEach((row) => {
-                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(row.priorityLevel?.priorityLevelName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
+                csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.priorityLevel?.priorityLevelName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else {
             csv = 'ID,Asset Name,Maintenance Type,Requested By,Request Date,Date Approved,Date Starts,Date Completed,Status\n';

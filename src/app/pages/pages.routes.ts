@@ -7,7 +7,6 @@ import { UsersComponent } from './users/users';
 import { CampusesComponent } from './campuses/campuses';
 import { DepartmentsComponent } from './departments/departments';
 import { ASSET_CATEGORY_ROUTES } from './assetcategory/assetcategory.routes';
-import { MaintenanceServicesComponent } from './maintenance/services/services';
 import { MaintenanceStatusComponent } from './maintenance/status/maintenance-status';
 import { MaintenancePriorityLevelComponent } from './maintenance/priority-level/maintenance-priority-level';
 import { MaintenanceTypesComponent } from './maintenance/types/maintenance-types';
@@ -26,7 +25,6 @@ export const pageRoutes: Routes = [
     { path: 'departments', component: DepartmentsComponent },
     { path: 'assetcategory', children: ASSET_CATEGORY_ROUTES },
     // Maintenance property pages
-    { path: 'maintenance/services', component: MaintenanceServicesComponent },
     { path: 'maintenance/status', component: MaintenanceStatusComponent },
     { path: 'maintenance/priority-level', component: MaintenancePriorityLevelComponent },
     { path: 'maintenance/types', component: MaintenanceTypesComponent },

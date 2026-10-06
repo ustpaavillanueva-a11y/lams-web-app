@@ -18,7 +18,6 @@ export interface BundleHistoryItem {
     scope: 'ASSET' | 'COMPONENTS' | 'BUNDLE';
     target: string;
     maintenanceType: string | null;
-    serviceName: string | null;
     status: string;
     requestDate: string;
     completedAt: string | null;

@@ -10,7 +10,7 @@ import { tap, map } from 'rxjs/operators';
 import { MaintenanceService } from '../../service/maintenance.service';
 import { AuthService } from '../../service/auth.service';
 import { UserService } from '../../service/user.service';
-import { MaintenanceApproval, MaintenanceFilter, MaintenanceSummary, RequestStatus, PriorityLevel, MaintenanceType, ServiceMaintenance } from '../../models/maintenance.models';
+import { MaintenanceApproval, MaintenanceFilter, MaintenanceSummary, RequestStatus, PriorityLevel, MaintenanceType } from '../../models/maintenance.models';
 import { MaintenanceUtils } from '../utils/maintenance.utils';
 
 @Injectable({ providedIn: 'root' })
@@ -36,7 +36,6 @@ export class MaintenanceStateService {
     private statusesSubject = new BehaviorSubject<RequestStatus[]>([]);
     private prioritiesSubject = new BehaviorSubject<PriorityLevel[]>([]);
     private typesSubject = new BehaviorSubject<MaintenanceType[]>([]);
-    private servicesSubject = new BehaviorSubject<ServiceMaintenance[]>([]);
     private techniciansSubject = new BehaviorSubject<any[]>([]);
     private campusesSubject = new BehaviorSubject<any[]>([]);
 
@@ -50,7 +49,6 @@ export class MaintenanceStateService {
     public statuses$ = this.statusesSubject.asObservable();
     public priorities$ = this.prioritiesSubject.asObservable();
     public types$ = this.typesSubject.asObservable();
-    public services$ = this.servicesSubject.asObservable();
     public technicians$ = this.techniciansSubject.asObservable();
     public campuses$ = this.campusesSubject.asObservable();
 
@@ -103,7 +101,6 @@ export class MaintenanceStateService {
             statuses: this.maintenanceService.getRequestStatuses(),
             priorities: this.maintenanceService.getPriorityLevels(),
             types: this.maintenanceService.getMaintenanceTypes(),
-            services: this.maintenanceService.getServiceMaintenances(),
             technicians: this.maintenanceService.getLabTechnicians(),
             campuses: this.userService.getCampuses()
         }).subscribe({
@@ -111,7 +108,6 @@ export class MaintenanceStateService {
                 this.statusesSubject.next(data.statuses);
                 this.prioritiesSubject.next(data.priorities);
                 this.typesSubject.next(data.types);
-                this.servicesSubject.next(data.services);
                 this.techniciansSubject.next(data.technicians);
                 this.campusesSubject.next(data.campuses);
             },

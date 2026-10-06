@@ -60,7 +60,6 @@ export interface MaintenanceRequest {
     requestId: string;
     maintenanceName: string;
     maintenanceType?: MaintenanceType;
-    serviceMaintenance?: ServiceMaintenance;
     maintenanceStatus: RequestStatus;
     priorityLevel?: PriorityLevel;
     asset: Asset;
@@ -112,12 +111,6 @@ export interface RequestStatus {
 export interface MaintenanceType {
     maintenanceTypeId: string;
     maintenanceTypeName: string;
-}
-
-export interface ServiceMaintenance {
-    serviceMaintenanceId: string;
-    serviceName: string;
-    serviceDescription?: string;
 }
 
 export interface PriorityLevel {

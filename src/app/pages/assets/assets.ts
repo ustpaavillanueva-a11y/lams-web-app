@@ -620,13 +620,9 @@ import { AssetReportPdfService } from '../service/asset-report-pdf.service';
                         <label class="text-xs text-gray-600">Asset</label>
                         <input pInputText [(ngModel)]="maintenanceRequest.maintenanceName" class="w-full p-inputtext-sm" style="padding: 6px 8px;" [disabled]="true" />
                     </div>
-                    <div class="col-span-6">
+                    <div class="col-span-12">
                         <label class="text-xs text-gray-600">Type *</label>
                         <p-select [(ngModel)]="maintenanceRequest.maintenanceType" [options]="maintenanceTypesOptions" optionLabel="label" optionValue="value" placeholder="Select" class="w-full p-select-sm" appendTo="body" />
-                    </div>
-                    <div class="col-span-6">
-                        <label class="text-xs text-gray-600">Service *</label>
-                        <p-select [(ngModel)]="maintenanceRequest.serviceMaintenance" [options]="serviceMaintenancesOptions" optionLabel="label" optionValue="value" placeholder="Select" class="w-full p-select-sm" appendTo="body" />
                     </div>
                     <div class="col-span-12">
                         <label class="text-xs text-gray-600">Asset ID</label>
@@ -709,7 +705,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
     maintenanceRequest: {
         maintenanceName: string;
         maintenanceType: string;
-        serviceMaintenance: string;
         asset: string;
         reason: string;
         scope?: 'ASSET' | 'COMPONENTS' | 'BUNDLE';
@@ -719,13 +714,11 @@ export class AssetsComponent implements OnInit, OnDestroy {
     } = {
         maintenanceName: '',
         maintenanceType: '',
-        serviceMaintenance: '',
         asset: '',
         reason: ''
     };
     // Dropdown option arrays (label/value)
     maintenanceTypesOptions: { label: string; value: string }[] = [];
-    serviceMaintenancesOptions: { label: string; value: string }[] = [];
 
     // Reference data
     programs: Program[] = [];
@@ -1003,12 +996,6 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.maintenanceService.getMaintenanceTypes().subscribe({
             next: (types) => {
                 this.maintenanceTypesOptions = (types || []).map((t: any) => ({ label: t.maintenanceTypeName, value: t.maintenanceTypeId }));
-            }
-        });
-        // Service Maintenances
-        this.maintenanceService.getServiceMaintenances().subscribe({
-            next: (services) => {
-                this.serviceMaintenancesOptions = (services || []).map((s: any) => ({ label: s.serviceName, value: s.serviceMaintenanceId }));
             }
         });
     }
@@ -1574,7 +1561,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
     // Request Maintenance Handlers
     openRequestDialog(asset: Asset, choice?: MaintenanceScopeChoice) {
         this.requestAsset = asset;
-        this.maintenanceRequest = { maintenanceName: choice?.title || asset.assetName || '', maintenanceType: '', serviceMaintenance: '', asset: String(asset.assetId || ''), reason: '' };
+        this.maintenanceRequest = { maintenanceName: choice?.title || asset.assetName || '', maintenanceType: '', asset: String(asset.assetId || ''), reason: '' };
         if (choice) {
             // Scope fields are only added for bundle-related requests; plain asset requests keep the original payload
             this.maintenanceRequest.scope = choice.scope;
@@ -1612,7 +1599,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Missing asset ID' });
             return;
         }
-        if (!this.maintenanceRequest.maintenanceName || !this.maintenanceRequest.maintenanceType || !this.maintenanceRequest.asset || !this.maintenanceRequest.serviceMaintenance || !this.maintenanceRequest.reason?.trim()) {
+        if (!this.maintenanceRequest.maintenanceName || !this.maintenanceRequest.maintenanceType || !this.maintenanceRequest.asset || !this.maintenanceRequest.reason?.trim()) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'All fields are required' });
             return;
         }
@@ -1978,9 +1965,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                                             </span>
                                         </div>
                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-                                            <div><strong>Type:</strong> ${AssetUtils.escapeHtml(maint.maintenanceType?.maintenanceTypeName || 'N/A')}</div>
-                                            <div><strong>Service:</strong> ${AssetUtils.escapeHtml(maint.serviceMaintenance?.serviceName || 'N/A')}</div>
-                                            <div><strong>Priority:</strong> ${AssetUtils.escapeHtml(maint.priorityLevel?.priorityLevelName || 'N/A')}</div>
+                                            <div><strong>Type:</strong> ${AssetUtils.escapeHtml(maint.maintenanceType?.maintenanceTypeName || 'N/A')}</div>                                            <div><strong>Priority:</strong> ${AssetUtils.escapeHtml(maint.priorityLevel?.priorityLevelName || 'N/A')}</div>
                                             <div><strong>Requested:</strong> ${this.formatDate(maint.createdAt)}</div>
                                             ${maint.requestedBy ? `<div><strong>Requested By:</strong> ${AssetUtils.escapeHtml(maint.requestedBy.firstName)} ${AssetUtils.escapeHtml(maint.requestedBy.lastName)}</div>` : ''}
                                             ${maint.maintenanceApproval?.assignedTechnician ? `<div><strong>Technician:</strong> ${AssetUtils.escapeHtml(maint.maintenanceApproval.assignedTechnician.firstName)} ${AssetUtils.escapeHtml(maint.maintenanceApproval.assignedTechnician.lastName)}</div>` : ''}
