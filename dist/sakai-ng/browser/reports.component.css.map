@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/reports/reports.component.ts", "reports.component.ts"],
-  "sourcesContent": ["\n            :host {\n                display: block;\n                padding: 1rem;\n            }\n        ", ":host {\n  display: block;\n  padding: 1rem;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0Q6L0NhcHN0b25lJTIwUHJvamVjdHMvTEFNUy1DT1BZL3NyYy9hcHAvcGFnZXMvcmVwb3J0cy9yZXBvcnRzLmNvbXBvbmVudC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDWTtFQUNJO0VBQ0EiLCJzb3VyY2VzQ29udGVudCI6WyJcbiAgICAgICAgICAgIDpob3N0IHtcbiAgICAgICAgICAgICAgICBkaXNwbGF5OiBibG9jaztcbiAgICAgICAgICAgICAgICBwYWRkaW5nOiAxcmVtO1xuICAgICAgICAgICAgfVxuICAgICAgICAiXX0= */"],
-  "mappings": ";AACY;AACI,WAAA;AACA,WAAA;ACAhB;",
-  "names": []
-}

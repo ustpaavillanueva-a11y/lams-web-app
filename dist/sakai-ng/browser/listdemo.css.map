@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/uikit/listdemo.ts", "listdemo.ts"],
-  "sourcesContent": ["\n        ::ng-deep {\n            .p-orderlist-list-container {\n                width: 100%;\n            }\n        }\n    ", "::ng-deep .p-orderlist-list-container {\n  width: 100%;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0Q6L0NhcHN0b25lJTIwUHJvamVjdHMvTEFNUy1DT1BZL3NyYy9hcHAvcGFnZXMvdWlraXQvbGlzdGRlbW8udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBRVk7RUFDSSIsInNvdXJjZXNDb250ZW50IjpbIlxuICAgICAgICA6Om5nLWRlZXAge1xuICAgICAgICAgICAgLnAtb3JkZXJsaXN0LWxpc3QtY29udGFpbmVyIHtcbiAgICAgICAgICAgICAgICB3aWR0aDogMTAwJTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICJdfQ== */"],
-  "mappings": ";AAEY,UAAA,CAAA;AACI,SAAA;ACDhB;",
-  "names": []
-}
