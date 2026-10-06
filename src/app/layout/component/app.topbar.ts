@@ -37,11 +37,8 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
             <div class="layout-topbar-actions">
                 <div class="topbar-clock">
-                    <i class="pi pi-clock"></i>
-                    <div class="topbar-clock-text">
-                        <span class="topbar-clock-date">{{ now() | date: 'EEE, MMM d, y' }}</span>
-                        <span class="topbar-clock-time">{{ now() | date: 'h:mm:ss a' }}</span>
-                    </div>
+                    <span class="topbar-clock-date">{{ now() | date: 'EEE, MMM d, y' }}</span>
+                    <span class="topbar-clock-time">{{ now() | date: 'h:mm a' }}</span>
                 </div>
                 <div class="layout-config-menu">
                     <button type="button" class="layout-topbar-action" (click)="installPWA()" title="Install App" *ngIf="canInstallPWA">
@@ -168,23 +165,11 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
         `
             .topbar-clock {
                 display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                padding: 0.25rem 0.75rem;
-                border-radius: 8px;
-                background: var(--surface-ground);
-                color: var(--text-color);
-            }
-
-            .topbar-clock i {
-                color: var(--primary-color);
-            }
-
-            .topbar-clock-text {
-                display: flex;
                 flex-direction: column;
                 line-height: 1.15;
                 text-align: right;
+                padding: 0 0.75rem;
+                color: var(--text-color);
             }
 
             .topbar-clock-date {

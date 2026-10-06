@@ -75,15 +75,15 @@ export class AssetReportPdfService {
         y = (doc as any).lastAutoTable.finalY + 10;
         doc.setFontSize(12);
         doc.text('Incident History', 14, y);
-        const incidentRows = (incidents || []).map((i) => [this.fmt(i.incidentId), this.fmt(i.incidentType), this.fmt(i.severity), this.fmt(i.status), this.fmtDate(i.incidentDate), this.fullName(i.reportedBy), this.fmt(i.description)]);
+        const incidentRows = (incidents || []).map((i) => [this.fmt(i.incidentId), this.fmt(i.status), this.fmtDate(i.incidentDate), this.fmt(i.personsInvolved), this.fullName(i.reportedBy), this.fmt(i.description)]);
         autoTable(doc, {
             startY: y + 3,
-            head: [['ID', 'Type', 'Severity', 'Status', 'Incident Date', 'Reported By', 'Description']],
-            body: incidentRows.length ? incidentRows : [[{ content: 'No records', colSpan: 7, styles: { halign: 'center' } } as any]],
+            head: [['ID', 'Status', 'Incident Date', 'Person(s) Involved', 'Reported By', 'Description']],
+            body: incidentRows.length ? incidentRows : [[{ content: 'No records', colSpan: 6, styles: { halign: 'center' } } as any]],
             theme: 'grid',
             headStyles,
             styles: { fontSize: 8 },
-            columnStyles: { 6: { cellWidth: 50 } }
+            columnStyles: { 5: { cellWidth: 55 } }
         });
 
         doc.save(`asset-report-${assetId}.pdf`);

@@ -91,6 +91,13 @@ export class CalendarService {
     }
 
     /**
+     * Raw maintenance items (requests/approvals and master plan dates) from the role-scoped calendar endpoint
+     */
+    getMaintenanceItems(): Observable<any[]> {
+        return this.http.get<any>(`${this.baseApiUrl}/calendar/events`).pipe(map((res) => (Array.isArray(res?.data?.maintenance) ? res.data.maintenance : [])));
+    }
+
+    /**
      * Create a calendar event from a schedule object
      */
     private createScheduleEvent(schedule: any): CalendarEvent {

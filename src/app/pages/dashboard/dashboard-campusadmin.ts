@@ -11,6 +11,7 @@ import { CalendarOptions, DateSelectArg, EventClickArg, EventApi } from '@fullca
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { CalendarService } from '../service/calendar.service';
+import { MaintenanceMonitorWidget } from './components/maintenance-monitor-widget';
 import Swal from 'sweetalert2';
 
 const INITIAL_EVENTS = [
@@ -29,9 +30,12 @@ function createEventId() {
 @Component({
     selector: 'app-dashboard-campusadmin',
     standalone: true,
-    imports: [CommonModule, UIChart, TableModule, FullCalendarModule],
+    imports: [CommonModule, UIChart, TableModule, FullCalendarModule, MaintenanceMonitorWidget],
     template: `
         <div class="p-6">
+            <!-- Maintenance due and asset life monitoring -->
+            <app-maintenance-monitor-widget class="block mb-6" />
+
             <!-- Row 1: Stats Cards and Calendar -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Stats Cards -->

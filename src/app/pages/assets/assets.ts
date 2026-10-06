@@ -21,7 +21,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { FileUploadModule } from 'primeng/fileupload';
 import { StepperModule } from 'primeng/stepper';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { MessageService } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
+import { Menu, MenuModule } from 'primeng/menu';
 import { AssetService, Asset, Program, Color, Brand, Status, Laboratory } from '../service/asset.service';
 import { MaintenanceService, MaintenanceRequestPayload } from '../service/maintenance.service';
 import { AuthService } from '../service/auth.service';
@@ -74,6 +75,7 @@ import { AssetReportPdfService } from '../service/asset-report-pdf.service';
         FileUploadModule,
         StepperModule,
         SelectButtonModule,
+        MenuModule,
         BundleListComponent,
         BundleFormDialogComponent,
         ConvertToBundleDialogComponent,
@@ -168,14 +170,14 @@ import { AssetReportPdfService } from '../service/asset-report-pdf.service';
                     <th pSortableColumn="assetName" style="width:8rem">Asset Name <p-sortIcon field="assetName" /></th>
                     <th style="width:7rem">Property Number</th>
                     <th style="width:7rem">Serial Number</th>
-                    <th style="width:7rem">Campus</th>
+                    <th *ngIf="isSuperAdmin" style="width:7rem">Campus</th>
                     <th style="width:7rem">Lab</th>
                     <th style="width:7rem">Issued To</th>
                     <th style="width:5rem">Status</th>
                     <th style="width:6rem">Condition</th>
                     <th style="width:5rem">Warranty</th>
-                    <th style="width:5rem">QR</th>
-                    <th style="width:8rem">Actions</th>
+                    <th style="width:7rem">Life Remaining</th>
+                    <th style="width:5rem">Actions</th>
                 </tr>
             </ng-template>
 
@@ -189,7 +191,7 @@ import { AssetReportPdfService } from '../service/asset-report-pdf.service';
                     </td>
                     <td>{{ asset.propertyNumber }}</td>
                     <td>{{ asset.inventoryCustodianSlip?.serialNumber || 'N/A' }}</td>
-                    <td>{{ asset.campus?.campusName || 'N/A' }}</td>
+                    <td *ngIf="isSuperAdmin">{{ asset.campus?.campusName || 'N/A' }}</td>
                     <td>{{ asset.laboratories?.laboratoryName || 'N/A' }}</td>
                     <td>{{ asset.issuedTo || 'Not assigned' }}</td>
                     <td>
@@ -200,25 +202,16 @@ import { AssetReportPdfService } from '../service/asset-report-pdf.service';
                         <p-tag [value]="getWarrantyStatus(asset)" [severity]="getWarrantySeverity(asset)" />
                     </td>
                     <td>
-                        <button pButton icon="pi pi-qrcode" class="p-button-rounded p-button-text" (click)="viewQrCode(asset.assetId, asset.assetName)" pTooltip="View QR Code"></button>
+                        <p-tag [value]="getLifeRemainingLabel(asset)" [severity]="getLifeRemainingSeverity(asset)" [pTooltip]="getLifeRemainingTooltip(asset)" />
                     </td>
                     <td>
-                        <button *ngIf="isCampusAdmin() || isFaculty || isLabTech" pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-success" (click)="view(asset)" pTooltip="View Asset"></button>
-                        <button
-                            *ngIf="isLabTech && !asset.bundle && asset.status?.statusName !== 'Retired'"
-                            pButton
-                            icon="pi pi-sitemap"
-                            class="p-button-rounded p-button-text p-button-secondary"
-                            (click)="openConvert(asset)"
-                            pTooltip="Convert to set"
-                        ></button>
-                        <button *ngIf="!isFaculty" pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="delete(asset)" pTooltip="Delete"></button>
-                        <button *ngIf="!isSuperAdmin" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance(asset)" pTooltip="Request Maintenance"></button>
-                        <button *ngIf="asset.status?.statusName !== 'Retired'" pButton icon="pi pi-exclamation-triangle" class="p-button-rounded p-button-text p-button-warn" (click)="reportIncident(asset)" pTooltip="Report Incident"></button>
+                        <button pButton icon="pi pi-ellipsis-v" class="p-button-rounded p-button-text" (click)="openActionMenu($event, asset)" pTooltip="Actions" aria-haspopup="true"></button>
                     </td>
                 </tr>
             </ng-template>
         </p-table>
+
+        <p-menu #actionMenu [model]="actionMenuItems" [popup]="true" appendTo="body" />
 
         <p-dialog [(visible)]="assetDialog" [style]="{ width: '550px', maxHeight: '80vh' }" [header]="editMode ? 'Edit Asset' : 'Create New Asset'" [modal]="true" [closable]="true" [maximizable]="true">
             <ng-template #content>
@@ -656,6 +649,8 @@ import { AssetReportPdfService } from '../service/asset-report-pdf.service';
 })
 export class AssetsComponent implements OnInit, OnDestroy {
     @ViewChild('dt') dt: Table | undefined;
+    @ViewChild('actionMenu') actionMenu: Menu | undefined;
+    actionMenuItems: MenuItem[] = [];
 
     assets: Asset[] = [];
     filteredAssets: Asset[] = [];
@@ -1091,6 +1086,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
                 this.filter();
 
                 this.loading = false;
+                this.promptLifeEndingMaintenance();
             },
             error: (error) => {
                 Swal.fire({
@@ -1199,6 +1195,89 @@ export class AssetsComponent implements OnInit, OnDestroy {
 
     getWarrantySeverity(asset: Asset): 'success' | 'danger' | 'secondary' {
         return AssetUtils.getWarrantySeverity(asset.warrantyExpirationDate);
+    }
+
+    // One shared popup menu; its items are rebuilt for the clicked row (same role rules as the old buttons)
+    openActionMenu(event: Event, asset: Asset): void {
+        const retired = asset['status']?.statusName === 'Retired';
+        const items: (MenuItem | false)[] = [
+            (this.isCampusAdmin() || this.isFaculty || this.isLabTech) && { label: 'View Asset', icon: 'pi pi-eye', command: () => this.view(asset) },
+            { label: 'View QR Code', icon: 'pi pi-qrcode', command: () => this.viewQrCode(asset.assetId ?? '', asset.assetName ?? '') },
+            !this.isSuperAdmin && { label: 'Request Maintenance', icon: 'pi pi-wrench', command: () => this.requestMaintenance(asset) },
+            !retired && { label: 'Report Incident', icon: 'pi pi-exclamation-triangle', command: () => this.reportIncident(asset) },
+            this.isLabTech && !asset['bundle'] && !retired && { label: 'Convert to set', icon: 'pi pi-sitemap', command: () => this.openConvert(asset) },
+            !this.isFaculty && { separator: true },
+            !this.isFaculty && { label: 'Delete', icon: 'pi pi-trash', styleClass: 'text-red-500', command: () => this.delete(asset) }
+        ];
+        this.actionMenuItems = items.filter((item): item is MenuItem => !!item);
+        this.actionMenu?.toggle(event);
+    }
+
+    getLifeRemainingLabel(asset: Asset): string {
+        return AssetUtils.getLifeRemainingLabel(asset);
+    }
+
+    getLifeRemainingSeverity(asset: Asset): 'info' | 'warn' | 'danger' | 'secondary' {
+        return AssetUtils.getLifeRemainingSeverity(asset);
+    }
+
+    getLifeRemainingTooltip(asset: Asset): string {
+        const life = AssetUtils.getLifeRemaining(asset);
+        return life ? `${life.basis} ends ${this.formatDate(life.endDate)}` : 'No acquisition date with a subscription or estimated useful life';
+    }
+
+    /**
+     * Prompt to request maintenance for assets whose subscription or useful life ends within
+     * LIFE_DUE_SOON_DAYS (or has ended). Shown once per browser session for the same set of assets.
+     */
+    private promptLifeEndingMaintenance(): void {
+        if (this.isSuperAdmin) return; // SuperAdmin cannot request maintenance
+
+        const seen = new Set<string>();
+        const due = this.assets
+            .filter((a) => a.assetId && !seen.has(a.assetId) && seen.add(a.assetId) && a['status']?.statusName !== 'Retired')
+            .map((asset) => ({ asset, life: AssetUtils.getLifeRemaining(asset) }))
+            .filter((x): x is { asset: Asset; life: NonNullable<ReturnType<typeof AssetUtils.getLifeRemaining>> } => !!x.life && x.life.daysRemaining <= AssetUtils.LIFE_DUE_SOON_DAYS)
+            .sort((a, b) => a.life.daysRemaining - b.life.daysRemaining);
+        if (due.length === 0) return;
+
+        const key = 'lifeEndingPromptShown';
+        const signature = due.map((x) => x.asset.assetId).join(',');
+        try {
+            if (sessionStorage.getItem(key) === signature) return;
+            sessionStorage.setItem(key, signature);
+        } catch {
+            // Storage unavailable: show the prompt anyway
+        }
+
+        const e = AssetUtils.escapeHtml;
+        const rows = due
+            .map(
+                ({ asset, life }, i) => `
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 6px; text-align: left;">${e(asset.assetName)}<br /><small style="color: #6b7280;">${e(life.basis)} ends ${e(this.formatDate(life.endDate))}</small></td>
+                    <td style="padding: 6px; white-space: nowrap; font-weight: 600; color: ${life.daysRemaining <= 0 ? '#b91c1c' : '#c2410c'};">${e(AssetUtils.getLifeRemainingLabel(asset))}</td>
+                    <td style="padding: 6px;"><button type="button" class="swal2-confirm swal2-styled" data-due-index="${i}" style="margin: 0; padding: 4px 10px; font-size: 12px;">Request</button></td>
+                </tr>`
+            )
+            .join('');
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Maintenance due soon',
+            html: `<p style="margin: 0 0 8px; font-size: 13px;">${due.length} asset(s) reach the end of their subscription or estimated useful life within ${AssetUtils.LIFE_DUE_SOON_DAYS} days.</p>
+                <div style="max-height: 300px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 13px;">${rows}</table></div>`,
+            width: 600,
+            confirmButtonText: 'Later',
+            didOpen: (popup) => {
+                popup.querySelectorAll<HTMLButtonElement>('button[data-due-index]').forEach((button) =>
+                    button.addEventListener('click', () => {
+                        Swal.close();
+                        this.requestMaintenance(due[Number(button.dataset['dueIndex'])].asset);
+                    })
+                );
+            }
+        });
     }
 
     onSelectionChange(event: any) {

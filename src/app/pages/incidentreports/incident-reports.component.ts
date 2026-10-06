@@ -15,8 +15,9 @@ import { BaseComponent } from '../../core/base/base.component';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { AuthService } from '../service/auth.service';
 import { IncidentReport, IncidentReportService, IncidentStatus } from '../service/incident-report.service';
+import { IncidentReportPdfService } from '../service/incident-report-pdf.service';
 import { AssetUtils } from '../assets/utils/asset.utils';
-import { incidentSeverityTagClass, incidentStatusTagClass, isIncidentReviewer } from './incident-report.utils';
+import { formatIncidentTime, formatYesNo, incidentLocation, incidentStatusTagClass, isIncidentReviewer } from './incident-report.utils';
 
 const TAB_LABELS = ['All', 'Pending', 'Approved', 'Resolved', 'Rejected'];
 
@@ -432,8 +433,8 @@ const TAB_LABELS = ['All', 'Pending', 'Approved', 'Resolved', 'Rejected'];
                                 <tr>
                                     <th>ID</th>
                                     <th>Asset</th>
-                                    <th>Type</th>
-                                    <th>Severity</th>
+                                    <th>Person(s) Involved</th>
+                                    <th>Location</th>
                                     <th>Incident Date</th>
                                     <th>Reported By</th>
                                     <th>Status</th>
@@ -444,11 +445,9 @@ const TAB_LABELS = ['All', 'Pending', 'Approved', 'Resolved', 'Rejected'];
                                 <tr *ngFor="let row of paginatedItems">
                                     <td>{{ row.incidentId }}</td>
                                     <td>{{ row.asset?.assetName }}</td>
-                                    <td>{{ row.incidentType }}</td>
-                                    <td>
-                                        <span class="tag" [ngClass]="severityClass(row)">{{ row.severity }}</span>
-                                    </td>
-                                    <td>{{ row.incidentDate | date: 'mediumDate' }}</td>
+                                    <td>{{ row.personsInvolved || 'N/A' }}</td>
+                                    <td>{{ location(row) || 'N/A' }}</td>
+                                    <td>{{ row.incidentDate | date: 'mediumDate' }} {{ time(row) }}</td>
                                     <td>{{ reporterName(row) }}</td>
                                     <td>
                                         <span class="tag" [ngClass]="statusClass(row)">{{ row.status }}</span>
@@ -456,6 +455,7 @@ const TAB_LABELS = ['All', 'Pending', 'Approved', 'Resolved', 'Rejected'];
                                     <td>
                                         <div class="actions">
                                             <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" pTooltip="View" (onClick)="view(row)" />
+                                            <p-button icon="pi pi-file-pdf" severity="danger" [rounded]="true" [text]="true" pTooltip="Export PDF" (onClick)="exportPdf(row)" />
                                             <ng-container *ngIf="isReviewer">
                                                 <ng-container *ngIf="row.status === 'Pending'">
                                                     <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" pTooltip="Approve" (onClick)="approve(row)" />
@@ -503,7 +503,8 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
         private incidentService: IncidentReportService,
         private authService: AuthService,
         private errorHandler: ErrorHandlerService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private incidentPdfService: IncidentReportPdfService
     ) {
         super();
     }
@@ -542,7 +543,7 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
         this.filteredItems = this.items.filter((row) => {
             if (status && row.status !== status) return false;
             if (!term) return true;
-            const haystack = [row.incidentId, row.asset?.assetName, row.incidentType, row.severity, row.status, this.reporterName(row), row.description].join(' ').toLowerCase();
+            const haystack = [row.incidentId, row.asset?.assetName, row.personsInvolved, this.location(row), row.status, this.reporterName(row), row.description].join(' ').toLowerCase();
             return haystack.includes(term);
         });
         this.page = 1;
@@ -577,8 +578,11 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
     statusClass(row: IncidentReport): string {
         return incidentStatusTagClass(row.status);
     }
-    severityClass(row: IncidentReport): string {
-        return incidentSeverityTagClass(row.severity);
+    location(row: IncidentReport): string {
+        return incidentLocation(row);
+    }
+    time(row: IncidentReport): string {
+        return formatIncidentTime(row.incidentTime);
     }
 
     // Actions
@@ -590,12 +594,15 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
         let html =
             line('Incident ID', e(row.incidentId)) +
             line('Asset', e(row.asset?.assetName)) +
-            line('Type', e(row.incidentType)) +
-            line('Severity', e(row.severity)) +
             line('Status', e(row.status)) +
+            line('Person(s) Involved', e(row.personsInvolved || 'N/A')) +
             line('Incident Date', e(new Date(row.incidentDate).toLocaleDateString())) +
-            line('Reported By', fullName(row.reportedBy)) +
-            line('Description', e(row.description));
+            line('Time', e(this.time(row) || 'N/A')) +
+            line('Location', e(this.location(row) || 'N/A')) +
+            line('Description', e(row.description)) +
+            line('Witnesses', e(formatYesNo(row.hasWitnesses) || 'N/A')) +
+            line('Person Injured', e(formatYesNo(row.hasInjuredPerson) || 'N/A')) +
+            line('Reported By', fullName(row.reportedBy));
         if (row.reviewedBy || row.reviewedAt) html += line('Reviewed By', fullName(row.reviewedBy)) + line('Reviewed At', date(row.reviewedAt));
         if (row.rejectionReason) html += line('Rejection Reason', e(row.rejectionReason));
         if (row.resolvedBy || row.resolvedAt) html += line('Resolved By', fullName(row.resolvedBy)) + line('Resolved At', date(row.resolvedAt));
@@ -682,11 +689,15 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
         this.load();
     }
 
+    exportPdf(row: IncidentReport): void {
+        this.incidentPdfService.generate(row).catch((error) => this.errorHandler.handleError(error, 'export incident report', 'Failed to export the incident report PDF'));
+    }
+
     exportCSV(): void {
         const esc = (value: any) => String(value ?? '').replace(/,/g, ';');
-        let csv = 'ID,Asset,Type,Severity,Incident Date,Reported By,Status\n';
+        let csv = 'ID,Asset,Person(s) Involved,Location,Incident Date,Time,Witnesses,Person Injured,Reported By,Status\n';
         this.filteredItems.forEach((row) => {
-            csv += `${esc(row.incidentId)},${esc(row.asset?.assetName)},${esc(row.incidentType)},${esc(row.severity)},${esc(row.incidentDate ? new Date(row.incidentDate).toLocaleDateString() : '')},${esc(this.reporterName(row))},${esc(row.status)}\n`;
+            csv += `${esc(row.incidentId)},${esc(row.asset?.assetName)},${esc(row.personsInvolved)},${esc(this.location(row))},${esc(row.incidentDate ? new Date(row.incidentDate).toLocaleDateString() : '')},${esc(this.time(row))},${esc(formatYesNo(row.hasWitnesses))},${esc(formatYesNo(row.hasInjuredPerson))},${esc(this.reporterName(row))},${esc(row.status)}\n`;
         });
         const tabName = TAB_LABELS[this.activeTabIndex].toLowerCase();
         const blob = new Blob([csv], { type: 'text/csv' });

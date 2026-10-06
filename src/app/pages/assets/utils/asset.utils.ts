@@ -180,6 +180,83 @@ export class AssetUtils {
     }
 
     /**
+     * Parse the free-text estimated useful life ("5 years", "18 months", "6 mos", "90 days", "3")
+     * into a length. A bare number is read as years. Returns null when it cannot be read.
+     */
+    static parseUsefulLife(text: string | null | undefined): { amount: number; unit: 'days' | 'weeks' | 'months' | 'years' } | null {
+        const match = /^\s*(\d+(?:\.\d+)?)\s*([a-z]*)/i.exec(text ?? '');
+        if (!match) return null;
+        const amount = Number(match[1]);
+        if (!(amount > 0)) return null;
+        const unit = match[2].toLowerCase();
+        if (!unit || unit.startsWith('y')) return { amount, unit: 'years' };
+        if (unit.startsWith('mo') || unit === 'm') return { amount, unit: 'months' };
+        if (unit.startsWith('w')) return { amount, unit: 'weeks' };
+        if (unit.startsWith('d')) return { amount, unit: 'days' };
+        return null;
+    }
+
+    /**
+     * When the asset's subscription (if it has one) or estimated useful life ends, counted from the
+     * acquisition date (falling back to the date the asset was created), and the days left until then.
+     * Negative days mean it has already ended. Null when there is not enough data.
+     */
+    static getLifeRemaining(asset: Asset, today: Date = new Date()): { basis: 'Subscription' | 'Useful life'; startDate: Date; endDate: Date; totalDays: number; daysRemaining: number } | null {
+        const start = new Date(asset.acquisitionDate || asset.assetCreated || '');
+        if (isNaN(start.getTime())) return null;
+
+        const end = new Date(start);
+        let basis: 'Subscription' | 'Useful life';
+        if (asset.subscriptionDurationMonths && asset.subscriptionDurationMonths > 0) {
+            basis = 'Subscription';
+            end.setMonth(end.getMonth() + asset.subscriptionDurationMonths);
+        } else {
+            const life = AssetUtils.parseUsefulLife(asset.inventoryCustodianSlip?.estimatedUsefullLife);
+            if (!life) return null;
+            basis = 'Useful life';
+            // Whole units shift the calendar; fractions ("2.5 years") fall back to an average length
+            if (life.unit === 'years' && Number.isInteger(life.amount)) end.setFullYear(end.getFullYear() + life.amount);
+            else if (life.unit === 'months' && Number.isInteger(life.amount)) end.setMonth(end.getMonth() + life.amount);
+            else {
+                const daysPerUnit = { days: 1, weeks: 7, months: 30.44, years: 365.25 }[life.unit];
+                end.setDate(end.getDate() + Math.round(life.amount * daysPerUnit));
+            }
+        }
+
+        const startOfDay = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+        const daysRemaining = Math.round((startOfDay(end) - startOfDay(today)) / 86_400_000);
+        const totalDays = Math.round((startOfDay(end) - startOfDay(start)) / 86_400_000);
+        return { basis, startDate: start, endDate: end, totalDays, daysRemaining };
+    }
+
+    /** Days left at or below which an asset is critical (red) and flagged for maintenance. */
+    static readonly LIFE_DUE_SOON_DAYS = 30;
+
+    /** Days left at or below which an asset should be monitored (orange). */
+    static readonly LIFE_MONITOR_DAYS = 90;
+
+    /** Blue while plenty of life remains, orange when it should be monitored, red when critical or ended. */
+    static getLifeLevel(daysRemaining: number): 'healthy' | 'monitor' | 'critical' {
+        if (daysRemaining <= AssetUtils.LIFE_DUE_SOON_DAYS) return 'critical';
+        if (daysRemaining <= AssetUtils.LIFE_MONITOR_DAYS) return 'monitor';
+        return 'healthy';
+    }
+
+    static getLifeRemainingLabel(asset: Asset): string {
+        const life = AssetUtils.getLifeRemaining(asset);
+        if (!life) return 'N/A';
+        if (life.daysRemaining < 0) return `Ended ${-life.daysRemaining} day(s) ago`;
+        if (life.daysRemaining === 0) return 'Ends today';
+        return `${life.daysRemaining} day(s) left`;
+    }
+
+    static getLifeRemainingSeverity(asset: Asset): 'info' | 'warn' | 'danger' | 'secondary' {
+        const life = AssetUtils.getLifeRemaining(asset);
+        if (!life) return 'secondary';
+        return { healthy: 'info', monitor: 'warn', critical: 'danger' }[AssetUtils.getLifeLevel(life.daysRemaining)] as 'info' | 'warn' | 'danger';
+    }
+
+    /**
      * Get PrimeNG tag severity for a warranty status
      */
     static getWarrantySeverity(warrantyExpirationDate: string | Date | null | undefined): 'success' | 'danger' | 'secondary' {
