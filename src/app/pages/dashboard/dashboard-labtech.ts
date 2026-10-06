@@ -13,6 +13,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import { CalendarService } from '../service/calendar.service';
 import { MaintenanceMonitorWidget } from './components/maintenance-monitor-widget';
+import { MaintenanceStatsWidget } from './components/maintenance-stats-widget';
 import Swal from 'sweetalert2';
 let eventGuid = 0;
 const TODAY_STR = new Date().toISOString().replace(/T.*$/, '');
@@ -29,7 +30,7 @@ export function createEventId() {
 @Component({
     selector: 'app-dashboard-labtech',
     standalone: true,
-    imports: [CommonModule, UIChart, FullCalendarModule, MaintenanceMonitorWidget],
+    imports: [CommonModule, UIChart, FullCalendarModule, MaintenanceMonitorWidget, MaintenanceStatsWidget],
     template: `
         <div class="p-6">
             <!-- Maintenance due and asset life monitoring -->
@@ -111,6 +112,9 @@ export function createEventId() {
                     </full-calendar>
                 </div>
             </div>
+
+            <!-- Campus maintenance statistics -->
+            <app-maintenance-stats-widget class="block mt-6" />
 
             <!-- Lab schedule charts row -->
             <div class="flex flex-col md:flex-row gap-6 mt-6">

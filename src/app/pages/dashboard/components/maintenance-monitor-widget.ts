@@ -7,7 +7,7 @@ import { BaseComponent } from '../../../core/base/base.component';
 import { Asset, AssetService } from '../../service/asset.service';
 import { CalendarService } from '../../service/calendar.service';
 import { AssetUtils } from '../../assets/utils/asset.utils';
-import { assetCountPhrase, classifyMaintenanceDue, MAINTENANCE_APPROACHING_DAYS, MaintenanceDueItem, MaintenanceDueLevel, maintenanceDueLabel } from '../maintenance-monitor.utils';
+import { assetCountPhrase, classifyMaintenanceDue, MaintenanceDueItem, MaintenanceDueLevel, maintenanceDueLabel } from '../maintenance-monitor.utils';
 
 type LifeLevel = 'healthy' | 'monitor' | 'critical';
 type LifeFilter = 'nearing' | 'ended';
@@ -31,7 +31,8 @@ interface Alert {
     filter: MaintenanceDueLevel | LifeFilter;
 }
 
-const LIST_LIMIT = 8;
+// Each card shows only the most urgent few; the alerts above carry the full counts
+const LIST_LIMIT = 3;
 
 const TONE_CLASSES = {
     red: 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300',
@@ -79,7 +80,6 @@ const LEVEL_TONE: Record<MaintenanceDueLevel | LifeLevel, 'red' | 'orange' | 'bl
                     <h3 class="text-xl font-semibold dark:text-white m-0">Maintenance Due</h3>
                     <button *ngIf="maintenanceFilter" type="button" class="text-sm text-primary cursor-pointer" (click)="maintenanceFilter = null">Show all</button>
                 </div>
-                <p class="text-gray-600 dark:text-gray-400 text-sm mt-0 mb-4">Overdue, due today, and scheduled within the next {{ approachingDays }} days.</p>
 
                 <div *ngIf="loading" class="text-gray-500 text-sm">Loading...</div>
                 <div *ngIf="!loading && visibleMaintenance.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">No maintenance due.</div>
@@ -101,9 +101,6 @@ const LEVEL_TONE: Record<MaintenanceDueLevel | LifeLevel, 'red' | 'orange' | 'bl
                         <span class="shrink-0 px-2 py-1 rounded-md border text-xs font-semibold" [ngClass]="toneClasses[levelTone[item.level]]">{{ dueLabel(item.daysRemaining) }}</span>
                     </button>
                 </div>
-                <button *ngIf="filteredMaintenance.length > limit" type="button" class="mt-3 text-sm text-primary cursor-pointer" (click)="showAllMaintenance = !showAllMaintenance">
-                    {{ showAllMaintenance ? 'Show less' : 'Show all ' + filteredMaintenance.length }}
-                </button>
             </div>
 
             <!-- Asset Life Remaining -->
@@ -112,14 +109,9 @@ const LEVEL_TONE: Record<MaintenanceDueLevel | LifeLevel, 'red' | 'orange' | 'bl
                     <h3 class="text-xl font-semibold dark:text-white m-0">Asset Life Remaining</h3>
                     <button *ngIf="lifeFilter" type="button" class="text-sm text-primary cursor-pointer" (click)="lifeFilter = null">Show all</button>
                 </div>
-                <div class="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400 mb-4">
-                    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span> Plenty of life left</span>
-                    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-orange-500"></span> {{ monitorDays }} days or fewer</span>
-                    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-red-500"></span> {{ criticalDays }} days or fewer / ended</span>
-                </div>
 
                 <div *ngIf="loading" class="text-gray-500 text-sm">Loading...</div>
-                <div *ngIf="!loading && visibleLife.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">No assets with a useful life or subscription to track.</div>
+                <div *ngIf="!loading && visibleLife.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">No assets nearing the end of their useful life.</div>
 
                 <div class="flex flex-col gap-2">
                     <button
@@ -141,9 +133,6 @@ const LEVEL_TONE: Record<MaintenanceDueLevel | LifeLevel, 'red' | 'orange' | 'bl
                         </div>
                     </button>
                 </div>
-                <button *ngIf="filteredLife.length > limit" type="button" class="mt-3 text-sm text-primary cursor-pointer" (click)="showAllLife = !showAllLife">
-                    {{ showAllLife ? 'Show less' : 'Show all ' + filteredLife.length }}
-                </button>
             </div>
         </div>
     `
@@ -155,10 +144,6 @@ export class MaintenanceMonitorWidget extends BaseComponent implements OnInit {
     readonly toneClasses = TONE_CLASSES;
     readonly levelTone = LEVEL_TONE;
     readonly barClasses: Record<LifeLevel, string> = { healthy: 'bg-blue-500', monitor: 'bg-orange-500', critical: 'bg-red-500' };
-    readonly limit = LIST_LIMIT;
-    readonly approachingDays = MAINTENANCE_APPROACHING_DAYS;
-    readonly monitorDays = AssetUtils.LIFE_MONITOR_DAYS;
-    readonly criticalDays = AssetUtils.LIFE_DUE_SOON_DAYS;
 
     loading = true;
     maintenanceItems: MaintenanceDueItem[] = [];
@@ -167,8 +152,6 @@ export class MaintenanceMonitorWidget extends BaseComponent implements OnInit {
 
     maintenanceFilter: MaintenanceDueLevel | null = null;
     lifeFilter: LifeFilter | null = null;
-    showAllMaintenance = false;
-    showAllLife = false;
 
     constructor(
         private calendarService: CalendarService,
@@ -238,27 +221,26 @@ export class MaintenanceMonitorWidget extends BaseComponent implements OnInit {
     }
 
     get visibleMaintenance(): MaintenanceDueItem[] {
-        return this.showAllMaintenance ? this.filteredMaintenance : this.filteredMaintenance.slice(0, LIST_LIMIT);
+        return this.filteredMaintenance.slice(0, LIST_LIMIT);
     }
 
+    // Only assets nearing (orange/red) or past their end of life; healthy (blue) ones are not listed
     get filteredLife(): LifeItem[] {
         if (this.lifeFilter === 'ended') return this.lifeItems.filter((i) => i.daysRemaining <= 0);
         if (this.lifeFilter === 'nearing') return this.lifeItems.filter((i) => i.daysRemaining > 0 && i.level !== 'healthy');
-        return this.lifeItems;
+        return this.lifeItems.filter((i) => i.level !== 'healthy');
     }
 
     get visibleLife(): LifeItem[] {
-        return this.showAllLife ? this.filteredLife : this.filteredLife.slice(0, LIST_LIMIT);
+        return this.filteredLife.slice(0, LIST_LIMIT);
     }
 
     openAlert(alert: Alert): void {
         if (alert.section === 'maintenance') {
             this.maintenanceFilter = alert.filter as MaintenanceDueLevel;
-            this.showAllMaintenance = true;
             this.maintenanceSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             this.lifeFilter = alert.filter as LifeFilter;
-            this.showAllLife = true;
             this.lifeSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
