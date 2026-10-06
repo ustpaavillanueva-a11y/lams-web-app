@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -36,6 +36,13 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
             </div>
 
             <div class="layout-topbar-actions">
+                <div class="topbar-clock">
+                    <i class="pi pi-clock"></i>
+                    <div class="topbar-clock-text">
+                        <span class="topbar-clock-date">{{ now() | date: 'EEE, MMM d, y' }}</span>
+                        <span class="topbar-clock-time">{{ now() | date: 'h:mm:ss a' }}</span>
+                    </div>
+                </div>
                 <div class="layout-config-menu">
                     <button type="button" class="layout-topbar-action" (click)="installPWA()" title="Install App" *ngIf="canInstallPWA">
                         <i class="pi pi-download"></i>
@@ -159,6 +166,44 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
         </p-dialog>`,
     styles: [
         `
+            .topbar-clock {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.25rem 0.75rem;
+                border-radius: 8px;
+                background: var(--surface-ground);
+                color: var(--text-color);
+            }
+
+            .topbar-clock i {
+                color: var(--primary-color);
+            }
+
+            .topbar-clock-text {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.15;
+                text-align: right;
+            }
+
+            .topbar-clock-date {
+                font-size: 0.75rem;
+                color: var(--text-color-secondary);
+            }
+
+            .topbar-clock-time {
+                font-size: 0.9rem;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+            }
+
+            @media (max-width: 767px) {
+                .topbar-clock {
+                    display: none;
+                }
+            }
+
             .profile-button {
                 display: flex;
                 align-items: center;
@@ -397,8 +442,11 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
         `
     ]
 })
-export class AppTopbar {
+export class AppTopbar implements OnDestroy {
     items!: MenuItem[];
+
+    now = signal(new Date());
+    private clockTimer = setInterval(() => this.now.set(new Date()), 1000);
     profileMenuItems!: MenuItem[];
 
     // QR Scanner properties
@@ -435,6 +483,10 @@ export class AppTopbar {
 
         this.initializeProfileMenu();
         this.loadCurrentUser();
+    }
+
+    ngOnDestroy() {
+        clearInterval(this.clockTimer);
     }
 
     toggleDarkMode() {
