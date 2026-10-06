@@ -44,6 +44,7 @@ import { BundleFormDialogComponent } from './components/bundle-form-dialog';
 import { ConvertToBundleDialogComponent } from './components/convert-to-bundle-dialog';
 import { BundleDetailDialogComponent } from './components/bundle-detail-dialog';
 import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './components/maintenance-scope-dialog';
+import { ReportIncidentDialogComponent } from './components/report-incident-dialog';
 
 @Component({
     selector: 'app-assets',
@@ -74,7 +75,8 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
         BundleFormDialogComponent,
         ConvertToBundleDialogComponent,
         BundleDetailDialogComponent,
-        MaintenanceScopeDialogComponent
+        MaintenanceScopeDialogComponent,
+        ReportIncidentDialogComponent
     ],
     providers: [MessageService, QrCodeService, AssetExportService, AssetFormService],
     styleUrls: ['./assets.component.scss'],
@@ -87,7 +89,16 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
 
         <app-bundle-list *ngIf="viewMode === 'bundles'" [bundles]="bundles" (deleted)="onBundleChanged()" (requestMaintenance)="onBundleRequestMaintenance($event)" (view)="openBundleDetail($event)" />
 
-        <app-bundle-detail-dialog [bundleId]="bundleDetailId" [(visible)]="bundleDetailVisible" (requestMaintenance)="onBundleRequestMaintenance($event)" (viewComponent)="onViewBundleComponent($event)" (changed)="onBundleChanged()" [candidateAssets]="bundleCandidateAssets" [otherBundles]="bundles" [brands]="brands" />
+        <app-bundle-detail-dialog
+            [bundleId]="bundleDetailId"
+            [(visible)]="bundleDetailVisible"
+            (requestMaintenance)="onBundleRequestMaintenance($event)"
+            (viewComponent)="onViewBundleComponent($event)"
+            (changed)="onBundleChanged()"
+            [candidateAssets]="bundleCandidateAssets"
+            [otherBundles]="bundles"
+            [brands]="brands"
+        />
 
         <app-maintenance-scope-dialog [(visible)]="scopeDialog" [asset]="scopeAsset" [bundleId]="scopeBundleId" [defaultScope]="scopeDefault" (scopeChosen)="onScopeChosen($event)" />
 
@@ -117,26 +128,8 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
                         [showClear]="true"
                         (onChange)="filter()"
                     />
-                    <p-select
-                        [(ngModel)]="selectedLaboratory"
-                        [options]="laboratories"
-                        optionLabel="laboratoryName"
-                        optionValue="laboratoryId"
-                        placeholder="Filter by Lab"
-                        class="w-64"
-                        appendTo="body"
-                        [showClear]="true"
-                        (onChange)="filter()"
-                    />
-                    <p-select
-                        [(ngModel)]="selectedIssuedTo"
-                        [options]="issuedToOptions"
-                        placeholder="Filter by Issued To"
-                        class="w-64"
-                        appendTo="body"
-                        [showClear]="true"
-                        (onChange)="filter()"
-                    />
+                    <p-select [(ngModel)]="selectedLaboratory" [options]="laboratories" optionLabel="laboratoryName" optionValue="laboratoryId" placeholder="Filter by Lab" class="w-64" appendTo="body" [showClear]="true" (onChange)="filter()" />
+                    <p-select [(ngModel)]="selectedIssuedTo" [options]="issuedToOptions" placeholder="Filter by Issued To" class="w-64" appendTo="body" [showClear]="true" (onChange)="filter()" />
                     <p-select [(ngModel)]="selectedCondition" [options]="conditionOptions" placeholder="Filter by Condition" class="w-64" appendTo="body" [showClear]="true" (onChange)="filter()" />
                     <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
@@ -208,9 +201,17 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
                     </td>
                     <td>
                         <button *ngIf="isCampusAdmin() || isFaculty || isLabTech" pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-success" (click)="view(asset)" pTooltip="View Asset"></button>
-                        <button *ngIf="isLabTech && !asset.bundle && asset.status?.statusName !== 'Retired'" pButton icon="pi pi-sitemap" class="p-button-rounded p-button-text p-button-secondary" (click)="openConvert(asset)" pTooltip="Convert to set"></button>
+                        <button
+                            *ngIf="isLabTech && !asset.bundle && asset.status?.statusName !== 'Retired'"
+                            pButton
+                            icon="pi pi-sitemap"
+                            class="p-button-rounded p-button-text p-button-secondary"
+                            (click)="openConvert(asset)"
+                            pTooltip="Convert to set"
+                        ></button>
                         <button *ngIf="!isFaculty" pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="delete(asset)" pTooltip="Delete"></button>
                         <button *ngIf="!isSuperAdmin" pButton icon="pi pi-wrench" class="p-button-rounded p-button-text p-button-info" (click)="requestMaintenance(asset)" pTooltip="Request Maintenance"></button>
+                        <button *ngIf="asset.status?.statusName !== 'Retired'" pButton icon="pi pi-exclamation-triangle" class="p-button-rounded p-button-text p-button-warn" (click)="reportIncident(asset)" pTooltip="Report Incident"></button>
                     </td>
                 </tr>
             </ng-template>
@@ -613,6 +614,8 @@ import { MaintenanceScopeDialogComponent, MaintenanceScopeChoice } from './compo
             </ng-template>
         </p-dialog>
 
+        <app-report-incident-dialog [asset]="incidentAsset" [(visible)]="incidentDialog" />
+
         <!-- Request Maintenance Dialog -->
         <p-dialog [(visible)]="requestDialog" [style]="{ width: '380px' }" header="Request Maintenance" [modal]="true" [closable]="true" (onHide)="closeRequestDialog()">
             <ng-template #content>
@@ -697,6 +700,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
 
     // Request maintenance dialog state
     requestDialog: boolean = false;
+    incidentDialog: boolean = false;
+    incidentAsset: { assetId: string | number; assetName?: string } | null = null;
     requestAsset: Asset | null = null;
     // Scope dialog state (assets that belong to a bundle, or requests started from the bundle list)
     scopeDialog: boolean = false;
@@ -1523,13 +1528,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'Missing asset ID' });
             return;
         }
-        if (
-            !this.maintenanceRequest.maintenanceName ||
-            !this.maintenanceRequest.maintenanceType ||
-            !this.maintenanceRequest.asset ||
-            !this.maintenanceRequest.serviceMaintenance ||
-            !this.maintenanceRequest.reason?.trim()
-        ) {
+        if (!this.maintenanceRequest.maintenanceName || !this.maintenanceRequest.maintenanceType || !this.maintenanceRequest.asset || !this.maintenanceRequest.serviceMaintenance || !this.maintenanceRequest.reason?.trim()) {
             this.messageService.add({ severity: 'warn', summary: 'Validation', detail: 'All fields are required' });
             return;
         }
@@ -2381,6 +2380,12 @@ export class AssetsComponent implements OnInit, OnDestroy {
     deleteSelected() {
         if (!this.selectedAssets || this.selectedAssets.length === 0) return;
         this.messageService.add({ severity: 'warn', summary: 'Delete', detail: `Delete ${this.selectedAssets.length} asset(s)?` });
+    }
+
+    reportIncident(asset: Asset) {
+        if (!asset?.assetId) return;
+        this.incidentAsset = { assetId: asset.assetId, assetName: asset.assetName };
+        this.incidentDialog = true;
     }
 
     requestMaintenance(item: Asset) {
