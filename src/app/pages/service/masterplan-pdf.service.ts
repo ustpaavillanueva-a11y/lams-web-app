@@ -253,8 +253,8 @@ export class MasterPlanPdfService {
 
         // Prepare headers based on showSchedule
         const headers = showSchedule
-            ? [['ID', 'Asset Name', 'Serial No', 'Qty', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory', 'Preventive', 'Corrective', 'Calibration']]
-            : [['ID Number', 'Asset Name', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair']];
+            ? [['ID', 'Asset Name', 'Property No', 'Serial No', 'Qty', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory', 'Preventive', 'Corrective', 'Calibration']]
+            : [['ID Number', 'Asset Name', 'Property Number', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair']];
 
         // Prepare table data
         const tableData = equipmentList.map((item) => {
@@ -262,6 +262,7 @@ export class MasterPlanPdfService {
             const baseData = [
                 equipment.assetId || 'N/A',
                 equipment.equipmentName || 'N/A',
+                equipment.propertyNumber || 'N/A',
                 equipment.serialNumber || 'N/A',
                 item.quantity || 1,
                 this.formatDate(equipment.dateAcquired),
@@ -300,29 +301,31 @@ export class MasterPlanPdfService {
             columnStyles: showSchedule
                 ? {
                       0: { cellWidth: 15, halign: 'center' },
-                      1: { cellWidth: 35, halign: 'left' },
-                      2: { cellWidth: 25, halign: 'left' },
-                      3: { cellWidth: 10, halign: 'center' },
-                      4: { cellWidth: 20, halign: 'center' },
-                      5: { cellWidth: 25, halign: 'left' },
-                      6: { cellWidth: 18, halign: 'right' },
-                      7: { cellWidth: 12, halign: 'center' },
+                      1: { cellWidth: 33, halign: 'left' },
+                      2: { cellWidth: 22, halign: 'left' },
+                      3: { cellWidth: 22, halign: 'left' },
+                      4: { cellWidth: 10, halign: 'center' },
+                      5: { cellWidth: 18, halign: 'center' },
+                      6: { cellWidth: 22, halign: 'left' },
+                      7: { cellWidth: 18, halign: 'right' },
                       8: { cellWidth: 12, halign: 'center' },
-                      9: { cellWidth: 20, halign: 'center' },
-                      10: { cellWidth: 20, halign: 'center' },
-                      11: { cellWidth: 20, halign: 'center' },
-                      12: { cellWidth: 20, halign: 'center' }
+                      9: { cellWidth: 12, halign: 'center' },
+                      10: { cellWidth: 19, halign: 'center' },
+                      11: { cellWidth: 19, halign: 'center' },
+                      12: { cellWidth: 19, halign: 'center' },
+                      13: { cellWidth: 19, halign: 'center' }
                   }
                 : {
                       0: { cellWidth: 20, halign: 'center' },
-                      1: { cellWidth: 50, halign: 'left' },
-                      2: { cellWidth: 35, halign: 'left' },
-                      3: { cellWidth: 15, halign: 'center' },
-                      4: { cellWidth: 25, halign: 'center' },
-                      5: { cellWidth: 35, halign: 'left' },
-                      6: { cellWidth: 20, halign: 'right' },
-                      7: { cellWidth: 18, halign: 'center' },
-                      8: { cellWidth: 18, halign: 'center' }
+                      1: { cellWidth: 45, halign: 'left' },
+                      2: { cellWidth: 30, halign: 'left' },
+                      3: { cellWidth: 30, halign: 'left' },
+                      4: { cellWidth: 15, halign: 'center' },
+                      5: { cellWidth: 25, halign: 'center' },
+                      6: { cellWidth: 30, halign: 'left' },
+                      7: { cellWidth: 20, halign: 'right' },
+                      8: { cellWidth: 18, halign: 'center' },
+                      9: { cellWidth: 18, halign: 'center' }
                   },
             margin: { left: 10, right: 10, bottom: 30 },
             alternateRowStyles: {

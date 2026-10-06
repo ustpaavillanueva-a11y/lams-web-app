@@ -424,7 +424,7 @@ export class MasterPlanService {
         }
 
         // Define headers
-        const headers = ['ID Number', 'Asset Name', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory Schedule', 'Preventive Maintenance', 'Corrective Maintenance', 'Calibration Schedule'];
+        const headers = ['ID Number', 'Asset Name', 'Property Number', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory Schedule', 'Preventive Maintenance', 'Corrective Maintenance', 'Calibration Schedule'];
 
         // Add header row
         const headerRow = worksheet.addRow(headers);
@@ -451,6 +451,7 @@ export class MasterPlanService {
             const rowData = [
                 equipment.assetId || 'N/A',
                 equipment.equipmentName || equipment.assetName || 'N/A',
+                equipment.propertyNumber || 'N/A',
                 equipment.serialNumber || 'N/A',
                 item.quantity || 1,
                 this.formatDate(equipment.dateAcquired),
@@ -470,7 +471,7 @@ export class MasterPlanService {
                 cell.font = { size: 10 };
                 cell.alignment = {
                     vertical: 'middle',
-                    horizontal: colNumber <= 3 ? 'left' : 'center',
+                    horizontal: colNumber <= 4 ? 'left' : 'center',
                     wrapText: true
                 };
                 cell.border = {
@@ -485,17 +486,18 @@ export class MasterPlanService {
         // Set column widths
         worksheet.getColumn(1).width = 22; // ID Number
         worksheet.getColumn(2).width = 30; // Asset Name
-        worksheet.getColumn(3).width = 20; // Serial Number
-        worksheet.getColumn(4).width = 10; // Quantity
-        worksheet.getColumn(5).width = 18; // Date Acquired
-        worksheet.getColumn(6).width = 25; // Location
-        worksheet.getColumn(7).width = 15; // Price
-        worksheet.getColumn(8).width = 12; // Functional
-        worksheet.getColumn(9).width = 15; // Under Repair
-        worksheet.getColumn(10).width = 25; // Inventory Schedule
-        worksheet.getColumn(11).width = 25; // Preventive Maintenance
-        worksheet.getColumn(12).width = 25; // Corrective Maintenance
-        worksheet.getColumn(13).width = 25; // Calibration Schedule
+        worksheet.getColumn(3).width = 20; // Property Number
+        worksheet.getColumn(4).width = 20; // Serial Number
+        worksheet.getColumn(5).width = 10; // Quantity
+        worksheet.getColumn(6).width = 18; // Date Acquired
+        worksheet.getColumn(7).width = 25; // Location
+        worksheet.getColumn(8).width = 15; // Price
+        worksheet.getColumn(9).width = 12; // Functional
+        worksheet.getColumn(10).width = 15; // Under Repair
+        worksheet.getColumn(11).width = 25; // Inventory Schedule
+        worksheet.getColumn(12).width = 25; // Preventive Maintenance
+        worksheet.getColumn(13).width = 25; // Corrective Maintenance
+        worksheet.getColumn(14).width = 25; // Calibration Schedule
 
         // Add footer image after data
         if (footerBase64) {

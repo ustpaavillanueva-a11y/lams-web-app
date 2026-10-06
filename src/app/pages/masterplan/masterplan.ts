@@ -88,7 +88,7 @@ import { MasterPlanPdfService } from '../service/masterplan-pdf.service';
                 <table class="master-plan-table">
                     <thead>
                         <tr>
-                            <th colspan="8" class="particulars-header">PARTICULARS</th>
+                            <th colspan="10" class="particulars-header">PARTICULARS</th>
 
                             <th *ngIf="showSchedule" colspan="4" class="schedule-header">MAINTENANCE SCHEDULE</th>
                         </tr>
@@ -96,6 +96,7 @@ import { MasterPlanPdfService } from '../service/masterplan-pdf.service';
                         <tr>
                             <th>ID Number</th>
                             <th>Asset Name</th>
+                            <th>Property Number</th>
                             <th>Serial Number</th>
                             <th>Quantity</th>
                             <th>Date Acquired</th>
@@ -118,6 +119,10 @@ import { MasterPlanPdfService } from '../service/masterplan-pdf.service';
 
                                 <td style="text-align:left">
                                     {{ item.equipment?.equipmentName || 'N/A' }}
+                                </td>
+
+                                <td style="text-align:left">
+                                    {{ item.equipment?.propertyNumber || 'N/A' }}
                                 </td>
 
                                 <td style="text-align:left">
@@ -167,7 +172,7 @@ import { MasterPlanPdfService } from '../service/masterplan-pdf.service';
 
                         <ng-template #empty>
                             <tr>
-                                <td colspan="12" style="text-align:center;padding:40px">No data available</td>
+                                <td colspan="14" style="text-align:center;padding:40px">No data available</td>
                             </tr>
                         </ng-template>
                     </tbody>
@@ -845,7 +850,7 @@ export class MasterPlanComponent implements OnInit {
                                     name: equipment.equipmentName || equipment.assetName || 'N/A',
                                     quantity: item.quantity || 1,
                                     dateAcquired: equipment.dateAcquired ? new Date(equipment.dateAcquired).toLocaleDateString() : '',
-                                    serialNumber: equipment.serialNumber || equipment.assetId || '',
+                                    serialNumber: [equipment.serialNumber, equipment.propertyNumber].filter(Boolean).join(' / ') || equipment.assetId || '',
                                     location: equipment.location || '',
                                     price: equipment.price || 0,
                                     workingUnits: item.isFunctional !== false ? item.quantity || 1 : 0,
@@ -912,14 +917,15 @@ export class MasterPlanComponent implements OnInit {
         }
 
         const headers = this.showSchedule
-            ? ['ID Number', 'Asset Name', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory', 'Preventive', 'Corrective', 'Calibration']
-            : ['ID Number', 'Asset Name', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair'];
+            ? ['ID Number', 'Asset Name', 'Property Number', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair', 'Inventory', 'Preventive', 'Corrective', 'Calibration']
+            : ['ID Number', 'Asset Name', 'Property Number', 'Serial Number', 'Quantity', 'Date Acquired', 'Location', 'Price', 'Functional', 'Under Repair'];
 
         const rows = this.equipmentList.map((item) => {
             const eq = item.equipment || {};
             const base = [
                 eq.assetId || 'N/A',
                 eq.equipmentName || 'N/A',
+                eq.propertyNumber || 'N/A',
                 eq.serialNumber || 'N/A',
                 item.quantity || 1,
                 this.formatDate(eq.dateAcquired),
