@@ -41,7 +41,7 @@ export class AssetReportPdfService {
                 ['Name', this.fmt(asset?.assetName)],
                 ['Asset ID', assetId],
                 ['Category', this.fmt(asset?.category)],
-                ['Brand', this.fmt(asset?.brand?.brandName ?? asset?.brand)],
+                ['Brand', this.fmt(typeof asset?.inventoryCustodianSlip?.brand === 'object' ? asset.inventoryCustodianSlip.brand?.brandName : null)],
                 ['Status', this.fmt(asset?.status?.statusName)],
                 ['Campus', this.fmt(asset?.campus?.campusName)],
                 ['Laboratory', this.fmt(asset?.laboratories?.laboratoryName)],
@@ -56,7 +56,7 @@ export class AssetReportPdfService {
         doc.setFontSize(12);
         doc.text('Maintenance History', 14, y);
         const maintRows = (maintenanceHistory || []).map((m) => [
-            this.fmt(m.maintenanceRequestId ?? m.requestId ?? m.id),
+            this.fmt(m.requestId ?? m.id),
             this.fmt(m.maintenanceType?.maintenanceTypeName),
             this.fmt(m.serviceMaintenance?.serviceName),
             this.fmt(m.priorityLevel?.priorityLevelName),
