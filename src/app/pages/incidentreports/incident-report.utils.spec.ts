@@ -10,7 +10,7 @@ describe('incident-report utils', () => {
         incidentDate: '2026-10-01',
         description: 'Cracked screen',
         status: 'Pending',
-        asset: { assetId: 'a1', assetName: 'Microscope', campus: 'Main' },
+        asset: { assetId: 'a1', assetName: 'Microscope', campus: { campusId: 'C1', campusName: 'Main' } },
         reportedBy: { userId: 'u1', firstName: 'Ann', lastName: 'Lee' },
         createdAt: '2026-10-01T00:00:00.000Z'
     };
@@ -35,6 +35,13 @@ describe('incident-report utils', () => {
         expect(isIncidentReviewer('SuperAdmin')).toBeTrue();
         expect(isIncidentReviewer('Faculty')).toBeFalse();
         expect(isIncidentReviewer(undefined)).toBeFalse();
+    });
+
+    it('colors the history pills inline', () => {
+        const html = renderIncidentHistoryHtml([{ ...sample, status: 'Approved', severity: 'High' }], AssetUtils.escapeHtml, fmt);
+        expect(html).toContain('#dbeafe');
+        expect(html).toContain('#fee2e2');
+        expect(html).not.toContain('class="tag-');
     });
 
     it('escapes user text in the history HTML', () => {

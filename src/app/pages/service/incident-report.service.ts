@@ -24,7 +24,7 @@ export interface IncidentReport {
     incidentDate: string;
     description: string;
     status: IncidentStatus;
-    asset: { assetId: string; assetName: string; campus?: string };
+    asset: { assetId: string; assetName: string; campus?: { campusId: string; campusName?: string } };
     reportedBy?: IncidentUser;
     reviewedBy?: IncidentUser | null;
     resolvedBy?: IncidentUser | null;

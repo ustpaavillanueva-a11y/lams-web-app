@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -24,7 +24,6 @@ const TAB_LABELS = ['All', 'Pending', 'Approved', 'Resolved', 'Rejected'];
     selector: 'app-incident-reports',
     standalone: true,
     imports: [CommonModule, FormsModule, ToolbarModule, ButtonModule, IconFieldModule, InputIconModule, InputTextModule, ToastModule, TooltipModule],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [MessageService],
     styles: [
         `
@@ -443,7 +442,7 @@ const TAB_LABELS = ['All', 'Pending', 'Approved', 'Resolved', 'Rejected'];
                             </thead>
                             <tbody>
                                 <tr *ngFor="let row of paginatedItems">
-                                    <td>{{ formatId(row.incidentId) }}</td>
+                                    <td>{{ row.incidentId }}</td>
                                     <td>{{ row.asset?.assetName }}</td>
                                     <td>{{ row.incidentType }}</td>
                                     <td>
@@ -543,7 +542,7 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
         this.filteredItems = this.items.filter((row) => {
             if (status && row.status !== status) return false;
             if (!term) return true;
-            const haystack = [this.formatId(row.incidentId), row.asset?.assetName, row.incidentType, row.severity, row.status, this.reporterName(row), row.description].join(' ').toLowerCase();
+            const haystack = [row.incidentId, row.asset?.assetName, row.incidentType, row.severity, row.status, this.reporterName(row), row.description].join(' ').toLowerCase();
             return haystack.includes(term);
         });
         this.page = 1;
@@ -572,9 +571,6 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
     }
 
     // Helpers
-    formatId(id: string): string {
-        return id ? id.substring(0, 8).toUpperCase() : '';
-    }
     reporterName(row: IncidentReport): string {
         return row.reportedBy ? `${row.reportedBy.firstName} ${row.reportedBy.lastName}`.trim() : '';
     }
@@ -690,7 +686,7 @@ export class IncidentReportsComponent extends BaseComponent implements OnInit {
         const esc = (value: any) => String(value ?? '').replace(/,/g, ';');
         let csv = 'ID,Asset,Type,Severity,Incident Date,Reported By,Status\n';
         this.filteredItems.forEach((row) => {
-            csv += `${esc(this.formatId(row.incidentId))},${esc(row.asset?.assetName)},${esc(row.incidentType)},${esc(row.severity)},${esc(row.incidentDate ? new Date(row.incidentDate).toLocaleDateString() : '')},${esc(this.reporterName(row))},${esc(row.status)}\n`;
+            csv += `${esc(row.incidentId)},${esc(row.asset?.assetName)},${esc(row.incidentType)},${esc(row.severity)},${esc(row.incidentDate ? new Date(row.incidentDate).toLocaleDateString() : '')},${esc(this.reporterName(row))},${esc(row.status)}\n`;
         });
         const tabName = TAB_LABELS[this.activeTabIndex].toLowerCase();
         const blob = new Blob([csv], { type: 'text/csv' });

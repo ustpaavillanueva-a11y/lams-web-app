@@ -34,6 +34,18 @@ export function isIncidentReviewer(role: string | undefined): boolean {
 
 const TOGGLE = "this.classList.toggle('active'); this.nextElementSibling.classList.toggle('active'); this.querySelector('.accordion-icon').classList.toggle('active');";
 
+// Inline colors: the popup is rendered by SweetAlert outside component-scoped styles.
+// Severity and status share a name-keyed map (no overlapping names).
+const PILL_COLORS: Record<string, string> = {
+    Pending: 'background:#ffedd5;color:#9a3412;',
+    Approved: 'background:#dbeafe;color:#1e40af;',
+    Resolved: 'background:#dcfce7;color:#166534;',
+    Rejected: 'background:#fee2e2;color:#991b1b;',
+    High: 'background:#fee2e2;color:#991b1b;',
+    Medium: 'background:#fef08a;color:#92400e;',
+    Low: 'background:#dcfce7;color:#166534;'
+};
+
 export function renderIncidentHistoryHtml(incidents: IncidentReport[], escape: (v: unknown) => string, formatDate: (d: string | Date) => string): string {
     const header = (label: string) => `
                             <div class="accordion-header" onclick="${TOGGLE}">
@@ -60,8 +72,8 @@ export function renderIncidentHistoryHtml(incidents: IncidentReport[], escape: (
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                             <strong style="font-size: 13px;">${escape(inc.incidentType)}</strong>
                                             <span>
-                                                <span class="${incidentSeverityTagClass(inc.severity)}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${escape(inc.severity)}</span>
-                                                <span class="${incidentStatusTagClass(inc.status)}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${escape(inc.status)}</span>
+                                                <span style="${PILL_COLORS[inc.severity] ?? ''}padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${escape(inc.severity)}</span>
+                                                <span style="${PILL_COLORS[inc.status] ?? ''}padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${escape(inc.status)}</span>
                                             </span>
                                         </div>
                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
