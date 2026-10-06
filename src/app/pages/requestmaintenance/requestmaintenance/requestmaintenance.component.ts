@@ -1019,6 +1019,20 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         return user?.role?.toLowerCase() === 'campusadmin';
     }
 
+    isFaculty(): boolean {
+        const user = this.authService.getCurrentUser();
+        return user?.role?.toLowerCase() === 'faculty';
+    }
+
+    // Faculty may only export the requests they submitted; other roles export the list as shown
+    private ownRowsForExport(rows: any[]): any[] {
+        if (!this.isFaculty()) return rows;
+        const user = this.authService.getCurrentUser() as any;
+        const userId = user?.userId || user?.user_id;
+        if (!userId) return [];
+        return rows.filter((row) => (row.requestedBy || row.maintenanceRequest?.requestedBy)?.userId === userId);
+    }
+
     getCurrentUserFullName(): string {
         const user = this.authService.getCurrentUser() as any;
         if (!user) return '';
@@ -1962,31 +1976,31 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
         if (this.activeTabIndex === 1) {
             csv = 'ID,Asset Name,Maintenance Type,Service Name,Request Date,Requested By,Status\n';
-            this.filteredPendingItems.forEach((row) => {
+            this.ownRowsForExport(this.filteredPendingItems).forEach((row) => {
                 csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else if (this.activeTabIndex === 2) {
             csv = 'ID,Maintenance Name,Assigned Technician,Priority,Scheduled Date,Status\n';
-            this.filteredScheduledItems.forEach((row) => {
+            this.ownRowsForExport(this.filteredScheduledItems).forEach((row) => {
                 const requestId = row.maintenanceRequest?.requestId || row.requestId;
                 const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(row.maintenanceRequest?.priorityLevel?.priorityLevelName)},${esc(dateStr(row.scheduledAt))},${esc(row.status || 'Scheduled')}\n`;
             });
         } else if (this.activeTabIndex === 3) {
             csv = 'ID,Maintenance Name,Assigned Technician,Started At,Status\n';
-            this.filteredInProgressItems.forEach((row) => {
+            this.ownRowsForExport(this.filteredInProgressItems).forEach((row) => {
                 const requestId = row.maintenanceRequest?.requestId || row.requestId;
                 const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(dateStr(row.inProgressAt))},${esc(row.status || 'In Progress')}\n`;
             });
         } else if (this.activeTabIndex === 0) {
             csv = 'ID,Asset Name,Maintenance Type,Service Name,Priority,Request Date,Requested By,Status\n';
-            this.filteredAllItems.forEach((row) => {
+            this.ownRowsForExport(this.filteredAllItems).forEach((row) => {
                 csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(row.priorityLevel?.priorityLevelName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else {
             csv = 'ID,Asset Name,Maintenance Type,Requested By,Request Date,Date Approved,Date Starts,Date Completed,Status\n';
-            this.filteredCompletedItems.forEach((row) => {
+            this.ownRowsForExport(this.filteredCompletedItems).forEach((row) => {
                 const requestId = row.requestId || row.maintenanceRequest?.requestId;
                 const mr = row.maintenanceRequest || row;
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceName || mr.maintenanceName)},${esc(mr.maintenanceType?.maintenanceTypeName)},${esc(this.getFullName(mr))},${esc(dateStr(mr.requestDate || mr.createdAt))},${esc(dateStr(row.approvedAt))},${esc(dateStr(row.inProgressAt))},${esc(dateStr(row.completedAt))},${esc(row.maintenanceStatus?.requestStatusName || 'Completed')}\n`;
