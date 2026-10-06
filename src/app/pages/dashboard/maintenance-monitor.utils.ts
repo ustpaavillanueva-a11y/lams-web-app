@@ -66,8 +66,3 @@ export function maintenanceDueLabel(daysRemaining: number): string {
     if (daysRemaining === 0) return 'Due today';
     return `In ${daysRemaining} day(s)`;
 }
-
-/** "3 assets are due…" vs "1 asset is due…" */
-export function assetCountPhrase(count: number, singular: string, plural: string): string {
-    return count === 1 ? `1 asset ${singular}` : `${count} assets ${plural}`;
-}

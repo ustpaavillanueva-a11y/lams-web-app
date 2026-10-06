@@ -873,7 +873,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         // Check if user is authenticated before connecting
         const token = localStorage.getItem('token');
         if (!token) {
-            console.warn('⚠️ Skipping WebSocket connection - user not authenticated');
+            console.warn('âš ï¸ Skipping WebSocket connection - user not authenticated');
             return;
         }
 
@@ -1024,8 +1024,9 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         return user?.role?.toLowerCase() === 'faculty';
     }
 
-    // Faculty may only export the requests they submitted; other roles export the list as shown
-    private ownRowsForExport(rows: any[]): any[] {
+    // Faculty only see and export the requests they submitted (the backend scopes these too);
+    // other roles get the rows unchanged
+    private ownRows(rows: any[]): any[] {
         if (!this.isFaculty()) return rows;
         const user = this.authService.getCurrentUser() as any;
         const userId = user?.userId || user?.user_id;
@@ -1070,9 +1071,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         this.loading = true;
         this.maintenanceService.getMaintenanceRequests?.()?.subscribe({
             next: (data: any[]) => {
-                if (data && data.length > 0) {
-                }
-                this.items = data || [];
+                this.items = this.ownRows(data || []);
                 this.categorizeItems();
                 this.loadApprovals();
                 this.loading = false;
@@ -1105,7 +1104,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         // Load Scheduled approvals
         this.maintenanceService.getScheduledApprovals().subscribe({
             next: (data: any[]) => {
-                this.scheduledItems = data || [];
+                this.scheduledItems = this.ownRows(data || []);
             },
             error: (error: any) => {
                 this.scheduledItems = [];
@@ -1115,7 +1114,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         // Load In-Progress approvals
         this.maintenanceService.getInProgressApprovals().subscribe({
             next: (data: any[]) => {
-                this.inProgressItems = data || [];
+                this.inProgressItems = this.ownRows(data || []);
             },
             error: (error: any) => {
                 this.inProgressItems = [];
@@ -1125,7 +1124,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         // Load Completed approvals
         this.maintenanceService.getCompletedApprovals().subscribe({
             next: (data: any[]) => {
-                const completedApprovals = data || [];
+                const completedApprovals = this.ownRows(data || []);
                 // Merge with existing completedItems from maintenance requests
                 this.completedItems = [...this.completedItems, ...completedApprovals];
             },
@@ -1474,7 +1473,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
         return 'info';
     }
 
-    // Format ID to show only numbers from each segment (e.g., CAMPUS004-LAB002-021126-MR001 → 004-002-021126-001)
+    // Format ID to show only numbers from each segment (e.g., CAMPUS004-LAB002-021126-MR001 â†’ 004-002-021126-001)
     formatId(id: string): string {
         if (!id) return '';
         // Split by dash, remove letters from each segment, rejoin with dash
@@ -1630,7 +1629,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             title: 'Start Maintenance Work',
             html: `
                 <p style="margin-bottom: 1rem;">Start maintenance for: <strong>${item.maintenanceRequest?.maintenanceName}</strong></p>
-                <p style="margin-bottom: 0.5rem; color: #f59e0b;">⚠️ The asset will be marked as "Unserviceable" when you start this maintenance.</p>
+                <p style="margin-bottom: 0.5rem; color: #f59e0b;">âš ï¸ The asset will be marked as "Unserviceable" when you start this maintenance.</p>
                 <textarea id="startNotes" class="swal2-textarea" placeholder="Add any notes about starting the work (optional)..."></textarea>
             `,
             icon: 'question',
@@ -1976,31 +1975,31 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
 
         if (this.activeTabIndex === 1) {
             csv = 'ID,Asset Name,Maintenance Type,Service Name,Request Date,Requested By,Status\n';
-            this.ownRowsForExport(this.filteredPendingItems).forEach((row) => {
+            this.ownRows(this.filteredPendingItems).forEach((row) => {
                 csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else if (this.activeTabIndex === 2) {
             csv = 'ID,Maintenance Name,Assigned Technician,Priority,Scheduled Date,Status\n';
-            this.ownRowsForExport(this.filteredScheduledItems).forEach((row) => {
+            this.ownRows(this.filteredScheduledItems).forEach((row) => {
                 const requestId = row.maintenanceRequest?.requestId || row.requestId;
                 const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(row.maintenanceRequest?.priorityLevel?.priorityLevelName)},${esc(dateStr(row.scheduledAt))},${esc(row.status || 'Scheduled')}\n`;
             });
         } else if (this.activeTabIndex === 3) {
             csv = 'ID,Maintenance Name,Assigned Technician,Started At,Status\n';
-            this.ownRowsForExport(this.filteredInProgressItems).forEach((row) => {
+            this.ownRows(this.filteredInProgressItems).forEach((row) => {
                 const requestId = row.maintenanceRequest?.requestId || row.requestId;
                 const technician = `${row.assignedTechnician?.firstName || ''} ${row.assignedTechnician?.lastName || ''}`.trim();
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceRequest?.maintenanceName || row.maintenanceName)},${esc(technician)},${esc(dateStr(row.inProgressAt))},${esc(row.status || 'In Progress')}\n`;
             });
         } else if (this.activeTabIndex === 0) {
             csv = 'ID,Asset Name,Maintenance Type,Service Name,Priority,Request Date,Requested By,Status\n';
-            this.ownRowsForExport(this.filteredAllItems).forEach((row) => {
+            this.ownRows(this.filteredAllItems).forEach((row) => {
                 csv += `${esc(this.formatId(row.requestId))},${esc(row.maintenanceName)},${esc(row.maintenanceType?.maintenanceTypeName)},${esc(row.serviceMaintenance?.serviceName)},${esc(row.priorityLevel?.priorityLevelName)},${esc(dateStr(row.requestDate || row.createdAt))},${esc(this.getFullName(row))},${esc(row.maintenanceStatus?.requestStatusName)}\n`;
             });
         } else {
             csv = 'ID,Asset Name,Maintenance Type,Requested By,Request Date,Date Approved,Date Starts,Date Completed,Status\n';
-            this.ownRowsForExport(this.filteredCompletedItems).forEach((row) => {
+            this.ownRows(this.filteredCompletedItems).forEach((row) => {
                 const requestId = row.requestId || row.maintenanceRequest?.requestId;
                 const mr = row.maintenanceRequest || row;
                 csv += `${esc(this.formatId(requestId))},${esc(row.maintenanceName || mr.maintenanceName)},${esc(mr.maintenanceType?.maintenanceTypeName)},${esc(this.getFullName(mr))},${esc(dateStr(mr.requestDate || mr.createdAt))},${esc(dateStr(row.approvedAt))},${esc(dateStr(row.inProgressAt))},${esc(dateStr(row.completedAt))},${esc(row.maintenanceStatus?.requestStatusName || 'Completed')}\n`;
@@ -2188,7 +2187,7 @@ export class RequestmaintenanceComponent implements OnInit, AfterViewInit, OnDes
             title: 'Cancel Maintenance',
             html: `
                 <p style="margin-bottom: 1rem;">Cancel maintenance for: <strong>${item.maintenanceRequest?.maintenanceName}</strong></p>
-                <p style="margin-bottom: 0.5rem; color: #dc2626;">⚠️ This action cannot be undone. The maintenance will be marked as cancelled.</p>
+                <p style="margin-bottom: 0.5rem; color: #dc2626;">âš ï¸ This action cannot be undone. The maintenance will be marked as cancelled.</p>
                 <textarea id="cancelReason" class="swal2-textarea" placeholder="Enter reason for cancelling (required)..."></textarea>
             `,
             icon: 'warning',

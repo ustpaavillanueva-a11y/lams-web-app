@@ -1,4 +1,4 @@
-import { assetCountPhrase, classifyMaintenanceDue, maintenanceDueLabel, MAINTENANCE_APPROACHING_DAYS } from './maintenance-monitor.utils';
+import { classifyMaintenanceDue, maintenanceDueLabel, MAINTENANCE_APPROACHING_DAYS } from './maintenance-monitor.utils';
 
 describe('maintenance monitor utils', () => {
     const today = new Date(2026, 9, 6, 10, 0); // Oct 6, 2026 local
@@ -31,11 +31,9 @@ describe('maintenance monitor utils', () => {
         expect(result[0]).toEqual(jasmine.objectContaining({ level: 'approaching', isMasterPlan: true, daysRemaining: 2 }));
     });
 
-    it('labels days and pluralizes counts', () => {
+    it('labels days remaining', () => {
         expect(maintenanceDueLabel(-2)).toBe('2 day(s) overdue');
         expect(maintenanceDueLabel(0)).toBe('Due today');
         expect(maintenanceDueLabel(5)).toBe('In 5 day(s)');
-        expect(assetCountPhrase(1, 'is due', 'are due')).toBe('1 asset is due');
-        expect(assetCountPhrase(3, 'is due', 'are due')).toBe('3 assets are due');
     });
 });
